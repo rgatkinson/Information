@@ -1,6 +1,5 @@
 package com.ftdi.j2xx;
 
-class q
-{
-    public long a;
+class q {
+   public long a;
 }

@@ -1,12 +1,11 @@
 package com.ftdi.j2xx.interfaces;
 
-public interface I2cMaster
-{
-    int init(int p0);
-    
-    int read(int p0, byte[] p1, int p2, int[] p3);
-    
-    int reset();
-    
-    int write(int p0, byte[] p1, int p2, int[] p3);
+public interface I2cMaster {
+   int init(int var1);
+
+   int read(int var1, byte[] var2, int var3, int[] var4);
+
+   int reset();
+
+   int write(int var1, byte[] var2, int var3, int[] var4);
 }

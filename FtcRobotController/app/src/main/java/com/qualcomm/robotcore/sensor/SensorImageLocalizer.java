@@ -1,230 +1,230 @@
 package com.qualcomm.robotcore.sensor;
 
-import java.util.Iterator;
-import com.qualcomm.robotcore.util.PoseUtils;
-import com.qualcomm.robotcore.util.MatrixD;
 import android.util.Log;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import com.qualcomm.robotcore.sensor.SensorBase;
+import com.qualcomm.robotcore.sensor.SensorListener;
+import com.qualcomm.robotcore.sensor.TargetInfo;
+import com.qualcomm.robotcore.sensor.TargetSize;
+import com.qualcomm.robotcore.sensor.TrackedTargetInfo;
+import com.qualcomm.robotcore.util.MatrixD;
 import com.qualcomm.robotcore.util.Pose;
+import com.qualcomm.robotcore.util.PoseUtils;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
-public class SensorImageLocalizer extends SensorBase<Pose> implements SensorListener<List<TrackedTargetInfo>>
-{
-    private final boolean a;
-    private final String b;
-    private final Map<String, TargetInfo> c;
-    private Pose d;
-    private final HashMap<String, a> e;
-    private a f;
-    
-    public SensorImageLocalizer(final List<SensorListener<Pose>> list) {
-        super(list);
-        this.a = false;
-        this.b = "SensorImageLocalizer";
-        this.e = new HashMap<String, a>();
-        this.c = new HashMap<String, TargetInfo>();
-    }
-    
-    private boolean a(final TrackedTargetInfo trackedTargetInfo) {
-        final long n = System.currentTimeMillis() / 1000L;
-        a a;
-        if (this.e.containsKey(trackedTargetInfo.mTargetInfo.mTargetName)) {
-            a = this.e.get(trackedTargetInfo.mTargetInfo.mTargetName);
-            a.b = trackedTargetInfo.mTimeTracked;
-            a.e = trackedTargetInfo.mConfidence;
-            if (n - a.b > 120L) {
-                a.c = 1;
+public class SensorImageLocalizer extends SensorBase<Pose> implements SensorListener<List<TrackedTargetInfo>> {
+   private final boolean a = false;
+   private final String b = "SensorImageLocalizer";
+   private final Map<String, TargetInfo> c = new HashMap();
+   private Pose d;
+   private final HashMap<String, SensorImageLocalizer.a> e = new HashMap();
+   private SensorImageLocalizer.a f;
+
+   public SensorImageLocalizer(List<SensorListener<Pose>> var1) {
+      super(var1);
+   }
+
+   private boolean a(TrackedTargetInfo var1) {
+      long var2 = System.currentTimeMillis() / 1000L;
+      SensorImageLocalizer.a var4;
+      if(this.e.containsKey(var1.mTargetInfo.mTargetName)) {
+         var4 = (SensorImageLocalizer.a)this.e.get(var1.mTargetInfo.mTargetName);
+         var4.b = var1.mTimeTracked;
+         var4.e = var1.mConfidence;
+         if(var2 - var4.b > 120L) {
+            var4.c = 1;
+         } else {
+            ++var4.c;
+         }
+      } else {
+         var4 = new SensorImageLocalizer.a(null);
+         var4.e = var1.mConfidence;
+         var4.d = var1.mTargetInfo.mTargetName;
+         var4.b = var1.mTimeTracked;
+         var4.c = 1;
+         this.e.put(var1.mTargetInfo.mTargetName, var4);
+      }
+
+      if(this.f != null && this.f.d != var4.d && var2 - this.f.a < 10L) {
+         Log.d("SensorImageLocalizer", "Ignoring target " + var1.mTargetInfo.mTargetName + " Time diff " + (var2 - this.f.a));
+         return false;
+      } else {
+         return true;
+      }
+   }
+
+   public void AddListener(SensorListener<Pose> param1) {
+      // $FF: Couldn't be decompiled
+   }
+
+   public void RemoveListener(SensorListener<Pose> param1) {
+      // $FF: Couldn't be decompiled
+   }
+
+   public boolean addRobotToCameraRef(double var1, double var3, double var5, double var7) {
+      new MatrixD(3, 3);
+      MatrixD var10 = Pose.makeRotationY(-var7);
+      MatrixD var11 = new MatrixD(3, 4);
+      var11.setSubmatrix(var10, 3, 3, 0, 0);
+      var11.data()[0][3] = var3;
+      var11.data()[1][3] = -var5;
+      var11.data()[2][3] = var1;
+      this.d = new Pose(var11);
+      return true;
+   }
+
+   public boolean addTargetReference(String var1, double var2, double var4, double var6, double var8, double var10, double var12) {
+      if(var1 == null) {
+         throw new IllegalArgumentException("Null targetInfoWorldRef");
+      } else if(this.c.containsKey(var1)) {
+         return false;
+      } else {
+         MatrixD var14 = Pose.makeRotationY(Math.toRadians(var8));
+         MatrixD var15 = new MatrixD(3, 4);
+         var15.setSubmatrix(var14, 3, 3, 0, 0);
+         var15.data()[0][3] = var4;
+         var15.data()[1][3] = var6;
+         var15.data()[2][3] = var2;
+         Pose var17 = new Pose(var15);
+         Log.d("SensorImageLocalizer", "Target Pose \n" + var15);
+         TargetInfo var19 = new TargetInfo(var1, var17, new TargetSize(var1, var10, var12));
+         this.c.put(var1, var19);
+         return true;
+      }
+   }
+
+   public boolean initialize() {
+      return true;
+   }
+
+   public void onUpdate(List<TrackedTargetInfo> var1) {
+      Log.d("SensorImageLocalizer", "SensorImageLocalizer onUpdate");
+      if(var1 != null && var1.size() >= 1) {
+         boolean var4 = false;
+         double var5 = Double.MIN_VALUE;
+         long var7 = System.currentTimeMillis() / 1000L;
+         TrackedTargetInfo var9 = null;
+         SensorImageLocalizer.a var10 = null;
+
+         double var40;
+         for(Iterator var11 = var1.iterator(); var11.hasNext(); var5 = var40) {
+            TrackedTargetInfo var36;
+            boolean var39;
+            label40: {
+               var36 = (TrackedTargetInfo)var11.next();
+               if(this.c.containsKey(var36.mTargetInfo.mTargetName)) {
+                  if(this.a(var36) && var36.mConfidence > var5) {
+                     var10 = (SensorImageLocalizer.a)this.e.get(var36.mTargetInfo.mTargetName);
+                     var40 = var36.mConfidence;
+                     var39 = true;
+                     Log.d("SensorImageLocalizer", "Potential target " + var36.mTargetInfo.mTargetName + " Confidence " + var36.mConfidence);
+                     break label40;
+                  }
+
+                  Log.d("SensorImageLocalizer", "Ignoring target " + var36.mTargetInfo.mTargetName + " Confidence " + var36.mConfidence);
+               }
+
+               var36 = var9;
+               var39 = var4;
+               var40 = var5;
             }
-            else {
-                ++a.c;
+
+            var9 = var36;
+            var4 = var39;
+         }
+
+         if(!var4) {
+            this.update((Object)null);
+         } else {
+            TargetInfo var12 = (TargetInfo)this.c.get(var9.mTargetInfo.mTargetName);
+            var10.a = var7;
+            this.f = var10;
+            Log.d("SensorImageLocalizer", "Selected target " + var9.mTargetInfo.mTargetName + " time " + var7);
+            Pose var14 = this.d;
+            MatrixD var15 = null;
+            if(var14 != null) {
+               var15 = this.d.poseMatrix.submatrix(3, 3, 0, 0);
             }
-        }
-        else {
-            a = new a();
-            a.e = trackedTargetInfo.mConfidence;
-            a.d = trackedTargetInfo.mTargetInfo.mTargetName;
-            a.b = trackedTargetInfo.mTimeTracked;
-            a.c = 1;
-            this.e.put(trackedTargetInfo.mTargetInfo.mTargetName, a);
-        }
-        if (this.f != null && this.f.d != a.d && n - this.f.a < 10L) {
-            Log.d("SensorImageLocalizer", "Ignoring target " + trackedTargetInfo.mTargetInfo.mTargetName + " Time diff " + (n - this.f.a));
-            return false;
-        }
-        return true;
-    }
-    
-    public void AddListener(final SensorListener<Pose> sensorListener) {
-        synchronized (this.mListeners) {
-            if (!this.mListeners.contains(sensorListener)) {
-                this.mListeners.add((SensorListener<T>)sensorListener);
+
+            MatrixD var16 = var9.mTargetInfo.mTargetPose.poseMatrix.submatrix(3, 3, 0, 0).transpose();
+            MatrixD var17 = var12.mTargetPose.poseMatrix.submatrix(3, 3, 0, 0);
+            MatrixD var18 = Pose.makeRotationX(Math.toRadians(90.0D)).times(Pose.makeRotationY(Math.toRadians(90.0D)));
+            MatrixD var19 = var18.times(var17).times(var16);
+            MatrixD var20;
+            if(var15 != null) {
+               var20 = var19.times(var15);
+            } else {
+               var20 = var19;
             }
-        }
-    }
-    
-    public void RemoveListener(final SensorListener<Pose> sensorListener) {
-        synchronized (this.mListeners) {
-            if (this.mListeners.contains(sensorListener)) {
-                this.mListeners.remove(sensorListener);
+
+            MatrixD var21 = new MatrixD(3, 1);
+            var21.data()[0][0] = var12.mTargetSize.mLongSide;
+            var21.data()[1][0] = var12.mTargetSize.mShortSide;
+            var21.data()[2][0] = 0.0D;
+            MatrixD var22 = var16.times(var9.mTargetInfo.mTargetPose.getTranslationMatrix());
+            MatrixD var23 = new MatrixD(3, 1);
+            if(this.d != null) {
+               var23 = this.d.getTranslationMatrix();
             }
-        }
-    }
-    
-    public boolean addRobotToCameraRef(final double n, final double n2, final double n3, final double n4) {
-        new MatrixD(3, 3);
-        final MatrixD rotationY = Pose.makeRotationY(-n4);
-        final MatrixD matrixD = new MatrixD(3, 4);
-        matrixD.setSubmatrix(rotationY, 3, 3, 0, 0);
-        matrixD.data()[0][3] = n2;
-        matrixD.data()[1][3] = -n3;
-        matrixD.data()[2][3] = n;
-        this.d = new Pose(matrixD);
-        return true;
-    }
-    
-    public boolean addTargetReference(final String s, final double n, final double n2, final double n3, final double n4, final double n5, final double n6) {
-        if (s == null) {
-            throw new IllegalArgumentException("Null targetInfoWorldRef");
-        }
-        if (this.c.containsKey(s)) {
-            return false;
-        }
-        final MatrixD rotationY = Pose.makeRotationY(Math.toRadians(n4));
-        final MatrixD matrixD = new MatrixD(3, 4);
-        matrixD.setSubmatrix(rotationY, 3, 3, 0, 0);
-        matrixD.data()[0][3] = n2;
-        matrixD.data()[1][3] = n3;
-        matrixD.data()[2][3] = n;
-        final Pose pose = new Pose(matrixD);
-        Log.d("SensorImageLocalizer", "Target Pose \n" + matrixD);
-        this.c.put(s, new TargetInfo(s, pose, new TargetSize(s, n5, n6)));
-        return true;
-    }
-    
-    @Override
-    public boolean initialize() {
-        return true;
-    }
-    
-    @Override
-    public void onUpdate(final List<TrackedTargetInfo> list) {
-        Log.d("SensorImageLocalizer", "SensorImageLocalizer onUpdate");
-        if (list == null || list.size() < 1) {
-            Log.d("SensorImageLocalizer", "SensorImageLocalizer onUpdate NULL");
-            this.update(null);
-            return;
-        }
-        int n = 0;
-        double n2 = Double.MIN_VALUE;
-        final long a = System.currentTimeMillis() / 1000L;
-        TrackedTargetInfo trackedTargetInfo = null;
-        a f = null;
-    Label_0204_Outer:
-        for (TrackedTargetInfo trackedTargetInfo2 : list) {
-            while (true) {
-                Label_0268: {
-                    if (!this.c.containsKey(trackedTargetInfo2.mTargetInfo.mTargetName)) {
-                        break Label_0268;
-                    }
-                    if (!this.a(trackedTargetInfo2) || trackedTargetInfo2.mConfidence <= n2) {
-                        Log.d("SensorImageLocalizer", "Ignoring target " + trackedTargetInfo2.mTargetInfo.mTargetName + " Confidence " + trackedTargetInfo2.mConfidence);
-                        break Label_0268;
-                    }
-                    f = this.e.get(trackedTargetInfo2.mTargetInfo.mTargetName);
-                    final double mConfidence = trackedTargetInfo2.mConfidence;
-                    final int n3 = 1;
-                    Log.d("SensorImageLocalizer", "Potential target " + trackedTargetInfo2.mTargetInfo.mTargetName + " Confidence " + trackedTargetInfo2.mConfidence);
-                    final double n4 = mConfidence;
-                    trackedTargetInfo = trackedTargetInfo2;
-                    n = n3;
-                    n2 = n4;
-                    continue Label_0204_Outer;
-                }
-                trackedTargetInfo2 = trackedTargetInfo;
-                final double n5 = n2;
-                final int n3 = n;
-                final double mConfidence = n5;
-                continue;
-            }
-        }
-        if (n == 0) {
-            this.update(null);
-            return;
-        }
-        final TargetInfo targetInfo = this.c.get(trackedTargetInfo.mTargetInfo.mTargetName);
-        f.a = a;
-        this.f = f;
-        Log.d("SensorImageLocalizer", "Selected target " + trackedTargetInfo.mTargetInfo.mTargetName + " time " + a);
-        final Pose d = this.d;
-        MatrixD submatrix = null;
-        if (d != null) {
-            submatrix = this.d.poseMatrix.submatrix(3, 3, 0, 0);
-        }
-        final MatrixD transpose = trackedTargetInfo.mTargetInfo.mTargetPose.poseMatrix.submatrix(3, 3, 0, 0).transpose();
-        final MatrixD submatrix2 = targetInfo.mTargetPose.poseMatrix.submatrix(3, 3, 0, 0);
-        final MatrixD times = Pose.makeRotationX(Math.toRadians(90.0)).times(Pose.makeRotationY(Math.toRadians(90.0)));
-        final MatrixD times2 = times.times(submatrix2).times(transpose);
-        MatrixD times3;
-        if (submatrix != null) {
-            times3 = times2.times(submatrix);
-        }
-        else {
-            times3 = times2;
-        }
-        final MatrixD matrixD = new MatrixD(3, 1);
-        matrixD.data()[0][0] = targetInfo.mTargetSize.mLongSide;
-        matrixD.data()[1][0] = targetInfo.mTargetSize.mShortSide;
-        matrixD.data()[2][0] = 0.0;
-        final MatrixD times4 = transpose.times(trackedTargetInfo.mTargetInfo.mTargetPose.getTranslationMatrix());
-        MatrixD translationMatrix = new MatrixD(3, 1);
-        if (this.d != null) {
-            translationMatrix = this.d.getTranslationMatrix();
-        }
-        final MatrixD times5 = times.times(targetInfo.mTargetPose.getTranslationMatrix().subtract(submatrix2.times(times4.add(transpose.times(translationMatrix)).add(matrixD))));
-        final MatrixD matrixD2 = new MatrixD(3, 4);
-        matrixD2.setSubmatrix(times3, 3, 3, 0, 0);
-        matrixD2.setSubmatrix(times5, 3, 1, 0, 3);
-        final Pose pose = new Pose(matrixD2);
-        final double[] anglesAroundZ = PoseUtils.getAnglesAroundZ(pose);
-        Log.d("SensorImageLocalizer", String.format("POSE_HEADING: x %8.4f z %8.4f up %8.4f", anglesAroundZ[0], anglesAroundZ[1], anglesAroundZ[2]));
-        final MatrixD translationMatrix2 = pose.getTranslationMatrix();
-        Log.d("SensorImageLocalizer", String.format("POSE_TRANS: x %8.4f y %8.4f z %8.4f", translationMatrix2.data()[0][0], translationMatrix2.data()[1][0], translationMatrix2.data()[2][0]));
-        this.update(pose);
-    }
-    
-    @Override
-    public boolean pause() {
-        return true;
-    }
-    
-    public boolean removeTargetReference(final String s) {
-        if (s == null) {
-            throw new IllegalArgumentException("Null targetName");
-        }
-        if (this.c.containsKey(s)) {
-            this.c.remove(s);
-            return true;
-        }
-        return false;
-    }
-    
-    @Override
-    public boolean resume() {
-        return true;
-    }
-    
-    @Override
-    public boolean shutdown() {
-        return true;
-    }
-    
-    private class a
-    {
-        public long a;
-        public long b;
-        public int c;
-        public String d;
-        public double e;
-    }
+
+            MatrixD var24 = var17.times(var22.add(var16.times(var23)).add(var21));
+            MatrixD var25 = var18.times(var12.mTargetPose.getTranslationMatrix().subtract(var24));
+            MatrixD var26 = new MatrixD(3, 4);
+            var26.setSubmatrix(var20, 3, 3, 0, 0);
+            var26.setSubmatrix(var25, 3, 1, 0, 3);
+            Pose var29 = new Pose(var26);
+            double[] var30 = PoseUtils.getAnglesAroundZ(var29);
+            Object[] var31 = new Object[]{Double.valueOf(var30[0]), Double.valueOf(var30[1]), Double.valueOf(var30[2])};
+            Log.d("SensorImageLocalizer", String.format("POSE_HEADING: x %8.4f z %8.4f up %8.4f", var31));
+            MatrixD var33 = var29.getTranslationMatrix();
+            Object[] var34 = new Object[]{Double.valueOf(var33.data()[0][0]), Double.valueOf(var33.data()[1][0]), Double.valueOf(var33.data()[2][0])};
+            Log.d("SensorImageLocalizer", String.format("POSE_TRANS: x %8.4f y %8.4f z %8.4f", var34));
+            this.update(var29);
+         }
+      } else {
+         Log.d("SensorImageLocalizer", "SensorImageLocalizer onUpdate NULL");
+         this.update((Object)null);
+      }
+   }
+
+   public boolean pause() {
+      return true;
+   }
+
+   public boolean removeTargetReference(String var1) {
+      if(var1 == null) {
+         throw new IllegalArgumentException("Null targetName");
+      } else if(this.c.containsKey(var1)) {
+         this.c.remove(var1);
+         return true;
+      } else {
+         return false;
+      }
+   }
+
+   public boolean resume() {
+      return true;
+   }
+
+   public boolean shutdown() {
+      return true;
+   }
+
+   private class a {
+      public long a;
+      public long b;
+      public int c;
+      public String d;
+      public double e;
+
+      private a() {
+      }
+
+      // $FF: synthetic method
+      a(Object var2) {
+         this();
+      }
+   }
 }

@@ -1,8 +1,9 @@
 package com.qualcomm.robotcore.exception;
 
-public class RobotCoreNonResponsiveException extends RobotCoreException
-{
-    public RobotCoreNonResponsiveException(final String s) {
-        super(s);
-    }
+import com.qualcomm.robotcore.exception.RobotCoreException;
+
+public class RobotCoreNonResponsiveException extends RobotCoreException {
+   public RobotCoreNonResponsiveException(String var1) {
+      super(var1);
+   }
 }

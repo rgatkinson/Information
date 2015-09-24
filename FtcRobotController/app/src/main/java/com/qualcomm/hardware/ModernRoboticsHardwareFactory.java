@@ -1,340 +1,385 @@
 package com.qualcomm.hardware;
 
-import com.qualcomm.robotcore.hardware.configuration.ReadXMLFileHandler;
+import android.content.Context;
+import com.qualcomm.hardware.ModernRoboticsDeviceManager;
+import com.qualcomm.hardware.ModernRoboticsUsbDcMotorController;
+import com.qualcomm.modernrobotics.ModernRoboticsUsbUtil;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
-import com.qualcomm.robotcore.hardware.configuration.ServoControllerConfiguration;
-import com.qualcomm.robotcore.hardware.configuration.MotorControllerConfiguration;
-import com.qualcomm.robotcore.hardware.AnalogOutputController;
-import com.qualcomm.robotcore.hardware.I2cController;
-import com.qualcomm.robotcore.hardware.AnalogInputController;
-import com.qualcomm.robotcore.hardware.configuration.DeviceInterfaceModuleConfiguration;
-import com.qualcomm.robotcore.hardware.ServoController;
-import com.qualcomm.robotcore.util.RobotLog;
-import java.util.List;
 import com.qualcomm.robotcore.exception.RobotCoreException;
-import java.util.Iterator;
+import com.qualcomm.robotcore.hardware.AccelerationSensor;
+import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.AnalogOutput;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.CompassSensor;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
-import com.qualcomm.robotcore.hardware.configuration.ControllerConfiguration;
-import com.qualcomm.robotcore.hardware.LegacyModule;
-import com.qualcomm.robotcore.hardware.DigitalChannelController;
-import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.DeviceManager;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.modernrobotics.ModernRoboticsUsbUtil;
-import java.io.InputStream;
-import android.content.Context;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DigitalChannelController;
+import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.HardwareFactory;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.I2cDevice;
+import com.qualcomm.robotcore.hardware.IrSeekerSensor;
+import com.qualcomm.robotcore.hardware.LED;
+import com.qualcomm.robotcore.hardware.LegacyModule;
+import com.qualcomm.robotcore.hardware.LightSensor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+import com.qualcomm.robotcore.hardware.PWMOutput;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoController;
+import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.robotcore.hardware.TouchSensorMultiplexer;
+import com.qualcomm.robotcore.hardware.UltrasonicSensor;
+import com.qualcomm.robotcore.hardware.configuration.ControllerConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.DeviceInterfaceModuleConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.MotorControllerConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.ReadXMLFileHandler;
+import com.qualcomm.robotcore.hardware.configuration.ServoControllerConfiguration;
+import com.qualcomm.robotcore.util.RobotLog;
+import java.io.InputStream;
+import java.util.Iterator;
+import java.util.List;
 
-public class ModernRoboticsHardwareFactory implements HardwareFactory
-{
-    private Context a;
-    private InputStream b;
-    
-    public ModernRoboticsHardwareFactory(final Context a) {
-        this.b = null;
-        ModernRoboticsUsbUtil.init(this.a = a);
-    }
-    
-    private void a(final HardwareMap hardwareMap, final DeviceManager deviceManager, final DeviceInterfaceModule deviceInterfaceModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.irSeekerSensor.put(deviceConfiguration.getName(), deviceManager.createIrSeekerSensorV3(deviceInterfaceModule, deviceConfiguration.getPort()));
-    }
-    
-    private void a(final HardwareMap hardwareMap, final DeviceManager deviceManager, final DigitalChannelController digitalChannelController, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.led.put(deviceConfiguration.getName(), deviceManager.createLED(digitalChannelController, deviceConfiguration.getPort()));
-    }
-    
-    private void a(final HardwareMap hardwareMap, final DeviceManager deviceManager, final LegacyModule legacyModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.touchSensor.put(deviceConfiguration.getName(), deviceManager.createNxtTouchSensor(legacyModule, deviceConfiguration.getPort()));
-    }
-    
-    private void a(final HardwareMap hardwareMap, final DeviceManager deviceManager, final ControllerConfiguration controllerConfiguration) throws RobotCoreException, InterruptedException {
-        final ModernRoboticsUsbDcMotorController modernRoboticsUsbDcMotorController = (ModernRoboticsUsbDcMotorController)deviceManager.createUsbDcMotorController(controllerConfiguration.getSerialNumber());
-        hardwareMap.dcMotorController.put(controllerConfiguration.getName(), modernRoboticsUsbDcMotorController);
-        for (final DeviceConfiguration deviceConfiguration : controllerConfiguration.getDevices()) {
-            if (deviceConfiguration.isEnabled()) {
-                hardwareMap.dcMotor.put(deviceConfiguration.getName(), deviceManager.createDcMotor(modernRoboticsUsbDcMotorController, deviceConfiguration.getPort()));
+public class ModernRoboticsHardwareFactory implements HardwareFactory {
+   private Context a;
+   private InputStream b = null;
+
+   public ModernRoboticsHardwareFactory(Context var1) {
+      this.a = var1;
+      ModernRoboticsUsbUtil.init(var1);
+   }
+
+   private void a(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
+      IrSeekerSensor var5 = var2.createIrSeekerSensorV3(var3, var4.getPort());
+      var1.irSeekerSensor.put(var4.getName(), var5);
+   }
+
+   private void a(HardwareMap var1, DeviceManager var2, DigitalChannelController var3, DeviceConfiguration var4) {
+      LED var5 = var2.createLED(var3, var4.getPort());
+      var1.led.put(var4.getName(), var5);
+   }
+
+   private void a(HardwareMap var1, DeviceManager var2, LegacyModule var3, DeviceConfiguration var4) {
+      TouchSensor var5 = var2.createNxtTouchSensor(var3, var4.getPort());
+      var1.touchSensor.put(var4.getName(), var5);
+   }
+
+   private void a(HardwareMap var1, DeviceManager var2, ControllerConfiguration var3) throws RobotCoreException, InterruptedException {
+      ModernRoboticsUsbDcMotorController var4 = (ModernRoboticsUsbDcMotorController)var2.createUsbDcMotorController(var3.getSerialNumber());
+      var1.dcMotorController.put(var3.getName(), var4);
+      Iterator var5 = var3.getDevices().iterator();
+
+      while(var5.hasNext()) {
+         DeviceConfiguration var6 = (DeviceConfiguration)var5.next();
+         if(var6.isEnabled()) {
+            DcMotor var7 = var2.createDcMotor(var4, var6.getPort());
+            var1.dcMotor.put(var6.getName(), var7);
+         }
+      }
+
+      var1.voltageSensor.put(var3.getName(), var4);
+   }
+
+   private void a(List<DeviceConfiguration> var1, HardwareMap var2, DeviceManager var3, DeviceInterfaceModule var4) {
+      Iterator var5 = var1.iterator();
+
+      while(var5.hasNext()) {
+         DeviceConfiguration var6 = (DeviceConfiguration)var5.next();
+         if(var6.isEnabled()) {
+            DeviceConfiguration.ConfigurationType var7 = var6.getType();
+            switch(null.a[var7.ordinal()]) {
+            case 5:
+               this.h(var2, var3, var4, var6);
+               break;
+            case 6:
+               this.d(var2, var3, var4, var6);
+               break;
+            case 7:
+               this.c(var2, var3, var4, var6);
+               break;
+            case 8:
+               this.b(var2, var3, var4, var6);
+               break;
+            case 9:
+               this.e(var2, var3, var4, var6);
+               break;
+            case 10:
+               this.a(var2, var3, var4, var6);
+               break;
+            case 11:
+               this.f(var2, var3, var4, var6);
+               break;
+            case 12:
+               this.g(var2, var3, var4, var6);
+               break;
+            case 13:
+               this.i(var2, var3, var4, var6);
+               break;
+            case 14:
+               this.a((HardwareMap)var2, (DeviceManager)var3, (DigitalChannelController)var4, (DeviceConfiguration)var6);
+               break;
+            case 15:
+               this.j(var2, var3, var4, var6);
+            case 16:
+               break;
+            default:
+               RobotLog.w("Unexpected device type connected to Device Interface Module while parsing XML: " + var7.toString());
             }
-        }
-        hardwareMap.voltageSensor.put(controllerConfiguration.getName(), modernRoboticsUsbDcMotorController);
-    }
-    
-    private void a(final List<DeviceConfiguration> list, final HardwareMap hardwareMap, final DeviceManager deviceManager, final DeviceInterfaceModule deviceInterfaceModule) {
-        for (final DeviceConfiguration deviceConfiguration : list) {
-            if (deviceConfiguration.isEnabled()) {
-                final DeviceConfiguration.ConfigurationType type = deviceConfiguration.getType();
-                switch (ModernRoboticsHardwareFactory$1.a[type.ordinal()]) {
-                    case 15: {
-                        this.j(hardwareMap, deviceManager, deviceInterfaceModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 14: {
-                        this.a(hardwareMap, deviceManager, (DigitalChannelController)deviceInterfaceModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 13: {
-                        this.i(hardwareMap, deviceManager, deviceInterfaceModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 12: {
-                        this.g(hardwareMap, deviceManager, deviceInterfaceModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 11: {
-                        this.f(hardwareMap, deviceManager, deviceInterfaceModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 10: {
-                        this.a(hardwareMap, deviceManager, deviceInterfaceModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 9: {
-                        this.e(hardwareMap, deviceManager, deviceInterfaceModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 8: {
-                        this.b(hardwareMap, deviceManager, deviceInterfaceModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 7: {
-                        this.c(hardwareMap, deviceManager, deviceInterfaceModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 6: {
-                        this.d(hardwareMap, deviceManager, deviceInterfaceModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 5: {
-                        this.h(hardwareMap, deviceManager, deviceInterfaceModule, deviceConfiguration);
-                    }
-                    case 16: {
-                        continue;
-                    }
-                    default: {
-                        RobotLog.w("Unexpected device type connected to Device Interface Module while parsing XML: " + type.toString());
-                        continue;
-                    }
-                }
+         }
+      }
+
+   }
+
+   private void b(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
+      DigitalChannel var5 = var2.createDigitalChannelDevice(var3, var4.getPort());
+      var1.digitalChannel.put(var4.getName(), var5);
+   }
+
+   private void b(HardwareMap var1, DeviceManager var2, LegacyModule var3, DeviceConfiguration var4) {
+      TouchSensorMultiplexer var5 = var2.createNxtTouchSensorMultiplexer(var3, var4.getPort());
+      var1.touchSensorMultiplexer.put(var4.getName(), var5);
+   }
+
+   private void b(HardwareMap var1, DeviceManager var2, ControllerConfiguration var3) throws RobotCoreException, InterruptedException {
+      ServoController var4 = var2.createUsbServoController(var3.getSerialNumber());
+      var1.servoController.put(var3.getName(), var4);
+      Iterator var5 = var3.getDevices().iterator();
+
+      while(var5.hasNext()) {
+         DeviceConfiguration var6 = (DeviceConfiguration)var5.next();
+         if(var6.isEnabled()) {
+            Servo var7 = var2.createServo(var4, var6.getPort());
+            var1.servo.put(var6.getName(), var7);
+         }
+      }
+
+   }
+
+   private void c(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
+      TouchSensor var5 = var2.createTouchSensor(var3, var4.getPort());
+      var1.touchSensor.put(var4.getName(), var5);
+   }
+
+   private void c(HardwareMap var1, DeviceManager var2, LegacyModule var3, DeviceConfiguration var4) {
+      UltrasonicSensor var5 = var2.createNxtUltrasonicSensor(var3, var4.getPort());
+      var1.ultrasonicSensor.put(var4.getName(), var5);
+   }
+
+   private void c(HardwareMap var1, DeviceManager var2, ControllerConfiguration var3) throws RobotCoreException, InterruptedException {
+      DeviceInterfaceModule var4 = var2.createDeviceInterfaceModule(var3.getSerialNumber());
+      var1.deviceInterfaceModule.put(var3.getName(), var4);
+      this.a(((DeviceInterfaceModuleConfiguration)var3).getPwmDevices(), var1, var2, var4);
+      this.a(((DeviceInterfaceModuleConfiguration)var3).getI2cDevices(), var1, var2, var4);
+      this.a(((DeviceInterfaceModuleConfiguration)var3).getAnalogInputDevices(), var1, var2, var4);
+      this.a(((DeviceInterfaceModuleConfiguration)var3).getDigitalDevices(), var1, var2, var4);
+      this.a(((DeviceInterfaceModuleConfiguration)var3).getAnalogOutputDevices(), var1, var2, var4);
+   }
+
+   private void d(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
+      AnalogInput var5 = var2.createAnalogInputDevice(var3, var4.getPort());
+      var1.analogInput.put(var4.getName(), var5);
+   }
+
+   private void d(HardwareMap var1, DeviceManager var2, LegacyModule var3, DeviceConfiguration var4) {
+      ColorSensor var5 = var2.createNxtColorSensor(var3, var4.getPort());
+      var1.colorSensor.put(var4.getName(), var5);
+   }
+
+   private void d(HardwareMap var1, DeviceManager var2, ControllerConfiguration var3) throws RobotCoreException, InterruptedException {
+      LegacyModule var4 = var2.createUsbLegacyModule(var3.getSerialNumber());
+      var1.legacyModule.put(var3.getName(), var4);
+      Iterator var5 = var3.getDevices().iterator();
+
+      while(var5.hasNext()) {
+         DeviceConfiguration var6 = (DeviceConfiguration)var5.next();
+         if(var6.isEnabled()) {
+            DeviceConfiguration.ConfigurationType var7 = var6.getType();
+            switch(null.a[var7.ordinal()]) {
+            case 1:
+               this.j(var1, var2, var4, var6);
+               break;
+            case 2:
+               this.k(var1, var2, var4, var6);
+               break;
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+            case 12:
+            case 13:
+            case 14:
+            default:
+               RobotLog.w("Unexpected device type connected to Legacy Module while parsing XML: " + var7.toString());
+               break;
+            case 7:
+               this.a(var1, var2, var4, var6);
+               break;
+            case 15:
+               this.d(var1, var2, var4, var6);
+            case 16:
+               break;
+            case 17:
+               this.e(var1, var2, var4, var6);
+               break;
+            case 18:
+               this.f(var1, var2, var4, var6);
+               break;
+            case 19:
+               this.g(var1, var2, var4, var6);
+               break;
+            case 20:
+               this.h(var1, var2, var4, var6);
+               break;
+            case 21:
+               this.i(var1, var2, var4, var6);
+               break;
+            case 22:
+               this.b(var1, var2, var4, var6);
+               break;
+            case 23:
+               this.c(var1, var2, var4, var6);
             }
-        }
-    }
-    
-    private void b(final HardwareMap hardwareMap, final DeviceManager deviceManager, final DeviceInterfaceModule deviceInterfaceModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.digitalChannel.put(deviceConfiguration.getName(), deviceManager.createDigitalChannelDevice(deviceInterfaceModule, deviceConfiguration.getPort()));
-    }
-    
-    private void b(final HardwareMap hardwareMap, final DeviceManager deviceManager, final LegacyModule legacyModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.touchSensorMultiplexer.put(deviceConfiguration.getName(), deviceManager.createNxtTouchSensorMultiplexer(legacyModule, deviceConfiguration.getPort()));
-    }
-    
-    private void b(final HardwareMap hardwareMap, final DeviceManager deviceManager, final ControllerConfiguration controllerConfiguration) throws RobotCoreException, InterruptedException {
-        final ServoController usbServoController = deviceManager.createUsbServoController(controllerConfiguration.getSerialNumber());
-        hardwareMap.servoController.put(controllerConfiguration.getName(), usbServoController);
-        for (final DeviceConfiguration deviceConfiguration : controllerConfiguration.getDevices()) {
-            if (deviceConfiguration.isEnabled()) {
-                hardwareMap.servo.put(deviceConfiguration.getName(), deviceManager.createServo(usbServoController, deviceConfiguration.getPort()));
+         }
+      }
+
+   }
+
+   public static void disableDeviceEmulation() {
+      ModernRoboticsDeviceManager.disableDeviceEmulation();
+   }
+
+   private void e(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
+      PWMOutput var5 = var2.createPwmOutputDevice(var3, var4.getPort());
+      var1.pwmOutput.put(var4.getName(), var5);
+   }
+
+   private void e(HardwareMap var1, DeviceManager var2, LegacyModule var3, DeviceConfiguration var4) {
+      GyroSensor var5 = var2.createNxtGyroSensor(var3, var4.getPort());
+      var1.gyroSensor.put(var4.getName(), var5);
+   }
+
+   public static void enableDeviceEmulation() {
+      ModernRoboticsDeviceManager.enableDeviceEmulation();
+   }
+
+   private void f(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
+      I2cDevice var5 = var2.createI2cDevice(var3, var4.getPort());
+      var1.i2cDevice.put(var4.getName(), var5);
+   }
+
+   private void f(HardwareMap var1, DeviceManager var2, LegacyModule var3, DeviceConfiguration var4) {
+      CompassSensor var5 = var2.createNxtCompassSensor(var3, var4.getPort());
+      var1.compassSensor.put(var4.getName(), var5);
+   }
+
+   private void g(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
+      AnalogOutput var5 = var2.createAnalogOutputDevice(var3, var4.getPort());
+      var1.analogOutput.put(var4.getName(), var5);
+   }
+
+   private void g(HardwareMap var1, DeviceManager var2, LegacyModule var3, DeviceConfiguration var4) {
+      IrSeekerSensor var5 = var2.createNxtIrSeekerSensor(var3, var4.getPort());
+      var1.irSeekerSensor.put(var4.getName(), var5);
+   }
+
+   private void h(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
+      OpticalDistanceSensor var5 = var2.createOpticalDistanceSensor(var3, var4.getPort());
+      var1.opticalDistanceSensor.put(var4.getName(), var5);
+   }
+
+   private void h(HardwareMap var1, DeviceManager var2, LegacyModule var3, DeviceConfiguration var4) {
+      LightSensor var5 = var2.createNxtLightSensor(var3, var4.getPort());
+      var1.lightSensor.put(var4.getName(), var5);
+   }
+
+   private void i(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
+      ColorSensor var5 = var2.createAdafruitColorSensor(var3, var4.getPort());
+      var1.colorSensor.put(var4.getName(), var5);
+   }
+
+   private void i(HardwareMap var1, DeviceManager var2, LegacyModule var3, DeviceConfiguration var4) {
+      AccelerationSensor var5 = var2.createNxtAccelerationSensor(var3, var4.getPort());
+      var1.accelerationSensor.put(var4.getName(), var5);
+   }
+
+   private void j(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
+      ColorSensor var5 = var2.createModernRoboticsColorSensor(var3, var4.getPort());
+      var1.colorSensor.put(var4.getName(), var5);
+   }
+
+   private void j(HardwareMap var1, DeviceManager var2, LegacyModule var3, DeviceConfiguration var4) {
+      DcMotorController var5 = var2.createNxtDcMotorController(var3, var4.getPort());
+      var1.dcMotorController.put(var4.getName(), var5);
+      Iterator var6 = ((MotorControllerConfiguration)var4).getMotors().iterator();
+
+      while(var6.hasNext()) {
+         DeviceConfiguration var7 = (DeviceConfiguration)var6.next();
+         DcMotor var8 = var2.createDcMotor(var5, var7.getPort());
+         var1.dcMotor.put(var7.getName(), var8);
+      }
+
+   }
+
+   private void k(HardwareMap var1, DeviceManager var2, LegacyModule var3, DeviceConfiguration var4) {
+      ServoController var5 = var2.createNxtServoController(var3, var4.getPort());
+      var1.servoController.put(var4.getName(), var5);
+      Iterator var6 = ((ServoControllerConfiguration)var4).getServos().iterator();
+
+      while(var6.hasNext()) {
+         DeviceConfiguration var7 = (DeviceConfiguration)var6.next();
+         Servo var8 = var2.createServo(var5, var7.getPort());
+         var1.servo.put(var7.getName(), var8);
+      }
+
+   }
+
+   public HardwareMap createHardwareMap(EventLoopManager var1) throws RobotCoreException, InterruptedException {
+      if(this.b == null) {
+         throw new RobotCoreException("XML input stream is null, ModernRoboticsHardwareFactory cannot create a hardware map");
+      } else {
+         HardwareMap var2 = new HardwareMap();
+         RobotLog.v("Starting Modern Robotics device manager");
+         ModernRoboticsDeviceManager var3 = new ModernRoboticsDeviceManager(this.a, var1);
+         Iterator var4 = (new ReadXMLFileHandler(this.a)).parse(this.b).iterator();
+
+         while(var4.hasNext()) {
+            ControllerConfiguration var5 = (ControllerConfiguration)var4.next();
+            DeviceConfiguration.ConfigurationType var6 = var5.getType();
+            switch(null.a[var6.ordinal()]) {
+            case 1:
+               this.a(var2, var3, var5);
+               break;
+            case 2:
+               this.b(var2, var3, var5);
+               break;
+            case 3:
+               this.d(var2, var3, var5);
+               break;
+            case 4:
+               this.c(var2, var3, var5);
+               break;
+            default:
+               RobotLog.w("Unexpected controller type while parsing XML: " + var6.toString());
             }
-        }
-    }
-    
-    private void c(final HardwareMap hardwareMap, final DeviceManager deviceManager, final DeviceInterfaceModule deviceInterfaceModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.touchSensor.put(deviceConfiguration.getName(), deviceManager.createTouchSensor(deviceInterfaceModule, deviceConfiguration.getPort()));
-    }
-    
-    private void c(final HardwareMap hardwareMap, final DeviceManager deviceManager, final LegacyModule legacyModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.ultrasonicSensor.put(deviceConfiguration.getName(), deviceManager.createNxtUltrasonicSensor(legacyModule, deviceConfiguration.getPort()));
-    }
-    
-    private void c(final HardwareMap hardwareMap, final DeviceManager deviceManager, final ControllerConfiguration controllerConfiguration) throws RobotCoreException, InterruptedException {
-        final DeviceInterfaceModule deviceInterfaceModule = deviceManager.createDeviceInterfaceModule(controllerConfiguration.getSerialNumber());
-        hardwareMap.deviceInterfaceModule.put(controllerConfiguration.getName(), deviceInterfaceModule);
-        this.a(((DeviceInterfaceModuleConfiguration)controllerConfiguration).getPwmDevices(), hardwareMap, deviceManager, deviceInterfaceModule);
-        this.a(((DeviceInterfaceModuleConfiguration)controllerConfiguration).getI2cDevices(), hardwareMap, deviceManager, deviceInterfaceModule);
-        this.a(((DeviceInterfaceModuleConfiguration)controllerConfiguration).getAnalogInputDevices(), hardwareMap, deviceManager, deviceInterfaceModule);
-        this.a(((DeviceInterfaceModuleConfiguration)controllerConfiguration).getDigitalDevices(), hardwareMap, deviceManager, deviceInterfaceModule);
-        this.a(((DeviceInterfaceModuleConfiguration)controllerConfiguration).getAnalogOutputDevices(), hardwareMap, deviceManager, deviceInterfaceModule);
-    }
-    
-    private void d(final HardwareMap hardwareMap, final DeviceManager deviceManager, final DeviceInterfaceModule deviceInterfaceModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.analogInput.put(deviceConfiguration.getName(), deviceManager.createAnalogInputDevice(deviceInterfaceModule, deviceConfiguration.getPort()));
-    }
-    
-    private void d(final HardwareMap hardwareMap, final DeviceManager deviceManager, final LegacyModule legacyModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.colorSensor.put(deviceConfiguration.getName(), deviceManager.createNxtColorSensor(legacyModule, deviceConfiguration.getPort()));
-    }
-    
-    private void d(final HardwareMap hardwareMap, final DeviceManager deviceManager, final ControllerConfiguration controllerConfiguration) throws RobotCoreException, InterruptedException {
-        final LegacyModule usbLegacyModule = deviceManager.createUsbLegacyModule(controllerConfiguration.getSerialNumber());
-        hardwareMap.legacyModule.put(controllerConfiguration.getName(), usbLegacyModule);
-        for (final DeviceConfiguration deviceConfiguration : controllerConfiguration.getDevices()) {
-            if (deviceConfiguration.isEnabled()) {
-                final DeviceConfiguration.ConfigurationType type = deviceConfiguration.getType();
-                switch (ModernRoboticsHardwareFactory$1.a[type.ordinal()]) {
-                    case 15: {
-                        this.d(hardwareMap, deviceManager, usbLegacyModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 23: {
-                        this.c(hardwareMap, deviceManager, usbLegacyModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 22: {
-                        this.b(hardwareMap, deviceManager, usbLegacyModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 7: {
-                        this.a(hardwareMap, deviceManager, usbLegacyModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 2: {
-                        this.k(hardwareMap, deviceManager, usbLegacyModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 1: {
-                        this.j(hardwareMap, deviceManager, usbLegacyModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 21: {
-                        this.i(hardwareMap, deviceManager, usbLegacyModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 20: {
-                        this.h(hardwareMap, deviceManager, usbLegacyModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 19: {
-                        this.g(hardwareMap, deviceManager, usbLegacyModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 18: {
-                        this.f(hardwareMap, deviceManager, usbLegacyModule, deviceConfiguration);
-                        continue;
-                    }
-                    case 17: {
-                        this.e(hardwareMap, deviceManager, usbLegacyModule, deviceConfiguration);
-                    }
-                    case 16: {
-                        continue;
-                    }
-                    default: {
-                        RobotLog.w("Unexpected device type connected to Legacy Module while parsing XML: " + type.toString());
-                        continue;
-                    }
-                }
-            }
-        }
-    }
-    
-    public static void disableDeviceEmulation() {
-        ModernRoboticsDeviceManager.disableDeviceEmulation();
-    }
-    
-    private void e(final HardwareMap hardwareMap, final DeviceManager deviceManager, final DeviceInterfaceModule deviceInterfaceModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.pwmOutput.put(deviceConfiguration.getName(), deviceManager.createPwmOutputDevice(deviceInterfaceModule, deviceConfiguration.getPort()));
-    }
-    
-    private void e(final HardwareMap hardwareMap, final DeviceManager deviceManager, final LegacyModule legacyModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.gyroSensor.put(deviceConfiguration.getName(), deviceManager.createNxtGyroSensor(legacyModule, deviceConfiguration.getPort()));
-    }
-    
-    public static void enableDeviceEmulation() {
-        ModernRoboticsDeviceManager.enableDeviceEmulation();
-    }
-    
-    private void f(final HardwareMap hardwareMap, final DeviceManager deviceManager, final DeviceInterfaceModule deviceInterfaceModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.i2cDevice.put(deviceConfiguration.getName(), deviceManager.createI2cDevice(deviceInterfaceModule, deviceConfiguration.getPort()));
-    }
-    
-    private void f(final HardwareMap hardwareMap, final DeviceManager deviceManager, final LegacyModule legacyModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.compassSensor.put(deviceConfiguration.getName(), deviceManager.createNxtCompassSensor(legacyModule, deviceConfiguration.getPort()));
-    }
-    
-    private void g(final HardwareMap hardwareMap, final DeviceManager deviceManager, final DeviceInterfaceModule deviceInterfaceModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.analogOutput.put(deviceConfiguration.getName(), deviceManager.createAnalogOutputDevice(deviceInterfaceModule, deviceConfiguration.getPort()));
-    }
-    
-    private void g(final HardwareMap hardwareMap, final DeviceManager deviceManager, final LegacyModule legacyModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.irSeekerSensor.put(deviceConfiguration.getName(), deviceManager.createNxtIrSeekerSensor(legacyModule, deviceConfiguration.getPort()));
-    }
-    
-    private void h(final HardwareMap hardwareMap, final DeviceManager deviceManager, final DeviceInterfaceModule deviceInterfaceModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.opticalDistanceSensor.put(deviceConfiguration.getName(), deviceManager.createOpticalDistanceSensor(deviceInterfaceModule, deviceConfiguration.getPort()));
-    }
-    
-    private void h(final HardwareMap hardwareMap, final DeviceManager deviceManager, final LegacyModule legacyModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.lightSensor.put(deviceConfiguration.getName(), deviceManager.createNxtLightSensor(legacyModule, deviceConfiguration.getPort()));
-    }
-    
-    private void i(final HardwareMap hardwareMap, final DeviceManager deviceManager, final DeviceInterfaceModule deviceInterfaceModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.colorSensor.put(deviceConfiguration.getName(), deviceManager.createAdafruitColorSensor(deviceInterfaceModule, deviceConfiguration.getPort()));
-    }
-    
-    private void i(final HardwareMap hardwareMap, final DeviceManager deviceManager, final LegacyModule legacyModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.accelerationSensor.put(deviceConfiguration.getName(), deviceManager.createNxtAccelerationSensor(legacyModule, deviceConfiguration.getPort()));
-    }
-    
-    private void j(final HardwareMap hardwareMap, final DeviceManager deviceManager, final DeviceInterfaceModule deviceInterfaceModule, final DeviceConfiguration deviceConfiguration) {
-        hardwareMap.colorSensor.put(deviceConfiguration.getName(), deviceManager.createModernRoboticsColorSensor(deviceInterfaceModule, deviceConfiguration.getPort()));
-    }
-    
-    private void j(final HardwareMap hardwareMap, final DeviceManager deviceManager, final LegacyModule legacyModule, final DeviceConfiguration deviceConfiguration) {
-        final DcMotorController nxtDcMotorController = deviceManager.createNxtDcMotorController(legacyModule, deviceConfiguration.getPort());
-        hardwareMap.dcMotorController.put(deviceConfiguration.getName(), nxtDcMotorController);
-        for (final DeviceConfiguration deviceConfiguration2 : ((MotorControllerConfiguration)deviceConfiguration).getMotors()) {
-            hardwareMap.dcMotor.put(deviceConfiguration2.getName(), deviceManager.createDcMotor(nxtDcMotorController, deviceConfiguration2.getPort()));
-        }
-    }
-    
-    private void k(final HardwareMap hardwareMap, final DeviceManager deviceManager, final LegacyModule legacyModule, final DeviceConfiguration deviceConfiguration) {
-        final ServoController nxtServoController = deviceManager.createNxtServoController(legacyModule, deviceConfiguration.getPort());
-        hardwareMap.servoController.put(deviceConfiguration.getName(), nxtServoController);
-        for (final DeviceConfiguration deviceConfiguration2 : ((ServoControllerConfiguration)deviceConfiguration).getServos()) {
-            hardwareMap.servo.put(deviceConfiguration2.getName(), deviceManager.createServo(nxtServoController, deviceConfiguration2.getPort()));
-        }
-    }
-    
-    @Override
-    public HardwareMap createHardwareMap(final EventLoopManager eventLoopManager) throws RobotCoreException, InterruptedException {
-        if (this.b == null) {
-            throw new RobotCoreException("XML input stream is null, ModernRoboticsHardwareFactory cannot create a hardware map");
-        }
-        final HardwareMap hardwareMap = new HardwareMap();
-        RobotLog.v("Starting Modern Robotics device manager");
-        final ModernRoboticsDeviceManager modernRoboticsDeviceManager = new ModernRoboticsDeviceManager(this.a, eventLoopManager);
-        for (final ControllerConfiguration controllerConfiguration : new ReadXMLFileHandler(this.a).parse(this.b)) {
-            final DeviceConfiguration.ConfigurationType type = controllerConfiguration.getType();
-            switch (ModernRoboticsHardwareFactory$1.a[type.ordinal()]) {
-                default: {
-                    RobotLog.w("Unexpected controller type while parsing XML: " + type.toString());
-                    continue;
-                }
-                case 1: {
-                    this.a(hardwareMap, modernRoboticsDeviceManager, controllerConfiguration);
-                    continue;
-                }
-                case 2: {
-                    this.b(hardwareMap, modernRoboticsDeviceManager, controllerConfiguration);
-                    continue;
-                }
-                case 3: {
-                    this.d(hardwareMap, modernRoboticsDeviceManager, controllerConfiguration);
-                    continue;
-                }
-                case 4: {
-                    this.c(hardwareMap, modernRoboticsDeviceManager, controllerConfiguration);
-                    continue;
-                }
-            }
-        }
-        hardwareMap.appContext = this.a;
-        return hardwareMap;
-    }
-    
-    public InputStream getXmlInputStream() {
-        return this.b;
-    }
-    
-    public void setXmlInputStream(final InputStream b) {
-        this.b = b;
-    }
+         }
+
+         var2.appContext = this.a;
+         return var2;
+      }
+   }
+
+   public InputStream getXmlInputStream() {
+      return this.b;
+   }
+
+   public void setXmlInputStream(InputStream var1) {
+      this.b = var1;
+   }
 }

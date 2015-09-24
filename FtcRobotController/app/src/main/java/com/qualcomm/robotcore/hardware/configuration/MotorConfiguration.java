@@ -1,20 +1,21 @@
 package com.qualcomm.robotcore.hardware.configuration;
 
-public class MotorConfiguration extends DeviceConfiguration
-{
-    public MotorConfiguration(final int port) {
-        super(ConfigurationType.MOTOR);
-        super.setName("NO DEVICE ATTACHED");
-        super.setPort(port);
-    }
-    
-    public MotorConfiguration(final int n, final String s, final boolean b) {
-        super(n, ConfigurationType.MOTOR, s, b);
-    }
-    
-    public MotorConfiguration(final String name) {
-        super(ConfigurationType.MOTOR);
-        super.setName(name);
-        super.setType(ConfigurationType.MOTOR);
-    }
+import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
+
+public class MotorConfiguration extends DeviceConfiguration {
+   public MotorConfiguration(int var1) {
+      super(DeviceConfiguration.ConfigurationType.MOTOR);
+      super.setName("NO DEVICE ATTACHED");
+      super.setPort(var1);
+   }
+
+   public MotorConfiguration(int var1, String var2, boolean var3) {
+      super(var1, DeviceConfiguration.ConfigurationType.MOTOR, var2, var3);
+   }
+
+   public MotorConfiguration(String var1) {
+      super(DeviceConfiguration.ConfigurationType.MOTOR);
+      super.setName(var1);
+      super.setType(DeviceConfiguration.ConfigurationType.MOTOR);
+   }
 }

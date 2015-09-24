@@ -1,6 +1,7 @@
 package com.ftdi.j2xx.protocol;
 
-public interface SpiSlaveListener
-{
-    boolean OnDataReceived(SpiSlaveResponseEvent p0);
+import com.ftdi.j2xx.protocol.SpiSlaveResponseEvent;
+
+public interface SpiSlaveListener {
+   boolean OnDataReceived(SpiSlaveResponseEvent var1);
 }

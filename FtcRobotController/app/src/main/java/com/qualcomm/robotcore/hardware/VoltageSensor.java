@@ -1,6 +1,7 @@
 package com.qualcomm.robotcore.hardware;
 
-public interface VoltageSensor extends HardwareDevice
-{
-    double getVoltage();
+import com.qualcomm.robotcore.hardware.HardwareDevice;
+
+public interface VoltageSensor extends HardwareDevice {
+   double getVoltage();
 }

@@ -1,25 +1,26 @@
 package com.qualcomm.robotcore.hardware.configuration;
 
-import java.util.List;
+import com.qualcomm.robotcore.hardware.configuration.ControllerConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
 import com.qualcomm.robotcore.util.SerialNumber;
-import java.util.ArrayList;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-public class MotorControllerConfiguration extends ControllerConfiguration implements Serializable
-{
-    public MotorControllerConfiguration() {
-        super("", new ArrayList<DeviceConfiguration>(), new SerialNumber(ControllerConfiguration.NO_SERIAL_NUMBER.getSerialNumber()), ConfigurationType.MOTOR_CONTROLLER);
-    }
-    
-    public MotorControllerConfiguration(final String s, final List<DeviceConfiguration> list, final SerialNumber serialNumber) {
-        super(s, list, serialNumber, ConfigurationType.MOTOR_CONTROLLER);
-    }
-    
-    public void addMotors(final List<DeviceConfiguration> list) {
-        super.addDevices(list);
-    }
-    
-    public List<DeviceConfiguration> getMotors() {
-        return super.getDevices();
-    }
+public class MotorControllerConfiguration extends ControllerConfiguration implements Serializable {
+   public MotorControllerConfiguration() {
+      super("", new ArrayList(), new SerialNumber(ControllerConfiguration.NO_SERIAL_NUMBER.getSerialNumber()), DeviceConfiguration.ConfigurationType.MOTOR_CONTROLLER);
+   }
+
+   public MotorControllerConfiguration(String var1, List<DeviceConfiguration> var2, SerialNumber var3) {
+      super(var1, var2, var3, DeviceConfiguration.ConfigurationType.MOTOR_CONTROLLER);
+   }
+
+   public void addMotors(List<DeviceConfiguration> var1) {
+      super.addDevices(var1);
+   }
+
+   public List<DeviceConfiguration> getMotors() {
+      return super.getDevices();
+   }
 }

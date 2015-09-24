@@ -1,18 +1,23 @@
 package com.qualcomm.robotcore.hardware;
 
-public interface DeviceInterfaceModule extends AnalogInputController, AnalogOutputController, DigitalChannelController, I2cController, PWMOutputController
-{
-    byte getDigitalIOControlByte();
-    
-    int getDigitalInputStateByte();
-    
-    byte getDigitalOutputStateByte();
-    
-    boolean getLEDState(int p0);
-    
-    void setDigitalIOControlByte(byte p0);
-    
-    void setDigitalOutputByte(byte p0);
-    
-    void setLED(int p0, boolean p1);
+import com.qualcomm.robotcore.hardware.AnalogInputController;
+import com.qualcomm.robotcore.hardware.AnalogOutputController;
+import com.qualcomm.robotcore.hardware.DigitalChannelController;
+import com.qualcomm.robotcore.hardware.I2cController;
+import com.qualcomm.robotcore.hardware.PWMOutputController;
+
+public interface DeviceInterfaceModule extends AnalogInputController, AnalogOutputController, DigitalChannelController, I2cController, PWMOutputController {
+   byte getDigitalIOControlByte();
+
+   int getDigitalInputStateByte();
+
+   byte getDigitalOutputStateByte();
+
+   boolean getLEDState(int var1);
+
+   void setDigitalIOControlByte(byte var1);
+
+   void setDigitalOutputByte(byte var1);
+
+   void setLED(int var1, boolean var2);
 }

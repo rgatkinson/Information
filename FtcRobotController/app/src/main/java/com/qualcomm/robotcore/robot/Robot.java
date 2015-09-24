@@ -1,46 +1,39 @@
 package com.qualcomm.robotcore.robot;
 
-import java.net.SocketException;
-import com.qualcomm.robotcore.exception.RobotCoreException;
-import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.eventloop.EventLoop;
-import java.net.InetAddress;
-import com.qualcomm.robotcore.robocol.RobocolDatagramSocket;
-import com.qualcomm.robotcore.robocol.RobocolDatagram;
-import java.util.concurrent.ArrayBlockingQueue;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
+import com.qualcomm.robotcore.exception.RobotCoreException;
+import com.qualcomm.robotcore.robocol.RobocolDatagram;
+import com.qualcomm.robotcore.robocol.RobocolDatagramSocket;
+import com.qualcomm.robotcore.util.RobotLog;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.util.concurrent.ArrayBlockingQueue;
 
-public class Robot
-{
-    public EventLoopManager eventLoopManager;
-    public ArrayBlockingQueue<RobocolDatagram> eventQueue;
-    public ArrayBlockingQueue<RobocolDatagram> sendQueue;
-    public RobocolDatagramSocket socket;
-    
-    public Robot() {
-        this.eventLoopManager = null;
-        this.socket = null;
-        this.sendQueue = null;
-        this.eventQueue = null;
-    }
-    
-    public void shutdown() {
-        if (this.eventLoopManager != null) {
-            this.eventLoopManager.shutdown();
-        }
-        if (this.socket != null) {
-            this.socket.close();
-        }
-    }
-    
-    public void start(final InetAddress inetAddress, final EventLoop eventLoop) throws RobotCoreException {
-        try {
-            this.socket.listen(inetAddress);
-            this.eventLoopManager.start(eventLoop);
-        }
-        catch (SocketException ex) {
-            RobotLog.logStacktrace(ex);
-            throw new RobotCoreException("Robot start failed: " + ex.toString());
-        }
-    }
+public class Robot {
+   public EventLoopManager eventLoopManager = null;
+   public ArrayBlockingQueue<RobocolDatagram> eventQueue = null;
+   public ArrayBlockingQueue<RobocolDatagram> sendQueue = null;
+   public RobocolDatagramSocket socket = null;
+
+   public void shutdown() {
+      if(this.eventLoopManager != null) {
+         this.eventLoopManager.shutdown();
+      }
+
+      if(this.socket != null) {
+         this.socket.close();
+      }
+
+   }
+
+   public void start(InetAddress var1, EventLoop var2) throws RobotCoreException {
+      try {
+         this.socket.listen(var1);
+         this.eventLoopManager.start(var2);
+      } catch (SocketException var4) {
+         RobotLog.logStacktrace((Exception)var4);
+         throw new RobotCoreException("Robot start failed: " + var4.toString());
+      }
+   }
 }

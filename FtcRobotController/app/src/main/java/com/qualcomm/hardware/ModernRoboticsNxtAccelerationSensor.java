@@ -1,74 +1,70 @@
 package com.qualcomm.hardware;
 
-import java.util.concurrent.locks.Lock;
-import com.qualcomm.robotcore.hardware.I2cController;
+import com.qualcomm.hardware.ModernRoboticsUsbLegacyModule;
 import com.qualcomm.robotcore.hardware.AccelerationSensor;
+import com.qualcomm.robotcore.hardware.I2cController;
+import java.util.concurrent.locks.Lock;
 
-public class ModernRoboticsNxtAccelerationSensor extends AccelerationSensor implements I2cPortReadyCallback
-{
-    public static final int ACCEL_LENGTH = 6;
-    public static final int ADDRESS_ACCEL_START = 66;
-    public static final byte I2C_ADDRESS = 2;
-    private final ModernRoboticsUsbLegacyModule a;
-    private final byte[] b;
-    private final Lock c;
-    private final int d;
-    
-    public ModernRoboticsNxtAccelerationSensor(final ModernRoboticsUsbLegacyModule a, final int d) {
-        a.enableI2cReadMode(d, 2, 66, 6);
-        this.a = a;
-        this.b = a.getI2cReadCache(d);
-        this.c = a.getI2cReadCacheLock(d);
-        a.registerForI2cPortReadyCallback(this, this.d = d);
-    }
-    
-    private double a(final double n, final double n2) {
-        return (n2 + 4.0 * n) / 200.0;
-    }
-    
-    @Override
-    public void close() {
-    }
-    
-    @Override
-    public Acceleration getAcceleration() {
-        final Acceleration acceleration = new Acceleration();
-        try {
-            this.c.lock();
-            acceleration.x = this.a(this.b[4], this.b[7]);
-            acceleration.y = this.a(this.b[5], this.b[8]);
-            acceleration.z = this.a(this.b[6], this.b[9]);
-            return acceleration;
-        }
-        finally {
-            this.c.unlock();
-        }
-    }
-    
-    @Override
-    public String getConnectionInfo() {
-        return this.a.getConnectionInfo() + "; port " + this.d;
-    }
-    
-    @Override
-    public String getDeviceName() {
-        return "NXT Servo Controller";
-    }
-    
-    @Override
-    public int getVersion() {
-        return 1;
-    }
-    
-    @Override
-    public void portIsReady(final int n) {
-        this.a.setI2cPortActionFlag(this.d);
-        this.a.writeI2cPortFlagOnlyToController(this.d);
-        this.a.readI2cCacheFromController(this.d);
-    }
-    
-    @Override
-    public String status() {
-        return String.format("NXT Acceleration Sensor, connected via device %s, port %d", this.a.getSerialNumber().toString(), this.d);
-    }
+public class ModernRoboticsNxtAccelerationSensor extends AccelerationSensor implements I2cController.I2cPortReadyCallback {
+   public static final int ACCEL_LENGTH = 6;
+   public static final int ADDRESS_ACCEL_START = 66;
+   public static final byte I2C_ADDRESS = 2;
+   private final ModernRoboticsUsbLegacyModule a;
+   private final byte[] b;
+   private final Lock c;
+   private final int d;
+
+   public ModernRoboticsNxtAccelerationSensor(ModernRoboticsUsbLegacyModule var1, int var2) {
+      var1.enableI2cReadMode(var2, 2, 66, 6);
+      this.a = var1;
+      this.b = var1.getI2cReadCache(var2);
+      this.c = var1.getI2cReadCacheLock(var2);
+      this.d = var2;
+      var1.registerForI2cPortReadyCallback(this, var2);
+   }
+
+   private double a(double var1, double var3) {
+      return (var3 + 4.0D * var1) / 200.0D;
+   }
+
+   public void close() {
+   }
+
+   public AccelerationSensor.Acceleration getAcceleration() {
+      AccelerationSensor.Acceleration var1 = new AccelerationSensor.Acceleration();
+
+      try {
+         this.c.lock();
+         var1.x = this.a((double)this.b[4], (double)this.b[7]);
+         var1.y = this.a((double)this.b[5], (double)this.b[8]);
+         var1.z = this.a((double)this.b[6], (double)this.b[9]);
+      } finally {
+         this.c.unlock();
+      }
+
+      return var1;
+   }
+
+   public String getConnectionInfo() {
+      return this.a.getConnectionInfo() + "; port " + this.d;
+   }
+
+   public String getDeviceName() {
+      return "NXT Servo Controller";
+   }
+
+   public int getVersion() {
+      return 1;
+   }
+
+   public void portIsReady(int var1) {
+      this.a.setI2cPortActionFlag(this.d);
+      this.a.writeI2cPortFlagOnlyToController(this.d);
+      this.a.readI2cCacheFromController(this.d);
+   }
+
+   public String status() {
+      Object[] var1 = new Object[]{this.a.getSerialNumber().toString(), Integer.valueOf(this.d)};
+      return String.format("NXT Acceleration Sensor, connected via device %s, port %d", var1);
+   }
 }

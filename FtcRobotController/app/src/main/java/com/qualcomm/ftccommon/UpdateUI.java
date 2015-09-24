@@ -1,152 +1,143 @@
 package com.qualcomm.ftccommon;
 
-import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
-import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.util.RobotLog;
-import android.content.Context;
-import android.widget.Toast;
-import android.widget.TextView;
-import com.qualcomm.robotcore.util.Dimmer;
 import android.app.Activity;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.qualcomm.ftccommon.DbgLog;
+import com.qualcomm.ftccommon.FtcRobotControllerService;
+import com.qualcomm.ftccommon.Restarter;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.Dimmer;
+import com.qualcomm.robotcore.util.RobotLog;
+import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 
-public class UpdateUI
-{
-    Restarter a;
-    FtcRobotControllerService b;
-    Activity c;
-    Dimmer d;
-    protected TextView textDeviceName;
-    protected TextView textErrorMessage;
-    protected TextView[] textGamepad;
-    protected TextView textOpMode;
-    protected TextView textRobotStatus;
-    protected TextView textWifiDirectStatus;
-    
-    public UpdateUI(final Activity c, final Dimmer d) {
-        this.textGamepad = new TextView[2];
-        this.c = c;
-        this.d = d;
-    }
-    
-    private void a() {
-        this.a.requestRestart();
-    }
-    
-    private void a(final String s) {
-        DbgLog.msg(s);
-        this.c.runOnUiThread((Runnable)new Runnable() {
-            @Override
+public class UpdateUI {
+   Restarter a;
+   FtcRobotControllerService b;
+   Activity c;
+   Dimmer d;
+   protected TextView textDeviceName;
+   protected TextView textErrorMessage;
+   protected TextView[] textGamepad = new TextView[2];
+   protected TextView textOpMode;
+   protected TextView textRobotStatus;
+   protected TextView textWifiDirectStatus;
+
+   public UpdateUI(Activity var1, Dimmer var2) {
+      this.c = var1;
+      this.d = var2;
+   }
+
+   private void a() {
+      this.a.requestRestart();
+   }
+
+   private void a(final String var1) {
+      DbgLog.msg(var1);
+      this.c.runOnUiThread(new Runnable() {
+         public void run() {
+            UpdateUI.this.textWifiDirectStatus.setText(var1);
+         }
+      });
+   }
+
+   private void b(final String var1) {
+      this.c.runOnUiThread(new Runnable() {
+         public void run() {
+            UpdateUI.this.textDeviceName.setText(var1);
+         }
+      });
+   }
+
+   public void setControllerService(FtcRobotControllerService var1) {
+      this.b = var1;
+   }
+
+   public void setRestarter(Restarter var1) {
+      this.a = var1;
+   }
+
+   public void setTextViews(TextView var1, TextView var2, TextView[] var3, TextView var4, TextView var5, TextView var6) {
+      this.textWifiDirectStatus = var1;
+      this.textRobotStatus = var2;
+      this.textGamepad = var3;
+      this.textOpMode = var4;
+      this.textErrorMessage = var5;
+      this.textDeviceName = var6;
+   }
+
+   public class Callback {
+      public void restartRobot() {
+         UpdateUI.this.c.runOnUiThread(new Runnable() {
             public void run() {
-                UpdateUI.this.textWifiDirectStatus.setText((CharSequence)s);
+               Toast.makeText(UpdateUI.this.c, "Restarting Robot", 0).show();
             }
-        });
-    }
-    
-    private void b(final String s) {
-        this.c.runOnUiThread((Runnable)new Runnable() {
-            @Override
+         });
+         (new Thread() {
             public void run() {
-                UpdateUI.this.textDeviceName.setText((CharSequence)s);
+               try {
+                  Thread.sleep(1500L);
+               } catch (InterruptedException var2) {
+                  ;
+               }
+
+               UpdateUI.this.c.runOnUiThread(new Runnable() {
+                  public void run() {
+                     UpdateUI.this.a();
+                  }
+               });
             }
-        });
-    }
-    
-    public void setControllerService(final FtcRobotControllerService b) {
-        this.b = b;
-    }
-    
-    public void setRestarter(final Restarter a) {
-        this.a = a;
-    }
-    
-    public void setTextViews(final TextView textWifiDirectStatus, final TextView textRobotStatus, final TextView[] textGamepad, final TextView textOpMode, final TextView textErrorMessage, final TextView textDeviceName) {
-        this.textWifiDirectStatus = textWifiDirectStatus;
-        this.textRobotStatus = textRobotStatus;
-        this.textGamepad = textGamepad;
-        this.textOpMode = textOpMode;
-        this.textErrorMessage = textErrorMessage;
-        this.textDeviceName = textDeviceName;
-    }
-    
-    public class Callback
-    {
-        public void restartRobot() {
-            UpdateUI.this.c.runOnUiThread((Runnable)new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText((Context)UpdateUI.this.c, (CharSequence)"Restarting Robot", 0).show();
-                }
-            });
-            new Thread() {
-                @Override
-                public void run() {
-                    while (true) {
-                        try {
-                            Thread.sleep(1500L);
-                            UpdateUI.this.c.runOnUiThread((Runnable)new Runnable() {
-                                @Override
-                                public void run() {
-                                    UpdateUI.this.a();
-                                }
-                            });
-                        }
-                        catch (InterruptedException ex) {
-                            continue;
-                        }
-                        break;
-                    }
-                }
-            }.start();
-        }
-        
-        public void robotUpdate(final String s) {
-            DbgLog.msg(s);
-            UpdateUI.this.c.runOnUiThread((Runnable)new Runnable() {
-                @Override
-                public void run() {
-                    UpdateUI.this.textRobotStatus.setText((CharSequence)s);
-                    UpdateUI.this.textErrorMessage.setText((CharSequence)RobotLog.getGlobalErrorMsg());
-                    if (RobotLog.hasGlobalErrorMsg()) {
-                        UpdateUI.this.d.longBright();
-                    }
-                }
-            });
-        }
-        
-        public void updateUi(final String s, final Gamepad[] array) {
-            UpdateUI.this.c.runOnUiThread((Runnable)new Runnable() {
-                @Override
-                public void run() {
-                    for (int n = 0; n < UpdateUI.this.textGamepad.length && n < array.length; ++n) {
-                        if (array[n].id == -1) {
-                            UpdateUI.this.textGamepad[n].setText((CharSequence)" ");
-                        }
-                        else {
-                            UpdateUI.this.textGamepad[n].setText((CharSequence)array[n].toString());
-                        }
-                    }
-                    UpdateUI.this.textOpMode.setText((CharSequence)("Op Mode: " + s));
-                    UpdateUI.this.textErrorMessage.setText((CharSequence)RobotLog.getGlobalErrorMsg());
-                }
-            });
-        }
-        
-        public void wifiDirectUpdate(final WifiDirectAssistant.Event event) {
-            switch (UpdateUI$3.a[event.ordinal()]) {
-                default: {}
-                case 1: {
-                    UpdateUI.this.a("Wifi Direct - disconnected");
-                }
-                case 2: {
-                    UpdateUI.this.a("Wifi Direct - enabled");
-                }
-                case 3: {
-                    UpdateUI.this.a("Wifi Direct - ERROR");
-                }
-                case 4: {
-                    UpdateUI.this.b(UpdateUI.this.b.getWifiDirectAssistant().getDeviceName());
-                }
+         }).start();
+      }
+
+      public void robotUpdate(final String var1) {
+         DbgLog.msg(var1);
+         UpdateUI.this.c.runOnUiThread(new Runnable() {
+            public void run() {
+               UpdateUI.this.textRobotStatus.setText(var1);
+               UpdateUI.this.textErrorMessage.setText(RobotLog.getGlobalErrorMsg());
+               if(RobotLog.hasGlobalErrorMsg()) {
+                  UpdateUI.this.d.longBright();
+               }
+
             }
-        }
-    }
+         });
+      }
+
+      public void updateUi(final String var1, final Gamepad[] var2) {
+         UpdateUI.this.c.runOnUiThread(new Runnable() {
+            public void run() {
+               for(int var1x = 0; var1x < UpdateUI.this.textGamepad.length && var1x < var2.length; ++var1x) {
+                  if(var2[var1x].id == -1) {
+                     UpdateUI.this.textGamepad[var1x].setText(" ");
+                  } else {
+                     UpdateUI.this.textGamepad[var1x].setText(var2[var1x].toString());
+                  }
+               }
+
+               UpdateUI.this.textOpMode.setText("Op Mode: " + var1);
+               UpdateUI.this.textErrorMessage.setText(RobotLog.getGlobalErrorMsg());
+            }
+         });
+      }
+
+      public void wifiDirectUpdate(WifiDirectAssistant.Event var1) {
+         switch(null.a[var1.ordinal()]) {
+         case 1:
+            UpdateUI.this.a("Wifi Direct - disconnected");
+            return;
+         case 2:
+            UpdateUI.this.a("Wifi Direct - enabled");
+            return;
+         case 3:
+            UpdateUI.this.a("Wifi Direct - ERROR");
+            return;
+         case 4:
+            WifiDirectAssistant var2 = UpdateUI.this.b.getWifiDirectAssistant();
+            UpdateUI.this.b(var2.getDeviceName());
+            return;
+         default:
+         }
+      }
+   }
 }

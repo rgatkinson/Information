@@ -1,303 +1,324 @@
 package com.qualcomm.robotcore.hardware.configuration;
 
-import java.util.Collection;
-import java.io.IOException;
-import com.qualcomm.robotcore.exception.RobotCoreException;
+import android.app.Activity;
+import android.app.AlertDialog.Builder;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
-import android.view.ViewGroup;
-import android.content.SharedPreferences$Editor;
-import java.util.Iterator;
-import com.qualcomm.robotcore.hardware.DeviceManager;
-import java.util.Map;
-import java.util.Set;
-import com.qualcomm.robotcore.util.RobotLog;
-import java.io.File;
-import java.util.ArrayList;
+import android.os.Environment;
+import android.preference.PreferenceManager;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.LinearLayout;
-import java.util.List;
+import com.qualcomm.robotcore.exception.RobotCoreException;
+import com.qualcomm.robotcore.hardware.DeviceManager;
+import com.qualcomm.robotcore.hardware.configuration.ControllerConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.DeviceInterfaceModuleConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.LegacyModuleControllerConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.MotorConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.MotorControllerConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.ServoConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.ServoControllerConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.WriteXMLFileHandler;
+import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.SerialNumber;
-import android.app.AlertDialog$Builder;
-import android.content.Context;
-import android.preference.PreferenceManager;
-import android.os.Environment;
-import android.content.SharedPreferences;
-import android.app.Activity;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
-public class Utility
-{
-    public static final String AUTOCONFIGURE_K9LEGACYBOT = "K9LegacyBot";
-    public static final String AUTOCONFIGURE_K9USBBOT = "K9USBBot";
-    public static final String CONFIG_FILES_DIR;
-    public static final String DEFAULT_ROBOT_CONFIG = "robot_config";
-    public static final String DEFAULT_ROBOT_CONFIG_FILENAME = "robot_config.xml";
-    public static final String FILE_EXT = ".xml";
-    public static final String NO_FILE = "No current file!";
-    public static final String UNSAVED = "Unsaved";
-    private static int c;
-    private Activity a;
-    private SharedPreferences b;
-    private WriteXMLFileHandler d;
-    private String e;
-    
-    static {
-        CONFIG_FILES_DIR = Environment.getExternalStorageDirectory() + "/FIRST/";
-        Utility.c = 1;
-    }
-    
-    public Utility(final Activity a) {
-        this.a = a;
-        this.b = PreferenceManager.getDefaultSharedPreferences((Context)a);
-        this.d = new WriteXMLFileHandler((Context)a);
-    }
-    
-    public AlertDialog$Builder buildBuilder(final String title, final String message) {
-        final AlertDialog$Builder alertDialog$Builder = new AlertDialog$Builder((Context)this.a);
-        alertDialog$Builder.setTitle((CharSequence)title).setMessage((CharSequence)message);
-        return alertDialog$Builder;
-    }
-    
-    public DeviceInterfaceModuleConfiguration buildDeviceInterfaceModule(final SerialNumber serialNumber) {
-        final DeviceInterfaceModuleConfiguration deviceInterfaceModuleConfiguration = new DeviceInterfaceModuleConfiguration("Device Interface Module " + Utility.c, serialNumber);
-        deviceInterfaceModuleConfiguration.setPwmDevices(this.createPWMList());
-        deviceInterfaceModuleConfiguration.setI2cDevices(this.createI2CList());
-        deviceInterfaceModuleConfiguration.setAnalogInputDevices(this.createAnalogInputList());
-        deviceInterfaceModuleConfiguration.setDigitalDevices(this.createDigitalList());
-        deviceInterfaceModuleConfiguration.setAnalogOutputDevices(this.createAnalogOutputList());
-        ++Utility.c;
-        return deviceInterfaceModuleConfiguration;
-    }
-    
-    public LegacyModuleControllerConfiguration buildLegacyModule(final SerialNumber serialNumber) {
-        final LegacyModuleControllerConfiguration legacyModuleControllerConfiguration = new LegacyModuleControllerConfiguration("Legacy Module " + Utility.c, this.createLegacyModuleList(), serialNumber);
-        ++Utility.c;
-        return legacyModuleControllerConfiguration;
-    }
-    
-    public MotorControllerConfiguration buildMotorController(final SerialNumber serialNumber) {
-        final MotorControllerConfiguration motorControllerConfiguration = new MotorControllerConfiguration("Motor Controller " + Utility.c, this.createMotorList(), serialNumber);
-        ++Utility.c;
-        return motorControllerConfiguration;
-    }
-    
-    public ServoControllerConfiguration buildServoController(final SerialNumber serialNumber) {
-        final ServoControllerConfiguration servoControllerConfiguration = new ServoControllerConfiguration("Servo Controller " + Utility.c, this.createServoList(), serialNumber);
-        ++Utility.c;
-        return servoControllerConfiguration;
-    }
-    
-    public void changeBackground(final int backgroundColor, final int n) {
-        ((LinearLayout)this.a.findViewById(n)).setBackgroundColor(backgroundColor);
-    }
-    
-    public void complainToast(final String s, final Context context) {
-        final Toast text = Toast.makeText(context, (CharSequence)s, 0);
-        text.setGravity(17, 0, 0);
-        final TextView textView = (TextView)text.getView().findViewById(16908299);
-        textView.setTextColor(-1);
-        textView.setTextSize(18.0f);
-        text.show();
-    }
-    
-    public void confirmSave() {
-        final Toast text = Toast.makeText((Context)this.a, (CharSequence)"Saved", 0);
-        text.setGravity(80, 0, 50);
-        text.show();
-    }
-    
-    public ArrayList<DeviceConfiguration> createAnalogInputList() {
-        final ArrayList<DeviceConfiguration> list = new ArrayList<DeviceConfiguration>();
-        for (int i = 0; i < 8; ++i) {
-            list.add(new DeviceConfiguration(i, DeviceConfiguration.ConfigurationType.ANALOG_INPUT));
-        }
-        return list;
-    }
-    
-    public ArrayList<DeviceConfiguration> createAnalogOutputList() {
-        final ArrayList<DeviceConfiguration> list = new ArrayList<DeviceConfiguration>();
-        for (int i = 0; i < 2; ++i) {
-            list.add(new DeviceConfiguration(i, DeviceConfiguration.ConfigurationType.ANALOG_OUTPUT));
-        }
-        return list;
-    }
-    
-    public void createConfigFolder() {
-        final File file = new File(Utility.CONFIG_FILES_DIR);
-        boolean mkdir = true;
-        if (!file.exists()) {
-            mkdir = file.mkdir();
-        }
-        if (!mkdir) {
-            RobotLog.e("Can't create the Robot Config Files directory!");
-            this.complainToast("Can't create the Robot Config Files directory!", (Context)this.a);
-        }
-    }
-    
-    public ArrayList<DeviceConfiguration> createDigitalList() {
-        final ArrayList<DeviceConfiguration> list = new ArrayList<DeviceConfiguration>();
-        for (int i = 0; i < 8; ++i) {
-            list.add(new DeviceConfiguration(i, DeviceConfiguration.ConfigurationType.DIGITAL_DEVICE));
-        }
-        return list;
-    }
-    
-    public ArrayList<DeviceConfiguration> createI2CList() {
-        final ArrayList<DeviceConfiguration> list = new ArrayList<DeviceConfiguration>();
-        for (int i = 0; i < 6; ++i) {
-            list.add(new DeviceConfiguration(i, DeviceConfiguration.ConfigurationType.I2C_DEVICE));
-        }
-        return list;
-    }
-    
-    public ArrayList<DeviceConfiguration> createLegacyModuleList() {
-        final ArrayList<DeviceConfiguration> list = new ArrayList<DeviceConfiguration>();
-        for (int i = 0; i < 6; ++i) {
-            list.add(new DeviceConfiguration(i, DeviceConfiguration.ConfigurationType.NOTHING));
-        }
-        return list;
-    }
-    
-    public void createLists(final Set<Map.Entry<SerialNumber, DeviceManager.DeviceType>> set, final Map<SerialNumber, ControllerConfiguration> map) {
-        for (final Map.Entry<SerialNumber, DeviceManager.DeviceType> entry : set) {
-            switch (Utility$1.a[entry.getValue().ordinal()]) {
-                default: {
-                    continue;
-                }
-                case 1: {
-                    map.put(entry.getKey(), this.buildMotorController(entry.getKey()));
-                    continue;
-                }
-                case 2: {
-                    map.put(entry.getKey(), this.buildServoController(entry.getKey()));
-                    continue;
-                }
-                case 3: {
-                    map.put(entry.getKey(), this.buildLegacyModule(entry.getKey()));
-                    continue;
-                }
-                case 4: {
-                    map.put(entry.getKey(), this.buildDeviceInterfaceModule(entry.getKey()));
-                    continue;
-                }
+public class Utility {
+   public static final String AUTOCONFIGURE_K9LEGACYBOT = "K9LegacyBot";
+   public static final String AUTOCONFIGURE_K9USBBOT = "K9USBBot";
+   public static final String CONFIG_FILES_DIR = Environment.getExternalStorageDirectory() + "/FIRST/";
+   public static final String DEFAULT_ROBOT_CONFIG = "robot_config";
+   public static final String DEFAULT_ROBOT_CONFIG_FILENAME = "robot_config.xml";
+   public static final String FILE_EXT = ".xml";
+   public static final String NO_FILE = "No current file!";
+   public static final String UNSAVED = "Unsaved";
+   private static int c = 1;
+   private Activity a;
+   private SharedPreferences b;
+   private WriteXMLFileHandler d;
+   private String e;
+
+   public Utility(Activity var1) {
+      this.a = var1;
+      this.b = PreferenceManager.getDefaultSharedPreferences(var1);
+      this.d = new WriteXMLFileHandler(var1);
+   }
+
+   public Builder buildBuilder(String var1, String var2) {
+      Builder var3 = new Builder(this.a);
+      var3.setTitle(var1).setMessage(var2);
+      return var3;
+   }
+
+   public DeviceInterfaceModuleConfiguration buildDeviceInterfaceModule(SerialNumber var1) {
+      DeviceInterfaceModuleConfiguration var2 = new DeviceInterfaceModuleConfiguration("Device Interface Module " + c, var1);
+      var2.setPwmDevices(this.createPWMList());
+      var2.setI2cDevices(this.createI2CList());
+      var2.setAnalogInputDevices(this.createAnalogInputList());
+      var2.setDigitalDevices(this.createDigitalList());
+      var2.setAnalogOutputDevices(this.createAnalogOutputList());
+      ++c;
+      return var2;
+   }
+
+   public LegacyModuleControllerConfiguration buildLegacyModule(SerialNumber var1) {
+      ArrayList var2 = this.createLegacyModuleList();
+      LegacyModuleControllerConfiguration var3 = new LegacyModuleControllerConfiguration("Legacy Module " + c, var2, var1);
+      ++c;
+      return var3;
+   }
+
+   public MotorControllerConfiguration buildMotorController(SerialNumber var1) {
+      ArrayList var2 = this.createMotorList();
+      MotorControllerConfiguration var3 = new MotorControllerConfiguration("Motor Controller " + c, var2, var1);
+      ++c;
+      return var3;
+   }
+
+   public ServoControllerConfiguration buildServoController(SerialNumber var1) {
+      ArrayList var2 = this.createServoList();
+      ServoControllerConfiguration var3 = new ServoControllerConfiguration("Servo Controller " + c, var2, var1);
+      ++c;
+      return var3;
+   }
+
+   public void changeBackground(int var1, int var2) {
+      ((LinearLayout)this.a.findViewById(var2)).setBackgroundColor(var1);
+   }
+
+   public void complainToast(String var1, Context var2) {
+      Toast var3 = Toast.makeText(var2, var1, 0);
+      var3.setGravity(17, 0, 0);
+      TextView var4 = (TextView)var3.getView().findViewById(16908299);
+      var4.setTextColor(-1);
+      var4.setTextSize(18.0F);
+      var3.show();
+   }
+
+   public void confirmSave() {
+      Toast var1 = Toast.makeText(this.a, "Saved", 0);
+      var1.setGravity(80, 0, 50);
+      var1.show();
+   }
+
+   public ArrayList<DeviceConfiguration> createAnalogInputList() {
+      ArrayList var1 = new ArrayList();
+
+      for(int var2 = 0; var2 < 8; ++var2) {
+         var1.add(new DeviceConfiguration(var2, DeviceConfiguration.ConfigurationType.ANALOG_INPUT));
+      }
+
+      return var1;
+   }
+
+   public ArrayList<DeviceConfiguration> createAnalogOutputList() {
+      ArrayList var1 = new ArrayList();
+
+      for(int var2 = 0; var2 < 2; ++var2) {
+         var1.add(new DeviceConfiguration(var2, DeviceConfiguration.ConfigurationType.ANALOG_OUTPUT));
+      }
+
+      return var1;
+   }
+
+   public void createConfigFolder() {
+      File var1 = new File(CONFIG_FILES_DIR);
+      boolean var2 = true;
+      if(!var1.exists()) {
+         var2 = var1.mkdir();
+      }
+
+      if(!var2) {
+         RobotLog.e("Can\'t create the Robot Config Files directory!");
+         this.complainToast("Can\'t create the Robot Config Files directory!", this.a);
+      }
+
+   }
+
+   public ArrayList<DeviceConfiguration> createDigitalList() {
+      ArrayList var1 = new ArrayList();
+
+      for(int var2 = 0; var2 < 8; ++var2) {
+         var1.add(new DeviceConfiguration(var2, DeviceConfiguration.ConfigurationType.DIGITAL_DEVICE));
+      }
+
+      return var1;
+   }
+
+   public ArrayList<DeviceConfiguration> createI2CList() {
+      ArrayList var1 = new ArrayList();
+
+      for(int var2 = 0; var2 < 6; ++var2) {
+         var1.add(new DeviceConfiguration(var2, DeviceConfiguration.ConfigurationType.I2C_DEVICE));
+      }
+
+      return var1;
+   }
+
+   public ArrayList<DeviceConfiguration> createLegacyModuleList() {
+      ArrayList var1 = new ArrayList();
+
+      for(int var2 = 0; var2 < 6; ++var2) {
+         var1.add(new DeviceConfiguration(var2, DeviceConfiguration.ConfigurationType.NOTHING));
+      }
+
+      return var1;
+   }
+
+   public void createLists(Set<Entry<SerialNumber, DeviceManager.DeviceType>> var1, Map<SerialNumber, ControllerConfiguration> var2) {
+      Iterator var3 = var1.iterator();
+
+      while(var3.hasNext()) {
+         Entry var4 = (Entry)var3.next();
+         DeviceManager.DeviceType var5 = (DeviceManager.DeviceType)var4.getValue();
+         switch(null.a[var5.ordinal()]) {
+         case 1:
+            var2.put(var4.getKey(), this.buildMotorController((SerialNumber)var4.getKey()));
+            break;
+         case 2:
+            var2.put(var4.getKey(), this.buildServoController((SerialNumber)var4.getKey()));
+            break;
+         case 3:
+            var2.put(var4.getKey(), this.buildLegacyModule((SerialNumber)var4.getKey()));
+            break;
+         case 4:
+            DeviceInterfaceModuleConfiguration var6 = this.buildDeviceInterfaceModule((SerialNumber)var4.getKey());
+            var2.put(var4.getKey(), var6);
+         }
+      }
+
+   }
+
+   public ArrayList<DeviceConfiguration> createMotorList() {
+      ArrayList var1 = new ArrayList();
+      var1.add(new MotorConfiguration(1));
+      var1.add(new MotorConfiguration(2));
+      return var1;
+   }
+
+   public ArrayList<DeviceConfiguration> createPWMList() {
+      ArrayList var1 = new ArrayList();
+
+      for(int var2 = 0; var2 < 2; ++var2) {
+         var1.add(new DeviceConfiguration(var2, DeviceConfiguration.ConfigurationType.PULSE_WIDTH_DEVICE));
+      }
+
+      return var1;
+   }
+
+   public ArrayList<DeviceConfiguration> createServoList() {
+      ArrayList var1 = new ArrayList();
+
+      for(int var2 = 1; var2 <= 6; ++var2) {
+         var1.add(new ServoConfiguration(var2));
+      }
+
+      return var1;
+   }
+
+   public String getFilenameFromPrefs(int var1, String var2) {
+      return this.b.getString(this.a.getString(var1), var2);
+   }
+
+   public String getOutput() {
+      return this.e;
+   }
+
+   public ArrayList<String> getXMLFiles() {
+      File[] var1 = (new File(CONFIG_FILES_DIR)).listFiles();
+      ArrayList var2;
+      if(var1 == null) {
+         RobotLog.i("robotConfigFiles directory is empty");
+         var2 = new ArrayList();
+      } else {
+         var2 = new ArrayList();
+         int var3 = var1.length;
+
+         for(int var4 = 0; var4 < var3; ++var4) {
+            File var5 = var1[var4];
+            if(var5.isFile()) {
+               var2.add(var5.getName().replaceFirst("[.][^.]+$", ""));
             }
-        }
-    }
-    
-    public ArrayList<DeviceConfiguration> createMotorList() {
-        final ArrayList<MotorConfiguration> list = (ArrayList<MotorConfiguration>)new ArrayList<DeviceConfiguration>();
-        list.add(new MotorConfiguration(1));
-        list.add(new MotorConfiguration(2));
-        return (ArrayList<DeviceConfiguration>)list;
-    }
-    
-    public ArrayList<DeviceConfiguration> createPWMList() {
-        final ArrayList<DeviceConfiguration> list = new ArrayList<DeviceConfiguration>();
-        for (int i = 0; i < 2; ++i) {
-            list.add(new DeviceConfiguration(i, DeviceConfiguration.ConfigurationType.PULSE_WIDTH_DEVICE));
-        }
-        return list;
-    }
-    
-    public ArrayList<DeviceConfiguration> createServoList() {
-        final ArrayList<ServoConfiguration> list = (ArrayList<ServoConfiguration>)new ArrayList<DeviceConfiguration>();
-        for (int i = 1; i <= 6; ++i) {
-            list.add(new ServoConfiguration(i));
-        }
-        return (ArrayList<DeviceConfiguration>)list;
-    }
-    
-    public String getFilenameFromPrefs(final int n, final String s) {
-        return this.b.getString(this.a.getString(n), s);
-    }
-    
-    public String getOutput() {
-        return this.e;
-    }
-    
-    public ArrayList<String> getXMLFiles() {
-        final File[] listFiles = new File(Utility.CONFIG_FILES_DIR).listFiles();
-        ArrayList<String> list;
-        if (listFiles == null) {
-            RobotLog.i("robotConfigFiles directory is empty");
-            list = new ArrayList<String>();
-        }
-        else {
-            list = new ArrayList<String>();
-            for (final File file : listFiles) {
-                if (file.isFile()) {
-                    list.add(file.getName().replaceFirst("[.][^.]+$", ""));
-                }
-            }
-        }
-        return list;
-    }
-    
-    public String prepareFilename(String trim) {
-        if (trim.toLowerCase().contains("Unsaved".toLowerCase())) {
-            trim = trim.substring(7).trim();
-        }
-        if (trim.equalsIgnoreCase("No current file!")) {
-            trim = "";
-        }
-        return trim;
-    }
-    
-    public void resetCount() {
-        Utility.c = 1;
-    }
-    
-    public void saveToPreferences(final String s, final int n) {
-        final String replaceFirst = s.replaceFirst("[.][^.]+$", "");
-        final SharedPreferences$Editor edit = this.b.edit();
-        edit.putString(this.a.getString(n), replaceFirst);
-        edit.apply();
-    }
-    
-    public void setOrangeText(final String text, final String text2, final int n, final int n2, final int n3, final int n4) {
-        final LinearLayout linearLayout = (LinearLayout)this.a.findViewById(n);
-        linearLayout.setVisibility(0);
-        linearLayout.removeAllViews();
-        this.a.getLayoutInflater().inflate(n2, (ViewGroup)linearLayout, true);
-        final TextView textView = (TextView)linearLayout.findViewById(n3);
-        final TextView textView2 = (TextView)linearLayout.findViewById(n4);
-        textView2.setGravity(3);
-        textView.setText((CharSequence)text);
-        textView2.setText((CharSequence)text2);
-    }
-    
-    public void updateHeader(final String s, final int n, final int n2, final int n3) {
-        final String replaceFirst = this.b.getString(this.a.getString(n), s).replaceFirst("[.][^.]+$", "");
-        ((TextView)this.a.findViewById(n2)).setText((CharSequence)replaceFirst);
-        if (replaceFirst.equalsIgnoreCase("No current file!")) {
-            this.changeBackground(Color.parseColor("#bf0510"), n3);
-            return;
-        }
-        if (replaceFirst.toLowerCase().contains("Unsaved".toLowerCase())) {
-            this.changeBackground(-12303292, n3);
-            return;
-        }
-        this.changeBackground(Color.parseColor("#790E15"), n3);
-    }
-    
-    public void writeToFile(final String s) throws RobotCoreException, IOException {
-        this.d.writeToFile(this.e, Utility.CONFIG_FILES_DIR, s);
-    }
-    
-    public boolean writeXML(final Map<SerialNumber, ControllerConfiguration> map) {
-        final ArrayList<ControllerConfiguration> list = new ArrayList<ControllerConfiguration>();
-        list.addAll(map.values());
-        try {
-            this.e = this.d.writeXml(list);
-            return false;
-        }
-        catch (RuntimeException ex) {
-            if (ex.getMessage().contains("Duplicate name")) {
-                this.complainToast("Found " + ex.getMessage(), (Context)this.a);
-                RobotLog.e("Found " + ex.getMessage());
-                return true;
-            }
-            return false;
-        }
-    }
+         }
+      }
+
+      return var2;
+   }
+
+   public String prepareFilename(String var1) {
+      if(var1.toLowerCase().contains("Unsaved".toLowerCase())) {
+         var1 = var1.substring(7).trim();
+      }
+
+      if(var1.equalsIgnoreCase("No current file!")) {
+         var1 = "";
+      }
+
+      return var1;
+   }
+
+   public void resetCount() {
+      c = 1;
+   }
+
+   public void saveToPreferences(String var1, int var2) {
+      String var3 = var1.replaceFirst("[.][^.]+$", "");
+      Editor var4 = this.b.edit();
+      var4.putString(this.a.getString(var2), var3);
+      var4.apply();
+   }
+
+   public void setOrangeText(String var1, String var2, int var3, int var4, int var5, int var6) {
+      LinearLayout var7 = (LinearLayout)this.a.findViewById(var3);
+      var7.setVisibility(0);
+      var7.removeAllViews();
+      this.a.getLayoutInflater().inflate(var4, var7, true);
+      TextView var9 = (TextView)var7.findViewById(var5);
+      TextView var10 = (TextView)var7.findViewById(var6);
+      var10.setGravity(3);
+      var9.setText(var1);
+      var10.setText(var2);
+   }
+
+   public void updateHeader(String var1, int var2, int var3, int var4) {
+      String var5 = this.b.getString(this.a.getString(var2), var1).replaceFirst("[.][^.]+$", "");
+      ((TextView)this.a.findViewById(var3)).setText(var5);
+      if(var5.equalsIgnoreCase("No current file!")) {
+         this.changeBackground(Color.parseColor("#bf0510"), var4);
+      } else if(var5.toLowerCase().contains("Unsaved".toLowerCase())) {
+         this.changeBackground(-12303292, var4);
+      } else {
+         this.changeBackground(Color.parseColor("#790E15"), var4);
+      }
+   }
+
+   public void writeToFile(String var1) throws RobotCoreException, IOException {
+      this.d.writeToFile(this.e, CONFIG_FILES_DIR, var1);
+   }
+
+   public boolean writeXML(Map<SerialNumber, ControllerConfiguration> var1) {
+      ArrayList var2 = new ArrayList();
+      var2.addAll(var1.values());
+
+      try {
+         this.e = this.d.writeXml(var2);
+      } catch (RuntimeException var5) {
+         if(var5.getMessage().contains("Duplicate name")) {
+            this.complainToast("Found " + var5.getMessage(), this.a);
+            RobotLog.e("Found " + var5.getMessage());
+            return true;
+         }
+      }
+
+      return false;
+   }
 }

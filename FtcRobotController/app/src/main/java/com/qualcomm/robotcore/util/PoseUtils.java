@@ -1,27 +1,33 @@
 package com.qualcomm.robotcore.util;
 
 import android.util.Log;
+import com.qualcomm.robotcore.util.MatrixD;
+import com.qualcomm.robotcore.util.Pose;
 
-public class PoseUtils
-{
-    public static double[] getAnglesAroundZ(final MatrixD matrixD) {
-        if (matrixD.numRows() != 3 || matrixD.numCols() != 3) {
-            throw new IllegalArgumentException("Invalid Matrix Dimension: Expected (3,3) got (" + matrixD.numRows() + "," + matrixD.numCols() + ")");
-        }
-        final MatrixD times = matrixD.times(new MatrixD(new double[][] { { 0.0 }, { 0.0 }, { 1.0 } }));
-        return new double[] { Math.toDegrees(Math.atan2(times.data()[1][0], times.data()[0][0])), Math.toDegrees(Math.atan2(times.data()[0][0], times.data()[1][0])), Math.toDegrees(Math.asin(times.data()[2][0] / times.length())) };
-    }
-    
-    public static double[] getAnglesAroundZ(final Pose pose) {
-        if (pose != null && pose.poseMatrix != null) {
-            return getAnglesAroundZ(pose.poseMatrix.submatrix(3, 3, 0, 0));
-        }
-        Log.e("PoseUtils", "null input");
-        return null;
-    }
-    
-    public static double smallestAngularDifferenceDegrees(final double n, final double n2) {
-        final double n3 = 3.141592653589793 * (n - n2) / 180.0;
-        return 180.0 * Math.atan2(Math.sin(n3), Math.cos(n3)) / 3.141592653589793;
-    }
+public class PoseUtils {
+   public static double[] getAnglesAroundZ(MatrixD var0) {
+      if(var0.numRows() == 3 && var0.numCols() == 3) {
+         MatrixD var1 = var0.times(new MatrixD(new double[][]{{0.0D}, {0.0D}, {1.0D}}));
+         double var2 = Math.toDegrees(Math.atan2(var1.data()[1][0], var1.data()[0][0]));
+         double var4 = Math.toDegrees(Math.atan2(var1.data()[0][0], var1.data()[1][0]));
+         double var6 = var1.length();
+         return new double[]{var2, var4, Math.toDegrees(Math.asin(var1.data()[2][0] / var6))};
+      } else {
+         throw new IllegalArgumentException("Invalid Matrix Dimension: Expected (3,3) got (" + var0.numRows() + "," + var0.numCols() + ")");
+      }
+   }
+
+   public static double[] getAnglesAroundZ(Pose var0) {
+      if(var0 != null && var0.poseMatrix != null) {
+         return getAnglesAroundZ(var0.poseMatrix.submatrix(3, 3, 0, 0));
+      } else {
+         Log.e("PoseUtils", "null input");
+         return null;
+      }
+   }
+
+   public static double smallestAngularDifferenceDegrees(double var0, double var2) {
+      double var4 = 3.141592653589793D * (var0 - var2) / 180.0D;
+      return 180.0D * Math.atan2(Math.sin(var4), Math.cos(var4)) / 3.141592653589793D;
+   }
 }

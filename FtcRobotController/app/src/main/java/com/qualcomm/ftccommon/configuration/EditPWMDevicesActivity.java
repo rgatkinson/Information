@@ -1,158 +1,160 @@
 package com.qualcomm.ftccommon.configuration;
 
-import android.text.Editable;
-import java.util.Iterator;
-import android.widget.TextView;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import com.qualcomm.robotcore.util.RobotLog;
-import android.content.Context;
-import android.preference.PreferenceManager;
-import android.view.View$OnClickListener;
-import android.text.TextWatcher;
-import android.widget.EditText;
-import com.qualcomm.ftccommon.R;
-import android.widget.CheckBox;
-import android.content.Intent;
-import java.io.Serializable;
-import android.os.Bundle;
-import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
-import java.util.ArrayList;
-import android.view.View;
-import com.qualcomm.robotcore.hardware.configuration.Utility;
 import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import com.qualcomm.ftccommon.R;
+import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.Utility;
+import com.qualcomm.robotcore.util.RobotLog;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
 
-public class EditPWMDevicesActivity extends Activity
-{
-    public static final String EDIT_PWM_DEVICES = "EDIT_PWM_DEVICES";
-    private Utility a;
-    private View b;
-    private View c;
-    private ArrayList<DeviceConfiguration> d;
-    
-    public EditPWMDevicesActivity() {
-        this.d = new ArrayList<DeviceConfiguration>();
-    }
-    
-    private void a() {
-        final Bundle bundle = new Bundle();
-        for (int i = 0; i < this.d.size(); ++i) {
-            bundle.putSerializable(String.valueOf(i), (Serializable)this.d.get(i));
-        }
-        final Intent intent = new Intent();
-        intent.putExtras(bundle);
-        intent.putExtras(bundle);
-        this.setResult(-1, intent);
-        this.finish();
-    }
-    
-    private void a(final int n) {
-        final View d = this.d(n);
-        final CheckBox checkBox = (CheckBox)d.findViewById(R.id.checkbox_port_pwm);
-        final DeviceConfiguration deviceConfiguration = this.d.get(n);
-        if (deviceConfiguration.isEnabled()) {
-            checkBox.setChecked(true);
-            ((EditText)d.findViewById(R.id.editTextResult_pwm)).setText((CharSequence)deviceConfiguration.getName());
-            return;
-        }
-        checkBox.setChecked(true);
-        checkBox.performClick();
-    }
-    
-    private void b(final int n) {
-        final View d = this.d(n);
-        ((EditText)d.findViewById(R.id.editTextResult_pwm)).addTextChangedListener((TextWatcher)new a(d));
-    }
-    
-    private void c(final int n) {
-        final View d = this.d(n);
-        ((CheckBox)d.findViewById(R.id.checkbox_port_pwm)).setOnClickListener((View$OnClickListener)new View$OnClickListener() {
-            final /* synthetic */ EditText a = (EditText)d.findViewById(R.id.editTextResult_pwm);
-            final /* synthetic */ DeviceConfiguration b = EditPWMDevicesActivity.this.d.get(n);
-            
-            public void onClick(final View view) {
-                if (((CheckBox)view).isChecked()) {
-                    this.a.setEnabled(true);
-                    this.a.setText((CharSequence)"");
-                    this.b.setEnabled(true);
-                    this.b.setName("");
-                    return;
-                }
-                this.a.setEnabled(false);
-                this.b.setEnabled(false);
-                this.b.setName("NO DEVICE ATTACHED");
-                this.a.setText((CharSequence)"NO DEVICE ATTACHED");
+public class EditPWMDevicesActivity extends Activity {
+   public static final String EDIT_PWM_DEVICES = "EDIT_PWM_DEVICES";
+   private Utility a;
+   private View b;
+   private View c;
+   private ArrayList<DeviceConfiguration> d = new ArrayList();
+
+   private void a() {
+      Bundle var1 = new Bundle();
+
+      for(int var2 = 0; var2 < this.d.size(); ++var2) {
+         var1.putSerializable(String.valueOf(var2), (Serializable)this.d.get(var2));
+      }
+
+      Intent var3 = new Intent();
+      var3.putExtras(var1);
+      var3.putExtras(var1);
+      this.setResult(-1, var3);
+      this.finish();
+   }
+
+   private void a(int var1) {
+      View var2 = this.d(var1);
+      CheckBox var3 = (CheckBox)var2.findViewById(R.id.checkbox_port_pwm);
+      DeviceConfiguration var4 = (DeviceConfiguration)this.d.get(var1);
+      if(var4.isEnabled()) {
+         var3.setChecked(true);
+         ((EditText)var2.findViewById(R.id.editTextResult_pwm)).setText(var4.getName());
+      } else {
+         var3.setChecked(true);
+         var3.performClick();
+      }
+   }
+
+   private void b(int var1) {
+      View var2 = this.d(var1);
+      ((EditText)var2.findViewById(R.id.editTextResult_pwm)).addTextChangedListener(new EditPWMDevicesActivity.a(var2, null));
+   }
+
+   private void c(int var1) {
+      View var2 = this.d(var1);
+      final EditText var3 = (EditText)var2.findViewById(R.id.editTextResult_pwm);
+      final DeviceConfiguration var4 = (DeviceConfiguration)this.d.get(var1);
+      ((CheckBox)var2.findViewById(R.id.checkbox_port_pwm)).setOnClickListener(new OnClickListener() {
+         public void onClick(View var1) {
+            if(((CheckBox)var1).isChecked()) {
+               var3.setEnabled(true);
+               var3.setText("");
+               var4.setEnabled(true);
+               var4.setName("");
+            } else {
+               var3.setEnabled(false);
+               var4.setEnabled(false);
+               var4.setName("NO DEVICE ATTACHED");
+               var3.setText("NO DEVICE ATTACHED");
             }
-        });
-    }
-    
-    private View d(final int n) {
-        switch (n) {
-            default: {
-                return null;
-            }
-            case 0: {
-                return this.b;
-            }
-            case 1: {
-                return this.c;
-            }
-        }
-    }
-    
-    public void cancelPWMDevices(final View view) {
-        this.setResult(0, new Intent());
-        this.finish();
-    }
-    
-    protected void onCreate(final Bundle bundle) {
-        super.onCreate(bundle);
-        this.setContentView(R.layout.pwms);
-        PreferenceManager.setDefaultValues((Context)this, R.xml.preferences, false);
-        this.a = new Utility(this);
-        RobotLog.writeLogcatToDisk((Context)this, 1024);
-        this.b = this.getLayoutInflater().inflate(R.layout.pwm_device, (ViewGroup)this.findViewById(R.id.linearLayout_pwm0), true);
-        ((TextView)this.b.findViewById(R.id.port_number_pwm)).setText((CharSequence)"0");
-        this.c = this.getLayoutInflater().inflate(R.layout.pwm_device, (ViewGroup)this.findViewById(R.id.linearLayout_pwm1), true);
-        ((TextView)this.c.findViewById(R.id.port_number_pwm)).setText((CharSequence)"1");
-    }
-    
-    protected void onStart() {
-        super.onStart();
-        this.a.updateHeader("No current file!", R.string.pref_hardware_config_filename, R.id.active_filename, R.id.included_header);
-        final Bundle extras = this.getIntent().getExtras();
-        if (extras != null) {
-            for (final String s : extras.keySet()) {
-                this.d.add(Integer.parseInt(s), (DeviceConfiguration)extras.getSerializable(s));
-            }
-            for (int i = 0; i < this.d.size(); ++i) {
-                this.c(i);
-                this.b(i);
-                this.a(i);
-            }
-        }
-    }
-    
-    public void savePWMDevices(final View view) {
-        this.a();
-    }
-    
-    private class a implements TextWatcher
-    {
-        private int b;
-        
-        private a(final View view) {
-            this.b = Integer.parseInt(((TextView)view.findViewById(R.id.port_number_pwm)).getText().toString());
-        }
-        
-        public void afterTextChanged(final Editable editable) {
-            EditPWMDevicesActivity.this.d.get(this.b).setName(editable.toString());
-        }
-        
-        public void beforeTextChanged(final CharSequence charSequence, final int n, final int n2, final int n3) {
-        }
-        
-        public void onTextChanged(final CharSequence charSequence, final int n, final int n2, final int n3) {
-        }
-    }
+         }
+      });
+   }
+
+   private View d(int var1) {
+      switch(var1) {
+      case 0:
+         return this.b;
+      case 1:
+         return this.c;
+      default:
+         return null;
+      }
+   }
+
+   public void cancelPWMDevices(View var1) {
+      this.setResult(0, new Intent());
+      this.finish();
+   }
+
+   protected void onCreate(Bundle var1) {
+      super.onCreate(var1);
+      this.setContentView(R.layout.pwms);
+      PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+      this.a = new Utility(this);
+      RobotLog.writeLogcatToDisk(this, 1024);
+      LinearLayout var2 = (LinearLayout)this.findViewById(R.id.linearLayout_pwm0);
+      this.b = this.getLayoutInflater().inflate(R.layout.pwm_device, var2, true);
+      ((TextView)this.b.findViewById(R.id.port_number_pwm)).setText("0");
+      LinearLayout var3 = (LinearLayout)this.findViewById(R.id.linearLayout_pwm1);
+      this.c = this.getLayoutInflater().inflate(R.layout.pwm_device, var3, true);
+      ((TextView)this.c.findViewById(R.id.port_number_pwm)).setText("1");
+   }
+
+   protected void onStart() {
+      super.onStart();
+      this.a.updateHeader("No current file!", R.string.pref_hardware_config_filename, R.id.active_filename, R.id.included_header);
+      Bundle var1 = this.getIntent().getExtras();
+      if(var1 != null) {
+         Iterator var2 = var1.keySet().iterator();
+
+         while(var2.hasNext()) {
+            String var4 = (String)var2.next();
+            this.d.add(Integer.parseInt(var4), (DeviceConfiguration)var1.getSerializable(var4));
+         }
+
+         for(int var3 = 0; var3 < this.d.size(); ++var3) {
+            this.c(var3);
+            this.b(var3);
+            this.a(var3);
+         }
+      }
+
+   }
+
+   public void savePWMDevices(View var1) {
+      this.a();
+   }
+
+   private class a implements TextWatcher {
+      private int b;
+
+      private a(View var2) {
+         this.b = Integer.parseInt(((TextView)var2.findViewById(R.id.port_number_pwm)).getText().toString());
+      }
+
+      // $FF: synthetic method
+      a(View var2, Object var3) {
+         this();
+      }
+
+      public void afterTextChanged(Editable var1) {
+         ((DeviceConfiguration)EditPWMDevicesActivity.this.d.get(this.b)).setName(var1.toString());
+      }
+
+      public void beforeTextChanged(CharSequence var1, int var2, int var3, int var4) {
+      }
+
+      public void onTextChanged(CharSequence var1, int var2, int var3, int var4) {
+      }
+   }
 }

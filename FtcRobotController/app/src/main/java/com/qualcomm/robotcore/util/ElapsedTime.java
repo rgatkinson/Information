@@ -1,37 +1,37 @@
 package com.qualcomm.robotcore.util;
 
-public class ElapsedTime
-{
-    private long a;
-    
-    public ElapsedTime() {
-        this.a = 0L;
-        this.reset();
-    }
-    
-    public ElapsedTime(final long a) {
-        this.a = 0L;
-        this.a = a;
-    }
-    
-    public void log(final String s) {
-        RobotLog.v(String.format("TIMER: %20s - %1.3f", s, this.time()));
-    }
-    
-    public void reset() {
-        this.a = System.nanoTime();
-    }
-    
-    public double startTime() {
-        return this.a / 1.0E9;
-    }
-    
-    public double time() {
-        return (System.nanoTime() - this.a) / 1.0E9;
-    }
-    
-    @Override
-    public String toString() {
-        return String.format("%1.4f seconds", this.time());
-    }
+import com.qualcomm.robotcore.util.RobotLog;
+
+public class ElapsedTime {
+   private long a = 0L;
+
+   public ElapsedTime() {
+      this.reset();
+   }
+
+   public ElapsedTime(long var1) {
+      this.a = var1;
+   }
+
+   public void log(String var1) {
+      Object[] var2 = new Object[]{var1, Double.valueOf(this.time())};
+      RobotLog.v(String.format("TIMER: %20s - %1.3f", var2));
+   }
+
+   public void reset() {
+      this.a = System.nanoTime();
+   }
+
+   public double startTime() {
+      return (double)this.a / 1.0E9D;
+   }
+
+   public double time() {
+      return (double)(System.nanoTime() - this.a) / 1.0E9D;
+   }
+
+   public String toString() {
+      Object[] var1 = new Object[]{Double.valueOf(this.time())};
+      return String.format("%1.4f seconds", var1);
+   }
 }

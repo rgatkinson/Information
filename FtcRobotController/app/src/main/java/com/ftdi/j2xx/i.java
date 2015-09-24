@@ -1,277 +1,111 @@
 package com.ftdi.j2xx;
 
-class i extends k
-{
-    private static FT_Device d;
-    
-    i(final FT_Device d) {
-        super(d);
-        i.d = d;
-    }
-    
-    @Override
-    int a(final byte[] array) {
-        if (array.length <= this.b()) {
-            final int[] array2 = new int[80];
-            for (short n = 0; n < 80; ++n) {
-                array2[n] = this.a(n);
+import com.ftdi.j2xx.FT_Device;
+import com.ftdi.j2xx.FT_EEPROM;
+import com.ftdi.j2xx.k;
+
+class i extends k {
+   private static FT_Device d;
+
+   i(FT_Device var1) {
+      super(var1);
+      d = var1;
+   }
+
+   int a(byte[] var1) {
+      if(var1.length <= this.b()) {
+         int[] var2 = new int[80];
+
+         for(short var3 = 0; var3 < 80; ++var3) {
+            var2[var3] = this.a(var3);
+         }
+
+         short var4 = (short)('\uffff' & (short)(-1 + (63 - this.b() / 2)));
+
+         short var8;
+         for(int var5 = 0; var5 < var1.length; var4 = var8) {
+            int var6;
+            if(var5 + 1 < var1.length) {
+               var6 = 255 & var1[var5 + 1];
+            } else {
+               var6 = 0;
             }
-            int n2 = (short)(0xFFFF & (short)(-1 + (63 - this.b() / 2)));
-            short n5;
-            for (int i = 0; i < array.length; i += 2, n2 = n5) {
-                int n3;
-                if (i + 1 < array.length) {
-                    n3 = (0xFF & array[i + 1]);
-                }
-                else {
-                    n3 = 0;
-                }
-                final int n4 = n3 << 8 | (0xFF & array[i]);
-                n5 = (short)(n2 + 1);
-                array2[n2] = n4;
+
+            int var7 = var6 << 8 | 255 & var1[var5];
+            var8 = (short)(var4 + 1);
+            var2[var4] = var7;
+            var5 += 2;
+         }
+
+         if(var2[1] != 0 && var2[2] != 0) {
+            byte var9 = d.getLatencyTimer();
+            d.setLatencyTimer((byte)119);
+            boolean var11 = this.a(var2, 63);
+            d.setLatencyTimer(var9);
+            if(var11) {
+               return var1.length;
             }
-            if (array2[1] != 0 && array2[2] != 0) {
-                final byte latencyTimer = i.d.getLatencyTimer();
-                i.d.setLatencyTimer((byte)119);
-                final boolean a = this.a(array2, 63);
-                i.d.setLatencyTimer(latencyTimer);
-                if (a) {
-                    return array.length;
-                }
+         }
+      }
+
+      return 0;
+   }
+
+   FT_EEPROM a() {
+      // $FF: Couldn't be decompiled
+   }
+
+   short a(FT_EEPROM param1) {
+      // $FF: Couldn't be decompiled
+   }
+
+   boolean a(short var1, short var2) {
+      int var3 = var2 & '\uffff';
+      int var4 = var1 & '\uffff';
+      if(var1 >= 1024) {
+         return false;
+      } else {
+         byte var5 = d.getLatencyTimer();
+         d.setLatencyTimer((byte)119);
+         int var7 = d.c().controlTransfer(64, 145, var3, var4, (byte[])null, 0, 0);
+         boolean var8 = false;
+         if(var7 == 0) {
+            var8 = true;
+         }
+
+         d.setLatencyTimer(var5);
+         return var8;
+      }
+   }
+
+   byte[] a(int var1) {
+      byte[] var2 = new byte[var1];
+      if(var1 != 0 && var1 <= this.b()) {
+         short var3 = (short)(-1 + (63 - this.b() / 2));
+
+         short var5;
+         for(int var4 = 0; var4 < var1; var3 = var5) {
+            var5 = (short)(var3 + 1);
+            int var6 = this.a(var3);
+            if(var4 + 1 < var2.length) {
+               byte var7 = (byte)(var6 & 255);
+               var2[var4 + 1] = var7;
             }
-        }
-        return 0;
-    }
-    
-    @Override
-    FT_EEPROM a() {
-        int n = 0;
-        final FT_EEPROM_245R ft_EEPROM_245R = new FT_EEPROM_245R();
-        final int[] array = new int[80];
-        while (true) {
-            Label_0376: {
-                if (n < 80) {
-                    break Label_0376;
-                }
-                try {
-                    if ((0x4 & array[0]) == 0x4) {
-                        ft_EEPROM_245R.HighIO = true;
-                    }
-                    else {
-                        ft_EEPROM_245R.HighIO = false;
-                    }
-                    if ((0x8 & array[0]) == 0x8) {
-                        ft_EEPROM_245R.LoadVCP = true;
-                    }
-                    else {
-                        ft_EEPROM_245R.LoadVCP = false;
-                    }
-                    if ((0x2 & array[0]) == 0x2) {
-                        ft_EEPROM_245R.ExternalOscillator = true;
-                    }
-                    else {
-                        ft_EEPROM_245R.ExternalOscillator = false;
-                    }
-                    ft_EEPROM_245R.VendorId = (short)array[1];
-                    ft_EEPROM_245R.ProductId = (short)array[2];
-                    this.a(ft_EEPROM_245R, array[4]);
-                    this.a((Object)ft_EEPROM_245R, array[5]);
-                    if ((0x100 & array[5]) == 0x100) {
-                        ft_EEPROM_245R.InvertTXD = true;
-                    }
-                    else {
-                        ft_EEPROM_245R.InvertTXD = false;
-                    }
-                    if ((0x200 & array[5]) == 0x200) {
-                        ft_EEPROM_245R.InvertRXD = true;
-                    }
-                    else {
-                        ft_EEPROM_245R.InvertRXD = false;
-                    }
-                    if ((0x400 & array[5]) == 0x400) {
-                        ft_EEPROM_245R.InvertRTS = true;
-                    }
-                    else {
-                        ft_EEPROM_245R.InvertRTS = false;
-                    }
-                    if ((0x800 & array[5]) == 0x800) {
-                        ft_EEPROM_245R.InvertCTS = true;
-                    }
-                    else {
-                        ft_EEPROM_245R.InvertCTS = false;
-                    }
-                    if ((0x1000 & array[5]) == 0x1000) {
-                        ft_EEPROM_245R.InvertDTR = true;
-                    }
-                    else {
-                        ft_EEPROM_245R.InvertDTR = false;
-                    }
-                    if ((0x2000 & array[5]) == 0x2000) {
-                        ft_EEPROM_245R.InvertDSR = true;
-                    }
-                    else {
-                        ft_EEPROM_245R.InvertDSR = false;
-                    }
-                    if ((0x4000 & array[5]) == 0x4000) {
-                        ft_EEPROM_245R.InvertDCD = true;
-                    }
-                    else {
-                        ft_EEPROM_245R.InvertDCD = false;
-                    }
-                    if ((0x8000 & array[5]) == 0x8000) {
-                        ft_EEPROM_245R.InvertRI = true;
-                    }
-                    else {
-                        ft_EEPROM_245R.InvertRI = false;
-                    }
-                    final int n2 = array[10];
-                    ft_EEPROM_245R.CBus0 = (byte)(n2 & 0xF);
-                    ft_EEPROM_245R.CBus1 = (byte)((n2 & 0xF0) >> 4);
-                    ft_EEPROM_245R.CBus2 = (byte)((n2 & 0xF00) >> 8);
-                    ft_EEPROM_245R.CBus3 = (byte)((n2 & 0xF000) >> 12);
-                    ft_EEPROM_245R.CBus4 = (byte)(0xFF & array[11]);
-                    ft_EEPROM_245R.Manufacturer = this.a((-128 + (0xFF & array[7])) / 2, array);
-                    ft_EEPROM_245R.Product = this.a((-128 + (0xFF & array[8])) / 2, array);
-                    ft_EEPROM_245R.SerialNumber = this.a((-128 + (0xFF & array[9])) / 2, array);
-                    return ft_EEPROM_245R;
-                    array[n] = this.a((short)n);
-                    ++n;
-                }
-                catch (Exception ex) {
-                    return null;
-                }
-            }
-        }
-    }
-    
-    @Override
-    short a(final FT_EEPROM ft_EEPROM) {
-        final int[] array = new int[80];
-        if (ft_EEPROM.getClass() != FT_EEPROM_245R.class) {
-            return 1;
-        }
-        final FT_EEPROM_245R ft_EEPROM_245R = (FT_EEPROM_245R)ft_EEPROM;
-        short n = 0;
-        while (true) {
-            Label_0404: {
-                if (n < 80) {
-                    break Label_0404;
-                }
-                try {
-                    int n2 = 0x0 | (0xFF00 & array[0]);
-                    if (ft_EEPROM_245R.HighIO) {
-                        n2 |= 0x4;
-                    }
-                    if (ft_EEPROM_245R.LoadVCP) {
-                        n2 |= 0x8;
-                    }
-                    int n3;
-                    if (ft_EEPROM_245R.ExternalOscillator) {
-                        n3 = (n2 | 0x2);
-                    }
-                    else {
-                        n3 = (n2 & 0xFFFD);
-                    }
-                    array[0] = n3;
-                    array[1] = ft_EEPROM_245R.VendorId;
-                    array[2] = ft_EEPROM_245R.ProductId;
-                    array[3] = 1536;
-                    array[4] = this.a((Object)ft_EEPROM);
-                    int b = this.b(ft_EEPROM);
-                    if (ft_EEPROM_245R.InvertTXD) {
-                        b |= 0x100;
-                    }
-                    if (ft_EEPROM_245R.InvertRXD) {
-                        b |= 0x200;
-                    }
-                    if (ft_EEPROM_245R.InvertRTS) {
-                        b |= 0x400;
-                    }
-                    if (ft_EEPROM_245R.InvertCTS) {
-                        b |= 0x800;
-                    }
-                    if (ft_EEPROM_245R.InvertDTR) {
-                        b |= 0x1000;
-                    }
-                    if (ft_EEPROM_245R.InvertDSR) {
-                        b |= 0x2000;
-                    }
-                    if (ft_EEPROM_245R.InvertDCD) {
-                        b |= 0x4000;
-                    }
-                    if (ft_EEPROM_245R.InvertRI) {
-                        b |= 0x8000;
-                    }
-                    array[5] = b;
-                    array[10] = (ft_EEPROM_245R.CBus3 << 12 | (ft_EEPROM_245R.CBus2 << 8 | (ft_EEPROM_245R.CBus0 | ft_EEPROM_245R.CBus1 << 4)));
-                    array[11] = ft_EEPROM_245R.CBus4;
-                    final int a = this.a(ft_EEPROM_245R.Product, array, this.a(ft_EEPROM_245R.Manufacturer, array, 12, 7, true), 8, true);
-                    if (ft_EEPROM_245R.SerNumEnable) {
-                        this.a(ft_EEPROM_245R.SerialNumber, array, a, 9, true);
-                    }
-                    if (array[1] == 0 || array[2] == 0) {
-                        return 2;
-                    }
-                    final byte latencyTimer = i.d.getLatencyTimer();
-                    i.d.setLatencyTimer((byte)119);
-                    final boolean a2 = this.a(array, 80);
-                    i.d.setLatencyTimer(latencyTimer);
-                    if (a2) {
-                        return 0;
-                    }
-                    return 1;
-                    array[n] = this.a(n);
-                    ++n;
-                }
-                catch (Exception ex) {
-                    ex.printStackTrace();
-                    return 0;
-                }
-            }
-        }
-    }
-    
-    @Override
-    boolean a(final short n, final short n2) {
-        final int n3 = n2 & 0xFFFF;
-        final int n4 = n & 0xFFFF;
-        if (n >= 1024) {
-            return false;
-        }
-        final byte latencyTimer = i.d.getLatencyTimer();
-        i.d.setLatencyTimer((byte)119);
-        final int controlTransfer = i.d.c().controlTransfer(64, 145, n3, n4, (byte[])null, 0, 0);
-        boolean b = false;
-        if (controlTransfer == 0) {
-            b = true;
-        }
-        i.d.setLatencyTimer(latencyTimer);
-        return b;
-    }
-    
-    @Override
-    byte[] a(final int n) {
-        byte[] array = new byte[n];
-        if (n == 0 || n > this.b()) {
-            array = null;
-        }
-        else {
-            short n2 = (short)(-1 + (63 - this.b() / 2));
-            short n3;
-            for (int i = 0; i < n; i += 2, n2 = n3) {
-                n3 = (short)(n2 + 1);
-                final int a = this.a(n2);
-                if (i + 1 < array.length) {
-                    array[i + 1] = (byte)(a & 0xFF);
-                }
-                array[i] = (byte)((a & 0xFF00) >> 8);
-            }
-        }
-        return array;
-    }
-    
-    @Override
-    int b() {
-        return 2 * (-1 + (63 - (1 + (((0xFF00 & this.a((short)8)) >> 8) / 2 + (((0xFF00 & this.a((short)7)) >> 8) / 2 + 12))) - ((0xFF00 & this.a((short)9)) >> 8) / 2));
-    }
+
+            var2[var4] = (byte)((var6 & '\uff00') >> 8);
+            var4 += 2;
+         }
+      } else {
+         var2 = null;
+      }
+
+      return var2;
+   }
+
+   int b() {
+      int var1 = (('\uff00' & this.a((short)7)) >> 8) / 2;
+      int var2 = 1 + (('\uff00' & this.a((short)8)) >> 8) / 2 + var1 + 12;
+      int var3 = (('\uff00' & this.a((short)9)) >> 8) / 2;
+      return 2 * (-1 + (63 - var2 - var3));
+   }
 }

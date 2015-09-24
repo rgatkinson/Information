@@ -1,36 +1,34 @@
 package com.qualcomm.robotcore.hardware;
 
-public class LED implements HardwareDevice
-{
-    private DigitalChannelController a;
-    private int b;
-    
-    public LED(final DigitalChannelController a, final int b) {
-        this.a = null;
-        this.b = -1;
-        (this.a = a).setDigitalChannelMode(this.b = b, DigitalChannelController.Mode.OUTPUT);
-    }
-    
-    @Override
-    public void close() {
-    }
-    
-    public void enable(final boolean b) {
-        this.a.setDigitalChannelState(this.b, b);
-    }
-    
-    @Override
-    public String getConnectionInfo() {
-        return null;
-    }
-    
-    @Override
-    public String getDeviceName() {
-        return null;
-    }
-    
-    @Override
-    public int getVersion() {
-        return 0;
-    }
+import com.qualcomm.robotcore.hardware.DigitalChannelController;
+import com.qualcomm.robotcore.hardware.HardwareDevice;
+
+public class LED implements HardwareDevice {
+   private DigitalChannelController a = null;
+   private int b = -1;
+
+   public LED(DigitalChannelController var1, int var2) {
+      this.a = var1;
+      this.b = var2;
+      var1.setDigitalChannelMode(var2, DigitalChannelController.Mode.OUTPUT);
+   }
+
+   public void close() {
+   }
+
+   public void enable(boolean var1) {
+      this.a.setDigitalChannelState(this.b, var1);
+   }
+
+   public String getConnectionInfo() {
+      return null;
+   }
+
+   public String getDeviceName() {
+      return null;
+   }
+
+   public int getVersion() {
+      return 0;
+   }
 }

@@ -1,63 +1,62 @@
 package com.qualcomm.robotcore.hardware;
 
+import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.util.SerialNumber;
 import java.util.concurrent.locks.Lock;
 
-public interface I2cController extends HardwareDevice
-{
-    public static final byte I2C_BUFFER_START_ADDRESS = 4;
-    
-    void copyBufferIntoWriteBuffer(int p0, byte[] p1);
-    
-    void deregisterForPortReadyCallback(int p0);
-    
-    void enableI2cReadMode(int p0, int p1, int p2, int p3);
-    
-    void enableI2cWriteMode(int p0, int p1, int p2, int p3);
-    
-    byte[] getCopyOfReadBuffer(int p0);
-    
-    byte[] getCopyOfWriteBuffer(int p0);
-    
-    byte[] getI2cReadCache(int p0);
-    
-    Lock getI2cReadCacheLock(int p0);
-    
-    byte[] getI2cWriteCache(int p0);
-    
-    Lock getI2cWriteCacheLock(int p0);
-    
-    SerialNumber getSerialNumber();
-    
-    boolean isI2cPortActionFlagSet(int p0);
-    
-    boolean isI2cPortInReadMode(int p0);
-    
-    boolean isI2cPortInWriteMode(int p0);
-    
-    boolean isI2cPortReady(int p0);
-    
-    void readI2cCacheFromController(int p0);
-    
-    @Deprecated
-    void readI2cCacheFromModule(int p0);
-    
-    void registerForI2cPortReadyCallback(I2cPortReadyCallback p0, int p1);
-    
-    void setI2cPortActionFlag(int p0);
-    
-    void writeI2cCacheToController(int p0);
-    
-    @Deprecated
-    void writeI2cCacheToModule(int p0);
-    
-    void writeI2cPortFlagOnlyToController(int p0);
-    
-    @Deprecated
-    void writeI2cPortFlagOnlyToModule(int p0);
-    
-    public interface I2cPortReadyCallback
-    {
-        void portIsReady(int p0);
-    }
+public interface I2cController extends HardwareDevice {
+   byte I2C_BUFFER_START_ADDRESS = 4;
+
+   void copyBufferIntoWriteBuffer(int var1, byte[] var2);
+
+   void deregisterForPortReadyCallback(int var1);
+
+   void enableI2cReadMode(int var1, int var2, int var3, int var4);
+
+   void enableI2cWriteMode(int var1, int var2, int var3, int var4);
+
+   byte[] getCopyOfReadBuffer(int var1);
+
+   byte[] getCopyOfWriteBuffer(int var1);
+
+   byte[] getI2cReadCache(int var1);
+
+   Lock getI2cReadCacheLock(int var1);
+
+   byte[] getI2cWriteCache(int var1);
+
+   Lock getI2cWriteCacheLock(int var1);
+
+   SerialNumber getSerialNumber();
+
+   boolean isI2cPortActionFlagSet(int var1);
+
+   boolean isI2cPortInReadMode(int var1);
+
+   boolean isI2cPortInWriteMode(int var1);
+
+   boolean isI2cPortReady(int var1);
+
+   void readI2cCacheFromController(int var1);
+
+   @Deprecated
+   void readI2cCacheFromModule(int var1);
+
+   void registerForI2cPortReadyCallback(I2cController.I2cPortReadyCallback var1, int var2);
+
+   void setI2cPortActionFlag(int var1);
+
+   void writeI2cCacheToController(int var1);
+
+   @Deprecated
+   void writeI2cCacheToModule(int var1);
+
+   void writeI2cPortFlagOnlyToController(int var1);
+
+   @Deprecated
+   void writeI2cPortFlagOnlyToModule(int var1);
+
+   public interface I2cPortReadyCallback {
+      void portIsReady(int var1);
+   }
 }

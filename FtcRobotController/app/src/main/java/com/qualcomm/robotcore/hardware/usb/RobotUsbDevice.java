@@ -2,29 +2,31 @@ package com.qualcomm.robotcore.hardware.usb;
 
 import com.qualcomm.robotcore.exception.RobotCoreException;
 
-public interface RobotUsbDevice
-{
-    void close();
-    
-    void purge(Channel p0) throws RobotCoreException;
-    
-    int read(byte[] p0) throws RobotCoreException;
-    
-    int read(byte[] p0, int p1, int p2) throws RobotCoreException;
-    
-    void setBaudRate(int p0) throws RobotCoreException;
-    
-    void setDataCharacteristics(byte p0, byte p1, byte p2) throws RobotCoreException;
-    
-    void setLatencyTimer(int p0) throws RobotCoreException;
-    
-    void write(byte[] p0) throws RobotCoreException;
-    
-    public enum Channel
-    {
-        BOTH, 
-        NONE, 
-        RX, 
-        TX;
-    }
+public interface RobotUsbDevice {
+   void close();
+
+   void purge(RobotUsbDevice.Channel var1) throws RobotCoreException;
+
+   int read(byte[] var1) throws RobotCoreException;
+
+   int read(byte[] var1, int var2, int var3) throws RobotCoreException;
+
+   void setBaudRate(int var1) throws RobotCoreException;
+
+   void setDataCharacteristics(byte var1, byte var2, byte var3) throws RobotCoreException;
+
+   void setLatencyTimer(int var1) throws RobotCoreException;
+
+   void write(byte[] var1) throws RobotCoreException;
+
+   public static enum Channel {
+      BOTH,
+      NONE,
+      RX,
+      TX;
+
+      static {
+         RobotUsbDevice.Channel[] var0 = new RobotUsbDevice.Channel[]{RX, TX, NONE, BOTH};
+      }
+   }
 }

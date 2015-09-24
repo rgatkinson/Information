@@ -1,16 +1,15 @@
 package com.ftdi.j2xx.interfaces;
 
-public interface I2cSlave
-{
-    int getAddress(int[] p0);
-    
-    int init();
-    
-    int read(byte[] p0, int p1, int[] p2);
-    
-    int reset();
-    
-    int setAddress(int p0);
-    
-    int write(byte[] p0, int p1, int[] p2);
+public interface I2cSlave {
+   int getAddress(int[] var1);
+
+   int init();
+
+   int read(byte[] var1, int var2, int[] var3);
+
+   int reset();
+
+   int setAddress(int var1);
+
+   int write(byte[] var1, int var2, int[] var3);
 }

@@ -1,302 +1,271 @@
 package com.ftdi.j2xx;
 
-final class b
-{
-    static final byte a(final int n, final int[] array) {
-        byte b = 1;
-        final byte b2 = b(n, array);
-        if (b2 == -1) {
-            b = -1;
-        }
-        else {
-            if (b2 == 0) {
-                array[0] = 1 + (0xFFFF3FFF & array[0]);
+final class b {
+   static final byte a(int var0, int[] var1) {
+      byte var2 = 1;
+      byte var3 = b(var0, var1);
+      if(var3 == -1) {
+         var2 = -1;
+      } else {
+         if(var3 == 0) {
+            var1[0] = 1 + (-49153 & var1[0]);
+         }
+
+         int var4 = a(var1[0], var1[var2]);
+         int var5;
+         int var6;
+         if(var0 > var4) {
+            var5 = -100 + var0 * 100 / var4;
+            var6 = 100 * (var0 % var4) % var4;
+         } else {
+            var5 = -100 + var4 * 100 / var0;
+            var6 = 100 * (var4 % var0) % var0;
+         }
+
+         if(var5 >= 3 && (var5 != 3 || var6 != 0)) {
+            return (byte)0;
+         }
+      }
+
+      return var2;
+   }
+
+   static byte a(int var0, int[] var1, boolean var2) {
+      byte var3 = 1;
+      byte var4 = b(var0, var1, var2);
+      if(var4 == -1) {
+         var3 = -1;
+      } else {
+         if(var4 == 0) {
+            var1[0] = 1 + (-49153 & var1[0]);
+         }
+
+         int var5 = a(var1[0], var1[var3], var2);
+         int var6;
+         int var7;
+         if(var0 > var5) {
+            var6 = -100 + var0 * 100 / var5;
+            var7 = 100 * (var0 % var5) % var5;
+         } else {
+            var6 = -100 + var5 * 100 / var0;
+            var7 = 100 * (var5 % var0) % var0;
+         }
+
+         if(var6 >= 3 && (var6 != 3 || var7 != 0)) {
+            return (byte)0;
+         }
+      }
+
+      return var3;
+   }
+
+   private static int a(int var0, int var1) {
+      if(var0 == 0) {
+         return 12000000;
+      } else if(var0 == 1) {
+         return 8000000;
+      } else {
+         int var2 = 100 * (-49153 & var0);
+         if(('�' & var1) == 0) {
+            switch(var0 & 49152) {
+            case 16384:
+               var2 += 50;
+               break;
+            case 32768:
+               var2 += 25;
+               break;
+            case 49152:
+               var2 += 12;
             }
-            final int a = a(array[0], array[b]);
-            int n2;
-            int n3;
-            if (n > a) {
-                n2 = -100 + n * 100 / a;
-                n3 = 100 * (n % a) % a;
+         } else {
+            switch(var0 & 49152) {
+            case 0:
+               var2 += 37;
+               break;
+            case 16384:
+               var2 += 62;
+               break;
+            case 32768:
+               var2 += 75;
+               break;
+            case 49152:
+               var2 += 87;
             }
-            else {
-                n2 = -100 + a * 100 / n;
-                n3 = 100 * (a % n) % n;
+         }
+
+         return 1200000000 / var2;
+      }
+   }
+
+   private static final int a(int var0, int var1, boolean var2) {
+      if(var0 == 0) {
+         return 3000000;
+      } else {
+         int var3 = 100 * (-49153 & var0);
+         if(!var2) {
+            switch(49152 & var0) {
+            case 16384:
+               var3 += 50;
+               break;
+            case 32768:
+               var3 += 25;
+               break;
+            case 49152:
+               var3 += 12;
             }
-            if (n2 >= 3 && (n2 != 3 || n3 != 0)) {
-                return 0;
+         } else if(var1 == 0) {
+            switch(49152 & var0) {
+            case 16384:
+               var3 += 50;
+               break;
+            case 32768:
+               var3 += 25;
+               break;
+            case 49152:
+               var3 += 12;
             }
-        }
-        return b;
-    }
-    
-    static byte a(final int n, final int[] array, final boolean b) {
-        byte b2 = 1;
-        final byte b3 = b(n, array, b);
-        if (b3 == -1) {
-            b2 = -1;
-        }
-        else {
-            if (b3 == 0) {
-                array[0] = 1 + (0xFFFF3FFF & array[0]);
+         } else {
+            switch(49152 & var0) {
+            case 0:
+               var3 += 37;
+               break;
+            case 16384:
+               var3 += 62;
+               break;
+            case 32768:
+               var3 += 75;
+               break;
+            case 49152:
+               var3 += 87;
             }
-            final int a = a(array[0], array[b2], b);
-            int n2;
-            int n3;
-            if (n > a) {
-                n2 = -100 + n * 100 / a;
-                n3 = 100 * (n % a) % a;
+         }
+
+         return 300000000 / var3;
+      }
+   }
+
+   private static byte b(int var0, int[] var1) {
+      byte var2 = 1;
+      if(var0 == 0) {
+         var2 = -1;
+      } else {
+         if((-16384 & 12000000 / var0) > 0) {
+            return (byte)-1;
+         }
+
+         var1[var2] = 2;
+         if(var0 >= 11640000 && var0 <= 12360000) {
+            var1[0] = 0;
+            return var2;
+         }
+
+         if(var0 >= 7760000 && var0 <= 8240000) {
+            var1[0] = var2;
+            return var2;
+         }
+
+         var1[0] = 12000000 / var0;
+         var1[var2] = 2;
+         if(var1[0] == var2 && 100 * (12000000 % var0) / var0 <= 3) {
+            var1[0] = 0;
+         }
+
+         if(var1[0] != 0) {
+            int var3 = 100 * (12000000 % var0) / var0;
+            char var4;
+            if(var3 <= 6) {
+               var4 = 0;
+            } else if(var3 <= 18) {
+               var4 = '쀀';
+            } else if(var3 <= 31) {
+               var4 = '耀';
+            } else if(var3 <= 43) {
+               var1[var2] |= 1;
+               var4 = 0;
+            } else if(var3 <= 56) {
+               var4 = 16384;
+            } else if(var3 <= 68) {
+               var4 = 16384;
+               var1[var2] |= 1;
+            } else if(var3 <= 81) {
+               var4 = '耀';
+               var1[var2] |= 1;
+            } else if(var3 <= 93) {
+               var4 = '쀀';
+               var1[var2] |= 1;
+            } else {
+               var2 = 0;
+               var4 = 0;
             }
-            else {
-                n2 = -100 + a * 100 / n;
-                n3 = 100 * (a % n) % n;
+
+            var1[0] |= var4;
+            return var2;
+         }
+      }
+
+      return var2;
+   }
+
+   private static byte b(int var0, int[] var1, boolean var2) {
+      char var3 = '耀';
+      byte var4 = 1;
+      if(var0 == 0) {
+         var4 = -1;
+      } else {
+         if((-16384 & 3000000 / var0) > 0) {
+            return (byte)-1;
+         }
+
+         var1[0] = 3000000 / var0;
+         var1[var4] = 0;
+         if(var1[0] == var4 && 100 * (3000000 % var0) / var0 <= 3) {
+            var1[0] = 0;
+         }
+
+         if(var1[0] != 0) {
+            int var5 = 100 * (3000000 % var0) / var0;
+            if(!var2) {
+               if(var5 <= 6) {
+                  var3 = 0;
+               } else if(var5 <= 18) {
+                  var3 = '쀀';
+               } else if(var5 > 37) {
+                  if(var5 <= 75) {
+                     var3 = 16384;
+                  } else {
+                     var4 = 0;
+                     var3 = 0;
+                  }
+               }
+            } else if(var5 <= 6) {
+               var3 = 0;
+            } else if(var5 <= 18) {
+               var3 = '쀀';
+            } else if(var5 > 31) {
+               if(var5 <= 43) {
+                  var1[var4] = var4;
+                  var3 = 0;
+               } else if(var5 <= 56) {
+                  var3 = 16384;
+               } else if(var5 <= 68) {
+                  var1[var4] = var4;
+                  var3 = 16384;
+               } else if(var5 <= 81) {
+                  var1[var4] = var4;
+               } else if(var5 <= 93) {
+                  var3 = '쀀';
+                  var1[var4] = var4;
+               } else {
+                  var4 = 0;
+                  var3 = 0;
+               }
             }
-            if (n2 >= 3 && (n2 != 3 || n3 != 0)) {
-                return 0;
-            }
-        }
-        return b2;
-    }
-    
-    private static int a(final int n, final int n2) {
-        if (n == 0) {
-            return 12000000;
-        }
-        if (n == 1) {
-            return 8000000;
-        }
-        int n3 = 100 * (0xFFFF3FFF & n);
-        if ((0xFFFD & n2) == 0x0) {
-            switch (n & 0xC000) {
-                case 49152: {
-                    n3 += 12;
-                    break;
-                }
-                case 32768: {
-                    n3 += 25;
-                    break;
-                }
-                case 16384: {
-                    n3 += 50;
-                    break;
-                }
-            }
-        }
-        else {
-            switch (n & 0xC000) {
-                case 0: {
-                    n3 += 37;
-                    break;
-                }
-                case 16384: {
-                    n3 += 62;
-                    break;
-                }
-                case 32768: {
-                    n3 += 75;
-                    break;
-                }
-                case 49152: {
-                    n3 += 87;
-                    break;
-                }
-            }
-        }
-        return 1200000000 / n3;
-    }
-    
-    private static final int a(final int n, final int n2, final boolean b) {
-        if (n == 0) {
-            return 3000000;
-        }
-        int n3 = 100 * (0xFFFF3FFF & n);
-        if (!b) {
-            switch (0xC000 & n) {
-                case 49152: {
-                    n3 += 12;
-                    break;
-                }
-                case 32768: {
-                    n3 += 25;
-                    break;
-                }
-                case 16384: {
-                    n3 += 50;
-                    break;
-                }
-            }
-        }
-        else if (n2 == 0) {
-            switch (0xC000 & n) {
-                case 16384: {
-                    n3 += 50;
-                    break;
-                }
-                case 49152: {
-                    n3 += 12;
-                    break;
-                }
-                case 32768: {
-                    n3 += 25;
-                    break;
-                }
-            }
-        }
-        else {
-            switch (0xC000 & n) {
-                case 0: {
-                    n3 += 37;
-                    break;
-                }
-                case 16384: {
-                    n3 += 62;
-                    break;
-                }
-                case 32768: {
-                    n3 += 75;
-                    break;
-                }
-                case 49152: {
-                    n3 += 87;
-                    break;
-                }
-            }
-        }
-        return 300000000 / n3;
-    }
-    
-    private static byte b(final int n, final int[] array) {
-        byte b = 1;
-        if (n == 0) {
-            b = -1;
-        }
-        else {
-            if ((0xFFFFC000 & 12000000 / n) > 0) {
-                return -1;
-            }
-            array[b] = 2;
-            if (n >= 11640000 && n <= 12360000) {
-                array[0] = 0;
-                return b;
-            }
-            if (n >= 7760000 && n <= 8240000) {
-                return (byte)(array[0] = b);
-            }
-            array[0] = 12000000 / n;
-            array[b] = 2;
-            if (array[0] == b && 100 * (12000000 % n) / n <= 3) {
-                array[0] = 0;
-            }
-            if (array[0] != 0) {
-                final int n2 = 100 * (12000000 % n) / n;
-                int n3;
-                if (n2 <= 6) {
-                    n3 = 0;
-                }
-                else if (n2 <= 18) {
-                    n3 = 49152;
-                }
-                else if (n2 <= 31) {
-                    n3 = 32768;
-                }
-                else if (n2 <= 43) {
-                    array[b] |= 0x1;
-                    n3 = 0;
-                }
-                else if (n2 <= 56) {
-                    n3 = 16384;
-                }
-                else if (n2 <= 68) {
-                    n3 = 16384;
-                    array[b] |= 0x1;
-                }
-                else if (n2 <= 81) {
-                    n3 = 32768;
-                    array[b] |= 0x1;
-                }
-                else if (n2 <= 93) {
-                    n3 = 49152;
-                    array[b] |= 0x1;
-                }
-                else {
-                    b = 0;
-                    n3 = 0;
-                }
-                array[0] |= n3;
-                return b;
-            }
-        }
-        return b;
-    }
-    
-    private static byte b(final int n, final int[] array, final boolean b) {
-        int n2 = 32768;
-        byte b2 = 1;
-        if (n == 0) {
-            b2 = -1;
-        }
-        else {
-            if ((0xFFFFC000 & 3000000 / n) > 0) {
-                return -1;
-            }
-            array[0] = 3000000 / n;
-            array[b2] = 0;
-            if (array[0] == b2 && 100 * (3000000 % n) / n <= 3) {
-                array[0] = 0;
-            }
-            if (array[0] != 0) {
-                final int n3 = 100 * (3000000 % n) / n;
-                if (!b) {
-                    if (n3 <= 6) {
-                        n2 = 0;
-                    }
-                    else if (n3 <= 18) {
-                        n2 = 49152;
-                    }
-                    else if (n3 > 37) {
-                        if (n3 <= 75) {
-                            n2 = 16384;
-                        }
-                        else {
-                            b2 = 0;
-                            n2 = 0;
-                        }
-                    }
-                }
-                else if (n3 <= 6) {
-                    n2 = 0;
-                }
-                else if (n3 <= 18) {
-                    n2 = 49152;
-                }
-                else if (n3 > 31) {
-                    if (n3 <= 43) {
-                        array[b2] = b2;
-                        n2 = 0;
-                    }
-                    else if (n3 <= 56) {
-                        n2 = 16384;
-                    }
-                    else if (n3 <= 68) {
-                        array[b2] = b2;
-                        n2 = 16384;
-                    }
-                    else if (n3 <= 81) {
-                        array[b2] = b2;
-                    }
-                    else if (n3 <= 93) {
-                        n2 = 49152;
-                        array[b2] = b2;
-                    }
-                    else {
-                        b2 = 0;
-                        n2 = 0;
-                    }
-                }
-                array[0] |= n2;
-                return b2;
-            }
-        }
-        return b2;
-    }
+
+            var1[0] |= var3;
+            return var4;
+         }
+      }
+
+      return var4;
+   }
 }

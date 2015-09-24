@@ -1,30 +1,15 @@
 package com.ftdi.j2xx;
 
-public class FT_EEPROM
-{
-    public short DeviceType;
-    public String Manufacturer;
-    public short MaxPower;
-    public String Product;
-    public short ProductId;
-    public boolean PullDownEnable;
-    public boolean RemoteWakeup;
-    public boolean SelfPowered;
-    public boolean SerNumEnable;
-    public String SerialNumber;
-    public short VendorId;
-    
-    public FT_EEPROM() {
-        this.DeviceType = 0;
-        this.Manufacturer = "FTDI";
-        this.Product = "USB <-> Serial Converter";
-        this.SerialNumber = "FT123456";
-        this.VendorId = 1027;
-        this.ProductId = 24577;
-        this.SerNumEnable = true;
-        this.MaxPower = 90;
-        this.SelfPowered = false;
-        this.RemoteWakeup = false;
-        this.PullDownEnable = false;
-    }
+public class FT_EEPROM {
+   public short DeviceType = 0;
+   public String Manufacturer = "FTDI";
+   public short MaxPower = 90;
+   public String Product = "USB <-> Serial Converter";
+   public short ProductId = 24577;
+   public boolean PullDownEnable = false;
+   public boolean RemoteWakeup = false;
+   public boolean SelfPowered = false;
+   public boolean SerNumEnable = true;
+   public String SerialNumber = "FT123456";
+   public short VendorId = 1027;
 }
