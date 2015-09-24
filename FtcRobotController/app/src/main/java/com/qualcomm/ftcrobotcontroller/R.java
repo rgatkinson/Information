@@ -1,0 +1,435 @@
+package com.qualcomm.ftcrobotcontroller;
+
+public final class R
+{
+    public static final class array
+    {
+        public static final int choice_array = 2131165184;
+        public static final int choice_array_analogInput = 2131165185;
+        public static final int choice_array_analogOutput = 2131165186;
+        public static final int choice_array_digital_device = 2131165187;
+        public static final int choice_array_i2c = 2131165188;
+        public static final int device_interface_module_options_array = 2131165189;
+        public static final int wifi_direct_channels = 2131165190;
+    }
+    
+    public static final class attr
+    {
+    }
+    
+    public static final class color
+    {
+        public static final int black = 2131230720;
+        public static final int bright_qcom_blue = 2131230721;
+        public static final int bright_red = 2131230722;
+        public static final int bright_red_text = 2131230723;
+        public static final int dark_red_background = 2131230724;
+        public static final int light_qcom_blue = 2131230725;
+        public static final int light_red_background = 2131230726;
+        public static final int medium_red_background = 2131230727;
+        public static final int transparent_color = 2131230728;
+        public static final int very_bright_red = 2131230729;
+        public static final int white = 2131230730;
+    }
+    
+    public static final class dimen
+    {
+        public static final int activity_horizontal_margin = 2131034112;
+        public static final int activity_vertical_margin = 2131034113;
+    }
+    
+    public static final class drawable
+    {
+        public static final int button_shape = 2130837504;
+        public static final int ic_launcher = 2130837505;
+        public static final int icon_battery0 = 2130837506;
+        public static final int icon_battery100 = 2130837507;
+        public static final int icon_battery25 = 2130837508;
+        public static final int icon_battery50 = 2130837509;
+        public static final int icon_battery75 = 2130837510;
+        public static final int icon_menu = 2130837511;
+        public static final int icon_robotcontroller = 2130837512;
+    }
+    
+    public static final class id
+    {
+        public static final int RelativeLayout = 2131427353;
+        public static final int aboutList = 2131427328;
+        public static final int action_about = 2131427531;
+        public static final int action_exit_app = 2131427532;
+        public static final int action_restart_robot = 2131427529;
+        public static final int action_settings = 2131427528;
+        public static final int action_view_logs = 2131427530;
+        public static final int active_filename = 2131427434;
+        public static final int activity_fix_misconfig_wifi_direct = 2131427333;
+        public static final int analogOutput_devices_cancelButton = 2131427398;
+        public static final int analogOutput_devices_saveButton = 2131427397;
+        public static final int analog_input_devices_cancelButton = 2131427379;
+        public static final int analog_input_devices_saveButton = 2131427378;
+        public static final int attached_title = 2131427383;
+        public static final int autoconfigure = 2131427370;
+        public static final int autoconfigure_holder = 2131427369;
+        public static final int autoconfigure_info = 2131427332;
+        public static final int buttonConfigure = 2131427361;
+        public static final int buttonWifiSettings = 2131427362;
+        public static final int checkbox_port6 = 2131427493;
+        public static final int checkbox_port7 = 2131427490;
+        public static final int checkbox_port_matrix = 2131427482;
+        public static final int checkbox_port_pwm = 2131427501;
+        public static final int checkbox_port_servo = 2131427508;
+        public static final int choiceSpinner_analogInput = 2131427375;
+        public static final int choiceSpinner_analogOutput = 2131427394;
+        public static final int choiceSpinner_digital_device = 2131427409;
+        public static final int choiceSpinner_i2c = 2131427437;
+        public static final int choiceSpinner_legacyModule = 2131427524;
+        public static final int configureLegacy = 2131427331;
+        public static final int configureUSB = 2131427330;
+        public static final int controller_name = 2131427487;
+        public static final int controller_name_text = 2131427451;
+        public static final int controllers = 2131427431;
+        public static final int controllersList = 2131427342;
+        public static final int device_interface_module_cancelButton = 2131427403;
+        public static final int device_interface_module_name = 2131427404;
+        public static final int device_interface_module_saveButton = 2131427402;
+        public static final int device_interface_module_serialNumber = 2131427405;
+        public static final int devices_holder = 2131427340;
+        public static final int devices_info_btn = 2131427341;
+        public static final int digital_devices_cancelButton = 2131427413;
+        public static final int digital_devices_saveButton = 2131427412;
+        public static final int dropdown_layout = 2131427523;
+        public static final int editTextResult_analogInput = 2131427376;
+        public static final int editTextResult_analogInput6 = 2131427494;
+        public static final int editTextResult_analogInput7 = 2131427491;
+        public static final int editTextResult_analogOutput = 2131427395;
+        public static final int editTextResult_digital_device = 2131427410;
+        public static final int editTextResult_i2c = 2131427438;
+        public static final int editTextResult_matrix = 2131427483;
+        public static final int editTextResult_name = 2131427525;
+        public static final int editTextResult_pwm = 2131427502;
+        public static final int editTextResult_servo = 2131427509;
+        public static final int edit_controller_btn = 2131427526;
+        public static final int empty_devicelist = 2131427343;
+        public static final int empty_filelist = 2131427368;
+        public static final int entire_screen = 2131427348;
+        public static final int file_activate_button = 2131427429;
+        public static final int file_buttons = 2131427424;
+        public static final int file_delete_button = 2131427430;
+        public static final int file_edit_button = 2131427428;
+        public static final int file_info_layout = 2131427423;
+        public static final int filename_editText = 2131427426;
+        public static final int files_holder = 2131427366;
+        public static final int header = 2131427432;
+        public static final int holdsDevices = 2131427335;
+        public static final int holds_buttons = 2131427364;
+        public static final int horizontalButtons = 2131427427;
+        public static final int i2c_devices_cancelButton = 2131427441;
+        public static final int i2c_devices_saveButton = 2131427440;
+        public static final int included_header = 2131427329;
+        public static final int inclusionlayout = 2131427367;
+        public static final int info_btn = 2131427449;
+        public static final int legacy_serialNumber = 2131427450;
+        public static final int linearLayout = 2131427425;
+        public static final int linearLayout0 = 2131427455;
+        public static final int linearLayout1 = 2131427458;
+        public static final int linearLayout2 = 2131427459;
+        public static final int linearLayout3 = 2131427462;
+        public static final int linearLayout4 = 2131427465;
+        public static final int linearLayout5 = 2131427466;
+        public static final int linearLayout_analogInput0 = 2131427391;
+        public static final int linearLayout_analogInput1 = 2131427390;
+        public static final int linearLayout_analogInput2 = 2131427389;
+        public static final int linearLayout_analogInput3 = 2131427388;
+        public static final int linearLayout_analogInput4 = 2131427387;
+        public static final int linearLayout_analogInput5 = 2131427386;
+        public static final int linearLayout_analogInput6 = 2131427385;
+        public static final int linearLayout_analogInput7 = 2131427384;
+        public static final int linearLayout_analogOutput0 = 2131427401;
+        public static final int linearLayout_analogOutput1 = 2131427400;
+        public static final int linearLayout_digital_device0 = 2131427422;
+        public static final int linearLayout_digital_device1 = 2131427421;
+        public static final int linearLayout_digital_device2 = 2131427420;
+        public static final int linearLayout_digital_device3 = 2131427419;
+        public static final int linearLayout_digital_device4 = 2131427418;
+        public static final int linearLayout_digital_device5 = 2131427417;
+        public static final int linearLayout_digital_device6 = 2131427416;
+        public static final int linearLayout_digital_device7 = 2131427415;
+        public static final int linearLayout_i2c0 = 2131427448;
+        public static final int linearLayout_i2c1 = 2131427447;
+        public static final int linearLayout_i2c2 = 2131427446;
+        public static final int linearLayout_i2c3 = 2131427445;
+        public static final int linearLayout_i2c4 = 2131427444;
+        public static final int linearLayout_i2c5 = 2131427443;
+        public static final int linearLayout_matrix1 = 2131427471;
+        public static final int linearLayout_matrix2 = 2131427472;
+        public static final int linearLayout_matrix3 = 2131427473;
+        public static final int linearLayout_matrix4 = 2131427474;
+        public static final int linearLayout_matrix5 = 2131427476;
+        public static final int linearLayout_matrix6 = 2131427477;
+        public static final int linearLayout_matrix7 = 2131427478;
+        public static final int linearLayout_matrix8 = 2131427479;
+        public static final int linearLayout_pwm0 = 2131427505;
+        public static final int linearLayout_pwm1 = 2131427504;
+        public static final int linearLayout_servo1 = 2131427515;
+        public static final int linearLayout_servo2 = 2131427516;
+        public static final int linearLayout_servo3 = 2131427517;
+        public static final int linearLayout_servo4 = 2131427518;
+        public static final int linearLayout_servo5 = 2131427519;
+        public static final int linearLayout_servo6 = 2131427520;
+        public static final int listView_devices = 2131427406;
+        public static final int load_bottom = 2131427363;
+        public static final int matrix_controller_cancelButton = 2131427468;
+        public static final int matrix_controller_saveButton = 2131427467;
+        public static final int matrixcontroller_name = 2131427469;
+        public static final int menu_buttons = 2131427352;
+        public static final int motor_controller_serialNumber = 2131427488;
+        public static final int motors_title = 2131427475;
+        public static final int new_button = 2131427365;
+        public static final int orange_warning = 2131427496;
+        public static final int orangetext0 = 2131427497;
+        public static final int orangetext1 = 2131427498;
+        public static final int port3 = 2131427461;
+        public static final int port4 = 2131427464;
+        public static final int port5 = 2131427454;
+        public static final int port7 = 2131427457;
+        public static final int portNumber = 2131427522;
+        public static final int port_number_analogInput = 2131427374;
+        public static final int port_number_analogOutput = 2131427393;
+        public static final int port_number_digital_device = 2131427408;
+        public static final int port_number_i2c = 2131427436;
+        public static final int port_number_matrix = 2131427481;
+        public static final int port_number_pwm = 2131427500;
+        public static final int port_number_servo = 2131427507;
+        public static final int port_title = 2131427382;
+        public static final int pwm_devices_cancelButton = 2131427486;
+        public static final int pwm_devices_saveButton = 2131427485;
+        public static final int robotIcon = 2131427350;
+        public static final int row_port = 2131427489;
+        public static final int row_port1 = 2131427456;
+        public static final int row_port3 = 2131427460;
+        public static final int row_port4 = 2131427463;
+        public static final int row_port5 = 2131427453;
+        public static final int row_port_analogInput = 2131427373;
+        public static final int row_port_analogOutput = 2131427392;
+        public static final int row_port_digital_device = 2131427407;
+        public static final int row_port_i2c = 2131427435;
+        public static final int row_port_matrix = 2131427480;
+        public static final int row_port_pwm = 2131427499;
+        public static final int row_port_servo = 2131427506;
+        public static final int save_config_btn = 2131427346;
+        public static final int save_holder = 2131427344;
+        public static final int scanButton = 2131427337;
+        public static final int scanButton_text = 2131427338;
+        public static final int scan_bottom = 2131427336;
+        public static final int scrollView = 2131427371;
+        public static final int servo_controller_cancelButton = 2131427512;
+        public static final int servo_controller_saveButton = 2131427511;
+        public static final int servo_controller_serialNumber = 2131427514;
+        public static final int servocontroller_name = 2131427513;
+        public static final int servos_title = 2131427470;
+        public static final int shape = 2131427521;
+        public static final int spinnerChannelSelect = 2131427360;
+        public static final int spinner_item = 2131427527;
+        public static final int tableLayout_analogOutput_devices = 2131427399;
+        public static final int tableLayout_analog_input_devices = 2131427380;
+        public static final int tableLayout_digital_devices = 2131427414;
+        public static final int tableLayout_i2c_devices = 2131427442;
+        public static final int tableLayout_pwm_devices = 2131427452;
+        public static final int table_header = 2131427381;
+        public static final int textAdbLogs = 2131427372;
+        public static final int textDeviceName = 2131427351;
+        public static final int textErrorMessage = 2131427357;
+        public static final int textGamepad1 = 2131427358;
+        public static final int textGamepad2 = 2131427359;
+        public static final int textOpMode = 2131427356;
+        public static final int textRobotStatus = 2131427355;
+        public static final int textView = 2131427334;
+        public static final int textView1 = 2131427433;
+        public static final int textWifiDirectStatus = 2131427354;
+        public static final int titleTextView_analogInput = 2131427377;
+        public static final int titleTextView_analogInput7 = 2131427492;
+        public static final int titleTextView_analogOutput = 2131427396;
+        public static final int titleTextView_digital_device = 2131427411;
+        public static final int titleTextView_i2c = 2131427439;
+        public static final int titleTextView_matrix = 2131427484;
+        public static final int titleTextView_motor2 = 2131427495;
+        public static final int titleTextView_pwm = 2131427503;
+        public static final int titleTextView_servo = 2131427510;
+        public static final int top_bar = 2131427349;
+        public static final int warning_layout = 2131427339;
+        public static final int writeXML = 2131427345;
+        public static final int writeXML_text = 2131427347;
+    }
+    
+    public static final class layout
+    {
+        public static final int about = 2130903040;
+        public static final int activity_autoconfigure = 2130903041;
+        public static final int activity_config_wifi_direct = 2130903042;
+        public static final int activity_ftc_configuration = 2130903043;
+        public static final int activity_ftc_controller = 2130903044;
+        public static final int activity_ftc_wifi_channel_selector = 2130903045;
+        public static final int activity_load = 2130903046;
+        public static final int activity_view_logs = 2130903047;
+        public static final int analog_input_device = 2130903048;
+        public static final int analog_inputs = 2130903049;
+        public static final int analog_output_device = 2130903050;
+        public static final int analog_outputs = 2130903051;
+        public static final int device_interface_module = 2130903052;
+        public static final int digital_device = 2130903053;
+        public static final int digital_devices = 2130903054;
+        public static final int file_info = 2130903055;
+        public static final int header = 2130903056;
+        public static final int i2c_device = 2130903057;
+        public static final int i2cs = 2130903058;
+        public static final int info_button = 2130903059;
+        public static final int legacy = 2130903060;
+        public static final int matrices = 2130903061;
+        public static final int matrix_devices = 2130903062;
+        public static final int motors = 2130903063;
+        public static final int orange_warning = 2130903064;
+        public static final int pwm_device = 2130903065;
+        public static final int pwms = 2130903066;
+        public static final int servo = 2130903067;
+        public static final int servos = 2130903068;
+        public static final int shape = 2130903069;
+        public static final int simple_device = 2130903070;
+        public static final int spinner_textview = 2130903071;
+    }
+    
+    public static final class menu
+    {
+        public static final int ftc_robot_controller = 2131361792;
+        public static final int menu_load = 2131361793;
+    }
+    
+    public static final class string
+    {
+        public static final int about_activity = 2131296256;
+        public static final int about_menu_item = 2131296257;
+        public static final int action_configuration = 2131296258;
+        public static final int action_exit_app = 2131296259;
+        public static final int action_settings = 2131296260;
+        public static final int action_view_logs = 2131296261;
+        public static final int action_wifi_channel_selector = 2131296262;
+        public static final int add_motor_controller_menu_item = 2131296263;
+        public static final int add_servo_controller_menu_item = 2131296264;
+        public static final int app_name = 2131296265;
+        public static final int attached = 2131296266;
+        public static final int autoconfigure = 2131296267;
+        public static final int autoconfigureLaunch_text = 2131296268;
+        public static final int autoconfigure_menu_item = 2131296269;
+        public static final int button_text_clear_logs = 2131296270;
+        public static final int cancel = 2131296271;
+        public static final int choice_prompt = 2131296272;
+        public static final int choice_prompt_analogInput = 2131296273;
+        public static final int choice_prompt_analogOutput = 2131296274;
+        public static final int choice_prompt_digital_device = 2131296275;
+        public static final int choice_prompt_i2c = 2131296276;
+        public static final int configure_activity = 2131296277;
+        public static final int configure_menu_item = 2131296278;
+        public static final int configure_settings = 2131296279;
+        public static final int default_port = 2131296280;
+        public static final int device_info = 2131296281;
+        public static final int device_type = 2131296282;
+        public static final int done_button = 2131296283;
+        public static final int edit_analog_input_devices_activity = 2131296284;
+        public static final int edit_analog_output_devices_activity = 2131296285;
+        public static final int edit_controller = 2131296286;
+        public static final int edit_core_device_interface_module_controller_activity = 2131296287;
+        public static final int edit_digital_devices_activity = 2131296288;
+        public static final int edit_i2c_devices_activity = 2131296289;
+        public static final int edit_legacy_module_controller_activity = 2131296290;
+        public static final int edit_matrix_controller_activity = 2131296291;
+        public static final int edit_motor_controller_activity = 2131296292;
+        public static final int edit_motor_controller_menu_item = 2131296293;
+        public static final int edit_pwm_devices_activity = 2131296294;
+        public static final int edit_servo_controller_activity = 2131296295;
+        public static final int file_activate_button = 2131296296;
+        public static final int file_delete_button = 2131296297;
+        public static final int file_edit_button = 2131296298;
+        public static final int file_prompt = 2131296299;
+        public static final int filename_editText = 2131296300;
+        public static final int input_name_hint = 2131296301;
+        public static final int input_name_label = 2131296302;
+        public static final int k9LegacyBot = 2131296303;
+        public static final int k9USBBot = 2131296304;
+        public static final int launch_wifi_settings = 2131296305;
+        public static final int legacy_controller_name = 2131296306;
+        public static final int load_menu_item = 2131296307;
+        public static final int matrix_controller_name = 2131296308;
+        public static final int matrix_controller_name_prompt = 2131296309;
+        public static final int matrix_motor_title = 2131296310;
+        public static final int matrix_name_prompt = 2131296311;
+        public static final int matrix_port0 = 2131296312;
+        public static final int matrix_port1 = 2131296313;
+        public static final int matrix_port2 = 2131296314;
+        public static final int matrix_port3 = 2131296315;
+        public static final int matrix_port4 = 2131296316;
+        public static final int matrix_port5 = 2131296317;
+        public static final int matrix_port6 = 2131296318;
+        public static final int matrix_port7 = 2131296319;
+        public static final int matrix_servo_title = 2131296320;
+        public static final int motor_controller_name = 2131296321;
+        public static final int motor_controller_name_text = 2131296322;
+        public static final int motor_name = 2131296323;
+        public static final int motor_name_prompt = 2131296324;
+        public static final int motor_port1 = 2131296325;
+        public static final int motor_port2 = 2131296326;
+        public static final int name_prompt_text = 2131296327;
+        public static final int name_prompt_undertext = 2131296328;
+        public static final int ok = 2131296329;
+        public static final int port = 2131296330;
+        public static final int pref_change_wifi_channel = 2131296331;
+        public static final int pref_configure_robot_title = 2131296332;
+        public static final int pref_hardware_config_filename = 2131296333;
+        public static final int pref_launch_autoconfigure = 2131296334;
+        public static final int pref_launch_configure = 2131296335;
+        public static final int pref_launch_settings = 2131296336;
+        public static final int pref_wifi_channel_selection_title = 2131296337;
+        public static final int readXML_text = 2131296338;
+        public static final int restart_robot_menu_item = 2131296339;
+        public static final int restore_settings = 2131296340;
+        public static final int row_port0 = 2131296341;
+        public static final int row_port1 = 2131296342;
+        public static final int row_port2 = 2131296343;
+        public static final int row_port3 = 2131296344;
+        public static final int row_port4 = 2131296345;
+        public static final int row_port5 = 2131296346;
+        public static final int row_port6 = 2131296347;
+        public static final int save_button = 2131296348;
+        public static final int save_configuration = 2131296349;
+        public static final int scan = 2131296350;
+        public static final int scanButton_text = 2131296351;
+        public static final int servo_controller_name = 2131296352;
+        public static final int servo_controller_name_prompt = 2131296353;
+        public static final int servo_name_prompt = 2131296354;
+        public static final int settings_activity = 2131296355;
+        public static final int settings_menu_item = 2131296356;
+        public static final int titleText_view = 2131296357;
+        public static final int title_activity_autoconfigure = 2131296358;
+        public static final int title_activity_config_wifi_direct = 2131296359;
+        public static final int title_activity_load = 2131296360;
+        public static final int title_activity_view_logs = 2131296361;
+        public static final int title_activity_wifi_channel_selector = 2131296362;
+        public static final int view_logs_activity = 2131296363;
+        public static final int view_logs_menu_item = 2131296364;
+        public static final int wifi_direct_update_settings = 2131296365;
+        public static final int writeXML_prompt = 2131296366;
+        public static final int writeXML_text = 2131296367;
+    }
+    
+    public static final class style
+    {
+        public static final int AppBaseTheme = 2131099648;
+        public static final int AppTheme = 2131099649;
+        public static final int CustomAlertDialog = 2131099650;
+        public static final int RobotoButtonStyle = 2131099651;
+        public static final int RobotoTextViewStyle = 2131099652;
+    }
+    
+    public static final class xml
+    {
+        public static final int device_filter = 2130968576;
+        public static final int preferences = 2130968577;
+    }
+}
