@@ -275,16 +275,13 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
          this.readCompletionCycle = 0;
       }
 
-      // $FF: synthetic method
       isBusyHelper(Object var1) {
          this();
       }
 
       public void onReadComplete(int currentPosition) {
          int prevPosition = this.positions[this.readCompletionCycle];
-
-         // 0 -> 1, 1 -> 2 2 -> 0
-         this.readCompletionCycle = (1 + this.readCompletionCycle) % this.positions.length;
+         this.readCompletionCycle = (1 + this.readCompletionCycle) % this.positions.length;          // 0 -> 1, 1 -> 2 2 -> 0
          this.absDeltaPosition[this.readCompletionCycle] = Math.abs(prevPosition - currentPosition);
          this.positions[this.readCompletionCycle] = currentPosition;
       }
