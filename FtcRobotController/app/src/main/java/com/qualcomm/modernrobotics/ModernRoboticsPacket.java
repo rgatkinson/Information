@@ -4,16 +4,16 @@ import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.TypeConversion;
 
 public class ModernRoboticsPacket {
-   static boolean a(byte[] var0, int var1) {
-      return b(var0, var1);
+   static boolean validatePacket0(byte[] packet, int cbExpected) {
+      return validatePacket1(packet, cbExpected);
    }
 
-   private static boolean b(byte[] var0, int var1) {
-      if(var0.length < 5) {
+   private static boolean validatePacket1(byte[] packet, int cbExpected) {
+      if(packet.length < 5) {
          RobotLog.w("header length is too short");
          return false;
-      } else if(var0[0] == 51 && var0[1] == -52) {
-         if(TypeConversion.unsignedByteToInt(var0[4]) != var1) {
+      } else if(packet[0] == 51 /*0x33*/ && packet[1] == -52 /*0xCC*/) {
+         if(TypeConversion.unsignedByteToInt(packet[4]) != cbExpected) {
             RobotLog.w("header reported unexpected packet size");
             return false;
          } else {

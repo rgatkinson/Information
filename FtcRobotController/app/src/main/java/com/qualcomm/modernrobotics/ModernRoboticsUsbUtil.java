@@ -2,7 +2,6 @@ package com.qualcomm.modernrobotics;
 
 import android.content.Context;
 import com.qualcomm.analytics.Analytics;
-import com.qualcomm.modernrobotics.ModernRoboticsPacket;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DeviceManager;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
@@ -99,7 +98,7 @@ public class ModernRoboticsUsbUtil {
          a("error reading USB device headers");
       }
 
-      if(!ModernRoboticsPacket.a(var1, 3)) {
+      if(!ModernRoboticsPacket.validatePacket0(var1, 3)) {
          return var2;
       } else {
          var0.read(var2);

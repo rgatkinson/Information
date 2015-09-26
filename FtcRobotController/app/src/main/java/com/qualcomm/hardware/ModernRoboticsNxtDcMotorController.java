@@ -1,6 +1,5 @@
 package com.qualcomm.hardware;
 
-import com.qualcomm.hardware.ModernRoboticsUsbLegacyModule;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.I2cController;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -43,41 +42,41 @@ public class ModernRoboticsNxtDcMotorController implements DcMotorController, I2
    public static final byte POWER_FLOAT = -128;
    public static final byte POWER_MAX = 100;
    public static final byte POWER_MIN = -100;
-   private final ModernRoboticsUsbLegacyModule a;
-   private final byte[] b;
-   private final Lock c;
-   private final byte[] d;
-   private final Lock e;
-   private final int f;
-   private final ElapsedTime g = new ElapsedTime(0L);
-   private volatile DcMotorController.DeviceMode h;
-   private volatile boolean i = true;
+   private final ModernRoboticsUsbLegacyModule legacyModule;
+   private final byte[] readCache;
+   private final Lock readCacheLock;
+   private final byte[] writeCache;
+   private final Lock writeCacheLock;
+   private final int port;
+   private final ElapsedTime elapsedTime = new ElapsedTime(0L);
+   private volatile DcMotorController.DeviceMode deviceMode;
+   private volatile boolean writeCacheIsDirty = true;
 
-   public ModernRoboticsNxtDcMotorController(ModernRoboticsUsbLegacyModule var1, int var2) {
-      this.a = var1;
-      this.f = var2;
-      this.b = var1.getI2cReadCache(var2);
-      this.c = var1.getI2cReadCacheLock(var2);
-      this.d = var1.getI2cWriteCache(var2);
-      this.e = var1.getI2cWriteCacheLock(var2);
-      this.h = DcMotorController.DeviceMode.WRITE_ONLY;
-      var1.enableI2cWriteMode(var2, 2, 64, 20);
+   public ModernRoboticsNxtDcMotorController(ModernRoboticsUsbLegacyModule legacyModule, int port) {
+      this.legacyModule    = legacyModule;
+      this.port            = port;
+      this.readCache       = legacyModule.getI2cReadCache(port);
+      this.readCacheLock   = legacyModule.getI2cReadCacheLock(port);
+      this.writeCache      = legacyModule.getI2cWriteCache(port);
+      this.writeCacheLock  = legacyModule.getI2cWriteCacheLock(port);
+      this.deviceMode      = DcMotorController.DeviceMode.WRITE_ONLY;
+      legacyModule.enableI2cWriteMode(port, 2, 64, 20);
 
       try {
-         this.e.lock();
-         this.d[9] = -128;
-         this.d[10] = -128;
+         this.writeCacheLock.lock();
+         this.writeCache[9] = -128;
+         this.writeCache[10] = -128;
       } finally {
-         this.e.unlock();
+         this.writeCacheLock.unlock();
       }
 
-      var1.writeI2cCacheToController(var2);
-      var1.registerForI2cPortReadyCallback(this, var2);
+      legacyModule.writeI2cCacheToController(port);
+      legacyModule.registerForI2cPortReadyCallback(this, port);
    }
 
-   private void a() {
-      if(this.h != DcMotorController.DeviceMode.SWITCHING_TO_WRITE_MODE && (this.h == DcMotorController.DeviceMode.READ_ONLY || this.h == DcMotorController.DeviceMode.SWITCHING_TO_READ_MODE)) {
-         String var1 = "Cannot write while in this mode: " + this.h;
+   private void checkCanWrite() {
+      if(this.deviceMode != DcMotorController.DeviceMode.SWITCHING_TO_WRITE_MODE && (this.deviceMode == DcMotorController.DeviceMode.READ_ONLY || this.deviceMode == DcMotorController.DeviceMode.SWITCHING_TO_READ_MODE)) {
+         String var1 = "Cannot write while in this mode: " + this.deviceMode;
          StackTraceElement[] var2 = Thread.currentThread().getStackTrace();
          if(var2 != null && var2.length > 3) {
             var1 = var1 + "\n from method: " + var2[3].getMethodName();
@@ -87,16 +86,16 @@ public class ModernRoboticsNxtDcMotorController implements DcMotorController, I2
       }
    }
 
-   private void a(int var1) {
-      if(var1 < 1 || var1 > 2) {
-         Object[] var2 = new Object[]{Integer.valueOf(var1), Integer.valueOf(2)};
+   private void validateMotor(int motor) {
+      if(motor < 1 || motor > 2) {
+         Object[] var2 = new Object[]{Integer.valueOf(motor), Integer.valueOf(2)};
          throw new IllegalArgumentException(String.format("Motor %d is invalid; valid motors are 1..%d", var2));
       }
    }
 
-   private void b() {
-      if(this.h != DcMotorController.DeviceMode.SWITCHING_TO_READ_MODE && (this.h == DcMotorController.DeviceMode.WRITE_ONLY || this.h == DcMotorController.DeviceMode.SWITCHING_TO_WRITE_MODE)) {
-         String var1 = "Cannot read while in this mode: " + this.h;
+   private void checkCanRead() {
+      if(this.deviceMode != DcMotorController.DeviceMode.SWITCHING_TO_READ_MODE && (this.deviceMode == DcMotorController.DeviceMode.WRITE_ONLY || this.deviceMode == DcMotorController.DeviceMode.SWITCHING_TO_WRITE_MODE)) {
+         String var1 = "Cannot read while in this mode: " + this.deviceMode;
          StackTraceElement[] var2 = Thread.currentThread().getStackTrace();
          if(var2 != null && var2.length > 3) {
             var1 = var1 + "\n from method: " + var2[3].getMethodName();
@@ -106,8 +105,8 @@ public class ModernRoboticsNxtDcMotorController implements DcMotorController, I2
       }
    }
 
-   public static DcMotorController.RunMode flagToRunModeNXT(byte var0) {
-      switch(var0 & 3) {
+   public static DcMotorController.RunMode flagToRunModeNXT(byte flagByte) {
+      switch(flagByte & 3) {
       case 0:
          return DcMotorController.RunMode.RUN_WITHOUT_ENCODERS;
       case 1:
@@ -121,8 +120,8 @@ public class ModernRoboticsNxtDcMotorController implements DcMotorController, I2
       }
    }
 
-   public static byte runModeToFlagNXT(DcMotorController.RunMode var0) {
-      switch(null.b[var0.ordinal()]) {
+   public static byte runModeToFlagNXT(DcMotorController.RunMode mode) {
+      switch(mode.ordinal()) {
       case 1:
       default:
          return (byte)1;
@@ -136,7 +135,7 @@ public class ModernRoboticsNxtDcMotorController implements DcMotorController, I2
    }
 
    public void close() {
-      if(this.h == DcMotorController.DeviceMode.WRITE_ONLY) {
+      if(this.deviceMode == DcMotorController.DeviceMode.WRITE_ONLY) {
          this.setMotorPowerFloat(1);
          this.setMotorPowerFloat(2);
       }
@@ -144,244 +143,247 @@ public class ModernRoboticsNxtDcMotorController implements DcMotorController, I2
    }
 
    public String getConnectionInfo() {
-      return this.a.getConnectionInfo() + "; port " + this.f;
+      return this.legacyModule.getConnectionInfo() + "; port " + this.port;
    }
 
    public String getDeviceName() {
       return "NXT DC Motor Controller";
    }
 
-   public DcMotorController.RunMode getMotorChannelMode(int var1) {
-      this.a(var1);
-      this.b();
+   public DcMotorController.RunMode getMotorChannelMode(int motor) {
+      this.validateMotor(motor);
+      this.checkCanRead();
 
-      byte var3;
+      byte channelMode;
       try {
-         this.c.lock();
-         var3 = this.b[OFFSET_MAP_MOTOR_MODE[var1]];
+         this.readCacheLock.lock();
+         channelMode = this.readCache[OFFSET_MAP_MOTOR_MODE[motor]];
       } finally {
-         this.c.unlock();
+         this.readCacheLock.unlock();
       }
 
-      return flagToRunModeNXT(var3);
+      return flagToRunModeNXT(channelMode);
    }
 
    public DcMotorController.DeviceMode getMotorControllerDeviceMode() {
-      return this.h;
+      return this.deviceMode;
    }
 
    public int getMotorCurrentPosition(int var1) {
-      this.a(var1);
-      this.b();
-      byte[] var2 = new byte[4];
+      this.validateMotor(var1);
+      this.checkCanRead();
+      byte[] resultBytes = new byte[4];
 
       try {
-         this.c.lock();
-         System.arraycopy(this.b, OFFSET_MAP_MOTOR_CURRENT_ENCODER_VALUE[var1], var2, 0, var2.length);
+         this.readCacheLock.lock();
+         System.arraycopy(this.readCache, OFFSET_MAP_MOTOR_CURRENT_ENCODER_VALUE[var1], resultBytes, 0, resultBytes.length);
       } finally {
-         this.c.unlock();
+         this.readCacheLock.unlock();
       }
 
-      return TypeConversion.byteArrayToInt(var2);
+      return TypeConversion.byteArrayToInt(resultBytes);
    }
 
    public double getMotorPower(int var1) {
-      this.a(var1);
-      this.b();
+      this.validateMotor(var1);
+      this.checkCanRead();
 
-      byte var3;
+      byte motorPower;
       try {
-         this.c.lock();
-         var3 = this.b[OFFSET_MAP_MOTOR_POWER[var1]];
+         this.readCacheLock.lock();
+         motorPower = this.readCache[OFFSET_MAP_MOTOR_POWER[var1]];
       } finally {
-         this.c.unlock();
+         this.readCacheLock.unlock();
       }
 
-      return var3 == -128?0.0D:(double)var3 / 100.0D;
+      return motorPower == -128?0.0D:(double)motorPower / 100.0D;
    }
 
    public boolean getMotorPowerFloat(int var1) {
-      this.a(var1);
-      this.b();
-      boolean var6 = false;
+      this.validateMotor(var1);
+      this.checkCanRead();
+      boolean locked = false;
 
-      byte var3;
+      byte motorPower;
       try {
-         var6 = true;
-         this.c.lock();
-         var3 = this.b[OFFSET_MAP_MOTOR_POWER[var1]];
-         var6 = false;
+         locked = true;
+         this.readCacheLock.lock();
+         motorPower = this.readCache[OFFSET_MAP_MOTOR_POWER[var1]];
+         locked = false;
       } finally {
-         if(var6) {
-            this.c.unlock();
+         if(locked) {
+            this.readCacheLock.unlock();
          }
       }
 
-      boolean var4;
-      if(var3 == -128) {
-         var4 = true;
+      boolean result;
+      if(motorPower == -128) {
+         result = true;
       } else {
-         var4 = false;
+         result = false;
       }
 
-      this.c.unlock();
-      return var4;
+      this.readCacheLock.unlock();
+      return result;
    }
 
-   public int getMotorTargetPosition(int var1) {
-      this.a(var1);
-      this.b();
-      byte[] var2 = new byte[4];
+   public int getMotorTargetPosition(int motor) {
+      this.validateMotor(motor);
+      this.checkCanRead();
+      byte[] resultBytes = new byte[4];
 
       try {
-         this.c.lock();
-         System.arraycopy(this.b, OFFSET_MAP_MOTOR_TARGET_ENCODER_VALUE[var1], var2, 0, var2.length);
+         this.readCacheLock.lock();
+         System.arraycopy(this.readCache, OFFSET_MAP_MOTOR_TARGET_ENCODER_VALUE[motor], resultBytes, 0, resultBytes.length);
       } finally {
-         this.c.unlock();
+         this.readCacheLock.unlock();
       }
 
-      return TypeConversion.byteArrayToInt(var2);
+      return TypeConversion.byteArrayToInt(resultBytes);
    }
 
    public int getVersion() {
       return 1;
    }
 
-   public boolean isBusy(int var1) {
-      this.a(var1);
-      this.b();
-      boolean var6 = false;
+   public boolean isBusy(int motor) {
+      this.validateMotor(motor);
+      this.checkCanRead();
+      boolean locked = false;
 
-      byte var3;
+      byte channelMode;
       try {
-         var6 = true;
-         this.c.lock();
-         var3 = this.b[OFFSET_MAP_MOTOR_MODE[var1]];
-         var6 = false;
+         locked = true;
+         this.readCacheLock.lock();
+         channelMode = this.readCache[OFFSET_MAP_MOTOR_MODE[motor]];
+         locked = false;
       } finally {
-         if(var6) {
-            this.c.unlock();
+         if(locked) {
+            this.readCacheLock.unlock();
          }
       }
 
-      boolean var4;
-      if((var3 & 128) == 128) {
-         var4 = true;
+      boolean result;
+      if((channelMode & 128) == 128) {
+         result = true;
       } else {
-         var4 = false;
+         result = false;
       }
 
-      this.c.unlock();
-      return var4;
+      this.readCacheLock.unlock();
+      return result;
    }
 
-   public void portIsReady(int var1) {
-      switch(null.a[this.h.ordinal()]) {
+   public void portIsReady(int port) {
+      switch(this.deviceMode.ordinal()) {
       case 3:
-         if(this.a.isI2cPortInReadMode(var1)) {
-            this.h = DcMotorController.DeviceMode.READ_ONLY;
+         if(this.legacyModule.isI2cPortInReadMode(port)) {
+            this.deviceMode = DcMotorController.DeviceMode.READ_ONLY;
          }
          break;
       case 4:
-         if(this.a.isI2cPortInWriteMode(var1)) {
-            this.h = DcMotorController.DeviceMode.WRITE_ONLY;
+         if(this.legacyModule.isI2cPortInWriteMode(port)) {
+            this.deviceMode = DcMotorController.DeviceMode.WRITE_ONLY;
          }
       }
 
-      if(this.h == DcMotorController.DeviceMode.READ_ONLY) {
-         this.a.setI2cPortActionFlag(this.f);
-         this.a.writeI2cPortFlagOnlyToController(this.f);
+      if(this.deviceMode == DcMotorController.DeviceMode.READ_ONLY) {
+         this.legacyModule.setI2cPortActionFlag(this.port);
+         this.legacyModule.writeI2cPortFlagOnlyToController(this.port);
       } else {
-         if(this.i || this.g.time() > 2.0D) {
-            this.a.setI2cPortActionFlag(this.f);
-            this.a.writeI2cCacheToController(this.f);
-            this.g.reset();
+         if(this.writeCacheIsDirty || this.elapsedTime.time() > 2.0D) {
+            this.legacyModule.setI2cPortActionFlag(this.port);
+            this.legacyModule.writeI2cCacheToController(this.port);
+            this.elapsedTime.reset();
          }
 
-         this.i = false;
+         this.writeCacheIsDirty = false;
       }
 
-      this.a.readI2cCacheFromController(this.f);
+      this.legacyModule.readI2cCacheFromController(this.port);
    }
 
-   public void setMotorChannelMode(int var1, DcMotorController.RunMode var2) {
-      this.a(var1);
-      this.a();
-      byte var3 = runModeToFlagNXT(var2);
-
+   public void setMotorChannelMode(int motor, DcMotorController.RunMode mode) {
+      this.validateMotor(motor);
+      this.checkCanWrite();
+      byte channelMode = runModeToFlagNXT(mode);
+      //
+      // NB: Never uses the motor controller 'rev' bit, instead choosing to
+      // do that at the DCMotor level
+      //
       try {
-         this.e.lock();
-         if(this.d[OFFSET_MAP_MOTOR_MODE[var1]] != var3) {
-            this.d[OFFSET_MAP_MOTOR_MODE[var1]] = var3;
-            this.i = true;
+         this.writeCacheLock.lock();
+         if(this.writeCache[OFFSET_MAP_MOTOR_MODE[motor]] != channelMode) {
+            this.writeCache[OFFSET_MAP_MOTOR_MODE[motor]] = channelMode;
+            this.writeCacheIsDirty = true;
          }
       } finally {
-         this.e.unlock();
+         this.writeCacheLock.unlock();
       }
 
    }
 
-   public void setMotorControllerDeviceMode(DcMotorController.DeviceMode var1) {
-      if(this.h != var1) {
-         switch(null.a[var1.ordinal()]) {
+   public void setMotorControllerDeviceMode(DcMotorController.DeviceMode mode) {
+      if(this.deviceMode != mode) {
+         switch(mode.ordinal()) {
          case 1:
-            this.h = DcMotorController.DeviceMode.SWITCHING_TO_READ_MODE;
-            this.a.enableI2cReadMode(this.f, 2, 64, 20);
+            this.deviceMode = DcMotorController.DeviceMode.SWITCHING_TO_READ_MODE;
+            this.legacyModule.enableI2cReadMode(this.port, 2, 64, 20);
             break;
          case 2:
-            this.h = DcMotorController.DeviceMode.SWITCHING_TO_WRITE_MODE;
-            this.a.enableI2cWriteMode(this.f, 2, 64, 20);
+            this.deviceMode = DcMotorController.DeviceMode.SWITCHING_TO_WRITE_MODE;
+            this.legacyModule.enableI2cWriteMode(this.port, 2, 64, 20);
          }
 
-         this.i = true;
+         this.writeCacheIsDirty = true;
       }
    }
 
-   public void setMotorPower(int var1, double var2) {
-      this.a(var1);
-      this.a();
-      Range.throwIfRangeIsInvalid(var2, -1.0D, 1.0D);
-      byte var4 = (byte)((int)(100.0D * var2));
+   public void setMotorPower(int motor, double power) {
+      this.validateMotor(motor);
+      this.checkCanWrite();
+      Range.throwIfRangeIsInvalid(power, -1.0D, 1.0D);
+      byte var4 = (byte)((int)(100.0D * power));
 
       try {
-         this.e.lock();
-         if(var4 != this.d[OFFSET_MAP_MOTOR_POWER[var1]]) {
-            this.d[OFFSET_MAP_MOTOR_POWER[var1]] = var4;
-            this.i = true;
+         this.writeCacheLock.lock();
+         if(var4 != this.writeCache[OFFSET_MAP_MOTOR_POWER[motor]]) {
+            this.writeCache[OFFSET_MAP_MOTOR_POWER[motor]] = var4;
+            this.writeCacheIsDirty = true;
          }
       } finally {
-         this.e.unlock();
-      }
-
-   }
-
-   public void setMotorPowerFloat(int var1) {
-      this.a(var1);
-      this.a();
-
-      try {
-         this.e.lock();
-         if(-128 != this.d[OFFSET_MAP_MOTOR_POWER[var1]]) {
-            this.d[OFFSET_MAP_MOTOR_POWER[var1]] = -128;
-            this.i = true;
-         }
-      } finally {
-         this.e.unlock();
+         this.writeCacheLock.unlock();
       }
 
    }
 
-   public void setMotorTargetPosition(int var1, int var2) {
-      this.a(var1);
-      this.a();
-      byte[] var3 = TypeConversion.intToByteArray(var2);
+   public void setMotorPowerFloat(int motor) {
+      this.validateMotor(motor);
+      this.checkCanWrite();
 
       try {
-         this.e.lock();
-         System.arraycopy(var3, 0, this.d, OFFSET_MAP_MOTOR_TARGET_ENCODER_VALUE[var1], var3.length);
-         this.i = true;
+         this.writeCacheLock.lock();
+         if(-128 != this.writeCache[OFFSET_MAP_MOTOR_POWER[motor]]) {
+            this.writeCache[OFFSET_MAP_MOTOR_POWER[motor]] = -128;
+            this.writeCacheIsDirty = true;
+         }
       } finally {
-         this.e.unlock();
+         this.writeCacheLock.unlock();
+      }
+
+   }
+
+   public void setMotorTargetPosition(int motor, int position) {
+      this.validateMotor(motor);
+      this.checkCanWrite();
+      byte[] var3 = TypeConversion.intToByteArray(position);
+
+      try {
+         this.writeCacheLock.lock();
+         System.arraycopy(var3, 0, this.writeCache, OFFSET_MAP_MOTOR_TARGET_ENCODER_VALUE[motor], var3.length);
+         this.writeCacheIsDirty = true;
+      } finally {
+         this.writeCacheLock.unlock();
       }
 
    }

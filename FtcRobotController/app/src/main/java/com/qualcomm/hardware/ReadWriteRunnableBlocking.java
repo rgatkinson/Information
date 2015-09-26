@@ -5,8 +5,6 @@
 
 package com.qualcomm.hardware;
 
-import com.qualcomm.hardware.ReadWriteRunnableStandard;
-import com.qualcomm.hardware.ReadWriteRunnable.BlockingState;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -22,14 +20,14 @@ public class ReadWriteRunnableBlocking extends ReadWriteRunnableStandard {
     protected final Condition blockingCondition;
     protected final Condition waitingCondition;
     protected BlockingState blockingState;
-    private volatile boolean a;
+    private volatile boolean writeCacheIsDirty;
 
     public ReadWriteRunnableBlocking(SerialNumber serialNumber, RobotUsbDevice device, int monitorLength, int startAddress, boolean debug) {
         super(serialNumber, device, monitorLength, startAddress, debug);
         this.blockingCondition = this.blockingLock.newCondition();
         this.waitingCondition = this.waitingLock.newCondition();
         this.blockingState = BlockingState.BLOCKING;
-        this.a = false;
+        this.writeCacheIsDirty = false;
     }
 
     public void blockUntilReady() throws RobotCoreException, InterruptedException {
@@ -65,16 +63,16 @@ public class ReadWriteRunnableBlocking extends ReadWriteRunnableStandard {
         byte[] var3 = this.localDeviceWriteCache;
         synchronized(this.localDeviceWriteCache) {
             System.arraycopy(data, 0, this.localDeviceWriteCache, address, data.length);
-            this.a = true;
+            this.writeCacheIsDirty = true;
         }
     }
 
     public boolean writeNeeded() {
-        return this.a;
+        return this.writeCacheIsDirty;
     }
 
     public void setWriteNeeded(boolean set) {
-        this.a = set;
+        this.writeCacheIsDirty = set;
     }
 
     protected void waitForSyncdEvents() throws RobotCoreException, InterruptedException {

@@ -1,6 +1,5 @@
 package com.qualcomm.modernrobotics;
 
-import com.qualcomm.modernrobotics.ModernRoboticsPacket;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -27,7 +26,7 @@ public class ReadWriteRunnableUsbHandler {
       this.device.write(this.readCmd);
       Arrays.fill(this.respHeader, (byte)0);
       int var3 = this.device.read(this.respHeader, this.respHeader.length, 100);
-      if(!ModernRoboticsPacket.a(this.respHeader, var2.length)) {
+      if(!ModernRoboticsPacket.validatePacket0(this.respHeader, var2.length)) {
          ++this.usbSequentialReadErrorCount;
          if(var3 == this.respHeader.length) {
             this.a(this.readCmd, "comm error");
@@ -49,13 +48,13 @@ public class ReadWriteRunnableUsbHandler {
       throw new RobotCoreException(var2);
    }
 
-   private void b(int var1, byte[] var2) throws RobotCoreException {
+   private void b(int var1, byte[] data) throws RobotCoreException {
       this.writeCmd[3] = (byte)var1;
-      this.writeCmd[4] = (byte)var2.length;
-      this.device.write(Util.concatenateByteArrays(this.writeCmd, var2));
+      this.writeCmd[4] = (byte)data.length;
+      this.device.write(Util.concatenateByteArrays(this.writeCmd, data));
       Arrays.fill(this.respHeader, (byte)0);
       int var3 = this.device.read(this.respHeader, this.respHeader.length, 100);
-      if(!ModernRoboticsPacket.a(this.respHeader, 0)) {
+      if(!ModernRoboticsPacket.validatePacket0(this.respHeader, 0)) {
          ++this.usbSequentialWriteErrorCount;
          if(var3 == this.respHeader.length) {
             this.a(this.writeCmd, "comm error");
@@ -67,16 +66,16 @@ public class ReadWriteRunnableUsbHandler {
       this.usbSequentialWriteErrorCount = 0;
    }
 
-   protected static String bufferToString(byte[] var0) {
+   protected static String bufferToString(byte[] buffer) {
       StringBuilder var1 = new StringBuilder();
       var1.append("[");
-      if(var0.length > 0) {
-         Object[] var7 = new Object[]{Byte.valueOf(var0[0])};
+      if(buffer.length > 0) {
+         Object[] var7 = new Object[]{Byte.valueOf(buffer[0])};
          var1.append(String.format("%02x", var7));
       }
 
-      for(int var3 = 1; var3 < var0.length; ++var3) {
-         Object[] var5 = new Object[]{Byte.valueOf(var0[var3])};
+      for(int var3 = 1; var3 < buffer.length; ++var3) {
+         Object[] var5 = new Object[]{Byte.valueOf(buffer[var3])};
          var1.append(String.format(" %02x", var5));
       }
 
@@ -88,8 +87,8 @@ public class ReadWriteRunnableUsbHandler {
       this.device.close();
    }
 
-   public void purge(RobotUsbDevice.Channel var1) throws RobotCoreException {
-      this.device.purge(var1);
+   public void purge(RobotUsbDevice.Channel channel) throws RobotCoreException {
+      this.device.purge(channel);
    }
 
    public void read(int var1, byte[] var2) throws RobotCoreException {

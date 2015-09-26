@@ -102,8 +102,8 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
    private ReadWriteRunnableSegment[] i;
    private ReadWriteRunnableSegment[] j;
 
-   protected ModernRoboticsUsbDeviceInterfaceModule(SerialNumber var1, RobotUsbDevice var2, EventLoopManager var3) throws RobotCoreException, InterruptedException {
-      super(var1, var3, new ReadWriteRunnableStandard(var1, var2, 21, 3, false));
+   protected ModernRoboticsUsbDeviceInterfaceModule(SerialNumber serialNumber, RobotUsbDevice usbDevice, EventLoopManager eventLoopManager) throws RobotCoreException, InterruptedException {
+      super(serialNumber, eventLoopManager, new ReadWriteRunnableStandard(serialNumber, usbDevice, 21, 3, false));
       this.g = new ReadWriteRunnableSegment[a.length];
       this.h = new ReadWriteRunnableSegment[b.length];
       this.i = new ReadWriteRunnableSegment[c.length];

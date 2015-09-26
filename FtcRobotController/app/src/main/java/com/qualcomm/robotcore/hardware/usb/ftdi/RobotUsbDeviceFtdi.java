@@ -16,7 +16,7 @@ public class RobotUsbDeviceFtdi implements RobotUsbDevice {
    }
 
    public void purge(RobotUsbDevice.Channel var1) throws RobotCoreException {
-      int var2 = null.a[var1.ordinal()];
+      int var2 = var1.ordinal();
       byte var3 = 0;
       switch(var2) {
       case 1:
