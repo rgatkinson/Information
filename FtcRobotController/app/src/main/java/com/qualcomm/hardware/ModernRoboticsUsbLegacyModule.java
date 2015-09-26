@@ -30,7 +30,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
     public static final byte NXT_MODE_9V_ENABLED = 0x02;
     public static final byte NXT_MODE_DIGITAL_0  = 0x04;
     public static final byte NXT_MODE_DIGITAL_1  = 0x08;
-    // what do the missing three bits do?
+    // What do the missing three bits do? Anything? I'm guessing no...
     public static final byte NXT_MODE_READ       = 0x80;
     public static final byte NXT_MODE_WRITE      = 0;
     public static final byte BUFFER_FLAG_S0 = 1;
@@ -69,16 +69,15 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
     private final I2cPortReadyCallback[] portCallbacks = new I2cPortReadyCallback[6];
 
     protected ModernRoboticsUsbLegacyModule(SerialNumber serialNumber, RobotUsbDevice device, EventLoopManager manager) throws RobotCoreException, InterruptedException {
-        super(serialNumber, manager, new ReadWriteRunnableStandard(serialNumber, device, 13, 3, false));
+        super(serialNumber, manager, new ReadWriteRunnableStandard(serialNumber, device, MONITOR_LENGTH, START_ADDRESS, false));
         this.readWriteRunnable.setCallback(this);
 
-        for(int port = 0; port < 6; ++port) {
-            this.runnableSegments[port]     = this.readWriteRunnable.createSegment(port, ADDRESS_I2C_PORT_MAP[port], 32);
-            this.runnableSegments[port + 6] = this.readWriteRunnable.createSegment(port + 6, ADDRESS_I2C_PORT_MAP[port] + 31, 1);
+        for(int port = 0; port < NUMBER_OF_PORTS; ++port) {
+            this.runnableSegments[port]                   = this.readWriteRunnable.createSegment(port, ADDRESS_I2C_PORT_MAP[port], SIZE_OF_PORT_BUFFER);
+            this.runnableSegments[port + NUMBER_OF_PORTS] = this.readWriteRunnable.createSegment(port + NUMBER_OF_PORTS, ADDRESS_I2C_PORT_MAP[port] + 31, 1);
             this.enableAnalogReadMode(port);
             this.readWriteRunnable.queueSegmentWrite(port);
         }
-
     }
 
     public String getDeviceName() {
@@ -115,7 +114,6 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
         } finally {
             this.runnableSegments[physicalPort].getWriteLock().unlock();
         }
-
     }
 
     public void enableI2cWriteMode(int physicalPort, int i2cAddress, int memAddress, int length) {
@@ -150,7 +148,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
     }
 
     public void enable9v(int physicalPort, boolean enable) {
-        if(Arrays.binarySearch(PORT_9V_CAPABLE, physicalPort) < 0) {
+        if (Arrays.binarySearch(PORT_9V_CAPABLE, physicalPort) < 0) {
             throw new IllegalArgumentException("9v is only available on the following ports: " + Arrays.toString(PORT_9V_CAPABLE));
         } else {
             try {
@@ -194,7 +192,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
 
     public byte[] readAnalog(int physicalPort) {
         this.validatePort(physicalPort);
-        return this.read(ADDRESS_ANALOG_PORT_MAP[physicalPort], 2);
+        return this.read(ADDRESS_ANALOG_PORT_MAP[physicalPort], SIZE_ANALOG_BUFFER);
     }
 
     public byte[] getCopyOfReadBuffer(int physicalPort) {
@@ -253,7 +251,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
         try {
             this.runnableSegments[physicalPort].getWriteLock().lock();
             byte[] buffer = this.runnableSegments[physicalPort].getWriteBuffer();
-            buffer[31] = -1;
+            buffer[31] = I2C_ACTION_FLAG;
         } finally {
             this.runnableSegments[physicalPort].getWriteLock().unlock();
         }
@@ -267,7 +265,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
         try {
             this.runnableSegments[physicalPort].getReadLock().lock();
             byte[] var3 = this.runnableSegments[physicalPort].getReadBuffer();
-            var2 = var3[31] == -1;
+            var2 = var3[31] == I2C_ACTION_FLAG;
         } finally {
             this.runnableSegments[physicalPort].getReadLock().unlock();
         }
@@ -319,17 +317,17 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
 
     public boolean isI2cPortInWriteMode(int physicalPort) {
         this.validatePort(physicalPort);
-        boolean var2 = false;
+        boolean result = false;
 
         try {
             this.runnableSegments[physicalPort].getReadLock().lock();
             byte[] var3 = this.runnableSegments[physicalPort].getReadBuffer();
-            var2 = var3[0] == NXT_MODE_I2C;
+            result = var3[0] == NXT_MODE_I2C;
         } finally {
             this.runnableSegments[physicalPort].getReadLock().unlock();
         }
 
-        return var2;
+        return result;
     }
 
     public boolean isI2cPortReady(int physicalPort) {
@@ -338,14 +336,14 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
     }
 
     private void validatePort(int port) {
-        if(port < 0 || port > 5) {
-            throw new IllegalArgumentException(String.format("port %d is invalid; valid ports are %d..%d", new Object[]{Integer.valueOf(port), Byte.valueOf((byte)0), Byte.valueOf((byte)5)}));
+        if(port < MIN_PORT_NUMBER || port > MAX_PORT_NUMBER) {
+            throw new IllegalArgumentException(String.format("port %d is invalid; valid ports are %d..%d", new Object[]{port, MIN_PORT_NUMBER, MAX_PORT_NUMBER}));
         }
     }
 
     private void validateI2cBufferLength(int cb) {
-        if(cb < 0 || cb > 27) {
-            throw new IllegalArgumentException(String.format("buffer length of %d is invalid; max value is %d", new Object[]{Integer.valueOf(cb), Byte.valueOf((byte)27)}));
+        if(cb < 0 || cb > SIZE_I2C_BUFFER) {
+            throw new IllegalArgumentException(String.format("buffer length of %d is invalid; max value is %d", new Object[]{Integer.valueOf(cb), Byte.valueOf((byte)SIZE_I2C_BUFFER)}));
         }
     }
 
