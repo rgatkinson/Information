@@ -57,10 +57,10 @@ public class WifiDirectChannelSelection {
          var8.write(var7);
          var8.close();
       } catch (FileNotFoundException var9) {
-         RobotLog.e("File not found: " + var9.toString());
+         RobotLog.log("File not found: " + var9.toString());
          var9.printStackTrace();
       } catch (IOException var10) {
-         RobotLog.e("FIO exception: " + var10.toString());
+         RobotLog.log("FIO exception: " + var10.toString());
          var10.printStackTrace();
       }
    }

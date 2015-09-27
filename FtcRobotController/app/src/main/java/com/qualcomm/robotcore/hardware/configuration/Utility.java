@@ -13,15 +13,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DeviceManager;
-import com.qualcomm.robotcore.hardware.configuration.ControllerConfiguration;
-import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
-import com.qualcomm.robotcore.hardware.configuration.DeviceInterfaceModuleConfiguration;
-import com.qualcomm.robotcore.hardware.configuration.LegacyModuleControllerConfiguration;
-import com.qualcomm.robotcore.hardware.configuration.MotorConfiguration;
-import com.qualcomm.robotcore.hardware.configuration.MotorControllerConfiguration;
-import com.qualcomm.robotcore.hardware.configuration.ServoConfiguration;
-import com.qualcomm.robotcore.hardware.configuration.ServoControllerConfiguration;
-import com.qualcomm.robotcore.hardware.configuration.WriteXMLFileHandler;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.SerialNumber;
 import java.io.File;
@@ -138,7 +129,7 @@ public class Utility {
       }
 
       if(!var2) {
-         RobotLog.e("Can\'t create the Robot Config Files directory!");
+         RobotLog.log("Can\'t create the Robot Config Files directory!");
          this.complainToast("Can\'t create the Robot Config Files directory!", this.a);
       }
 
@@ -314,7 +305,7 @@ public class Utility {
       } catch (RuntimeException var5) {
          if(var5.getMessage().contains("Duplicate name")) {
             this.complainToast("Found " + var5.getMessage(), this.a);
-            RobotLog.e("Found " + var5.getMessage());
+            RobotLog.log("Found " + var5.getMessage());
             return true;
          }
       }

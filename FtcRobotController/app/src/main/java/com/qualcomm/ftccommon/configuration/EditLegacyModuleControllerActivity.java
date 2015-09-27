@@ -17,9 +17,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import com.qualcomm.ftccommon.R;
-import com.qualcomm.ftccommon.configuration.EditMatrixControllerActivity;
-import com.qualcomm.ftccommon.configuration.EditMotorControllerActivity;
-import com.qualcomm.ftccommon.configuration.EditServoControllerActivity;
 import com.qualcomm.robotcore.hardware.configuration.ControllerConfiguration;
 import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
 import com.qualcomm.robotcore.hardware.configuration.LegacyModuleControllerConfiguration;
@@ -152,7 +149,7 @@ public class EditLegacyModuleControllerActivity extends Activity {
       var5.addTextChangedListener(new EditLegacyModuleControllerActivity.a(var2, null));
       var5.setText(var4);
       if(a) {
-         RobotLog.e("[populatePort] name: " + var4 + ", port: " + var6 + ", type: " + var2.getType());
+         RobotLog.log("[populatePort] name: " + var4 + ", port: " + var6 + ", type: " + var2.getType());
       }
 
    }
@@ -200,7 +197,7 @@ public class EditLegacyModuleControllerActivity extends Activity {
 
       if(a) {
          DeviceConfiguration var7 = (DeviceConfiguration)this.g.get(var3);
-         RobotLog.e("[changeDevice] modules.get(port) name: " + var7.getName() + ", port: " + var7.getPort() + ", type: " + var7.getType());
+         RobotLog.log("[changeDevice] modules.get(port) name: " + var7.getName() + ", port: " + var7.getPort() + ", type: " + var7.getType());
       }
 
    }
@@ -331,7 +328,7 @@ public class EditLegacyModuleControllerActivity extends Activity {
          for(int var2 = 0; var2 < this.g.size(); ++var2) {
             DeviceConfiguration var3 = (DeviceConfiguration)this.g.get(var2);
             if(a) {
-               RobotLog.e("[onStart] module name: " + var3.getName() + ", port: " + var3.getPort() + ", type: " + var3.getType());
+               RobotLog.log("[onStart] module name: " + var3.getName() + ", port: " + var3.getPort() + ", type: " + var3.getType());
             }
 
             this.a(this.a(var2), var3);

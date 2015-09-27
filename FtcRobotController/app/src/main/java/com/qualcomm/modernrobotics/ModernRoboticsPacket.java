@@ -4,11 +4,11 @@ import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.TypeConversion;
 
 public class ModernRoboticsPacket {
-   static boolean validatePacket0(byte[] packet, int cbExpected) {
-      return validatePacket1(packet, cbExpected);
+   static boolean validatePacket(byte[] packet, int cbExpected) {
+      return validatePacketInternal(packet, cbExpected);
    }
 
-   private static boolean validatePacket1(byte[] packet, int cbExpected) {
+   private static boolean validatePacketInternal(byte[] packet, int cbExpected) {
       if(packet.length < 5) {
          RobotLog.w("header length is too short");
          return false;

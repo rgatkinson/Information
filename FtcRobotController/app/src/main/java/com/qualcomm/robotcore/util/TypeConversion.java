@@ -11,8 +11,8 @@ public class TypeConversion {
       return byteArrayToInt(var0, ByteOrder.BIG_ENDIAN);
    }
 
-   public static int byteArrayToInt(byte[] var0, ByteOrder var1) {
-      return ByteBuffer.wrap(var0).order(var1).getInt();
+   public static int byteArrayToInt(byte[] data, ByteOrder byteOrder) {
+      return ByteBuffer.wrap(data).order(byteOrder).getInt();
    }
 
    public static long byteArrayToLong(byte[] var0) {

@@ -104,17 +104,17 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
     }
 
     public ReadWriteRunnableSegment createSegment(int key, int address, int size) {
-        ReadWriteRunnableSegment var4 = new ReadWriteRunnableSegment(address, size);
-        this.segments.put(Integer.valueOf(key), var4);
-        return var4;
+        ReadWriteRunnableSegment result = new ReadWriteRunnableSegment(address, size);
+        this.segments.put(key, result);
+        return result;
     }
 
     public void destroySegment(int key) {
-        this.segments.remove(Integer.valueOf(key));
+        this.segments.remove(key);
     }
 
     public ReadWriteRunnableSegment getSegment(int key) {
-        return (ReadWriteRunnableSegment)this.segments.get(Integer.valueOf(key));
+        return (ReadWriteRunnableSegment)this.segments.get(key);
     }
 
     public void queueSegmentRead(int key) {
@@ -134,7 +134,7 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
         ElapsedTime elapsed = new ElapsedTime();
         String deviceDescription = "Device " + this.serialNumber.toString();
         this.running = true;
-        RobotLog.v(String.format("starting read/write loop for device %s", new Object[]{this.serialNumber}));
+        RobotLog.v(String.format("starting read/write loop for device %s", this.serialNumber));
 
         try {
             this.usbHandler.purge(Channel.RX);

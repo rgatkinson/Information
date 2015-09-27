@@ -20,10 +20,6 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.ftccommon.R;
-import com.qualcomm.ftccommon.configuration.EditDeviceInterfaceModuleActivity;
-import com.qualcomm.ftccommon.configuration.EditLegacyModuleControllerActivity;
-import com.qualcomm.ftccommon.configuration.EditMotorControllerActivity;
-import com.qualcomm.ftccommon.configuration.EditServoControllerActivity;
 import com.qualcomm.hardware.ModernRoboticsDeviceManager;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
@@ -166,7 +162,7 @@ public class FtcConfigurationActivity extends Activity {
             this.h();
             this.f();
          } catch (RobotCoreException var4) {
-            RobotLog.e("Error parsing XML file");
+            RobotLog.log("Error parsing XML file");
             RobotLog.logStacktrace(var4);
             this.j.complainToast("Error parsing XML file: " + this.i, this.f);
          } catch (FileNotFoundException var5) {

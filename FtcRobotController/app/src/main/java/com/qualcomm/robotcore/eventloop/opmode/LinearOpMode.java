@@ -1,6 +1,5 @@
 package com.qualcomm.robotcore.eventloop.opmode;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -50,10 +49,10 @@ public abstract class LinearOpMode extends OpMode {
       }
 
       if(!this.a.c()) {
-         RobotLog.e("*****************************************************************");
-         RobotLog.e("User Linear Op Mode took too long to exit; emergency killing app.");
-         RobotLog.e("Possible infinite loop in user code?");
-         RobotLog.e("*****************************************************************");
+         RobotLog.log("*****************************************************************");
+         RobotLog.log("User Linear Op Mode took too long to exit; emergency killing app.");
+         RobotLog.log("Possible infinite loop in user code?");
+         RobotLog.log("*****************************************************************");
          System.exit(-1);
       }
 

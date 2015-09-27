@@ -26,7 +26,7 @@ public class ReadWriteRunnableUsbHandler {
       this.device.write(this.readCmd);
       Arrays.fill(this.respHeader, (byte)0);
       int var3 = this.device.read(this.respHeader, this.respHeader.length, 100);
-      if(!ModernRoboticsPacket.validatePacket0(this.respHeader, var2.length)) {
+      if(!ModernRoboticsPacket.validatePacket(this.respHeader, var2.length)) {
          ++this.usbSequentialReadErrorCount;
          if(var3 == this.respHeader.length) {
             this.a(this.readCmd, "comm error");
@@ -48,15 +48,21 @@ public class ReadWriteRunnableUsbHandler {
       throw new RobotCoreException(var2);
    }
 
-   private void b(int var1, byte[] data) throws RobotCoreException {
-      this.writeCmd[3] = (byte)var1;
+   private void writeInternal(int address, byte[] data) throws RobotCoreException {
+      // fill in the addressing information in the packet command header
+      this.writeCmd[3] = (byte)address;
       this.writeCmd[4] = (byte)data.length;
+
+      // send the data to the device
       this.device.write(Util.concatenateByteArrays(this.writeCmd, data));
-      Arrays.fill(this.respHeader, (byte)0);
-      int var3 = this.device.read(this.respHeader, this.respHeader.length, 100);
-      if(!ModernRoboticsPacket.validatePacket0(this.respHeader, 0)) {
+
+      // initialize and retrieve the response
+      Arrays.fill(this.respHeader, (byte) 0);
+      int cbReceived = this.device.read(this.respHeader, this.respHeader.length, 100);
+
+      if (!ModernRoboticsPacket.validatePacket(this.respHeader, 0)) {
          ++this.usbSequentialWriteErrorCount;
-         if(var3 == this.respHeader.length) {
+         if(cbReceived == this.respHeader.length) {
             this.a(this.writeCmd, "comm error");
          } else {
             this.a(this.writeCmd, "comm timeout");
@@ -91,8 +97,8 @@ public class ReadWriteRunnableUsbHandler {
       this.device.purge(channel);
    }
 
-   public void read(int var1, byte[] var2) throws RobotCoreException {
-      this.a(var1, var2);
+   public void read(int address, byte[] data) throws RobotCoreException {
+      this.a(address, data);
    }
 
    public void throwIfUsbErrorCountIsTooHigh() throws RobotCoreException {
@@ -101,7 +107,7 @@ public class ReadWriteRunnableUsbHandler {
       }
    }
 
-   public void write(int var1, byte[] var2) throws RobotCoreException {
-      this.b(var1, var2);
+   public void write(int address, byte[] data) throws RobotCoreException {
+      this.writeInternal(address, data);
    }
 }

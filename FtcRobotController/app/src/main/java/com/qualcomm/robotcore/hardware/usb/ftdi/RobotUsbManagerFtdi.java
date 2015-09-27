@@ -6,7 +6,6 @@ import com.ftdi.j2xx.FT_Device;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbManager;
-import com.qualcomm.robotcore.hardware.usb.ftdi.RobotUsbDeviceFtdi;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.SerialNumber;
 
@@ -20,7 +19,7 @@ public class RobotUsbManagerFtdi implements RobotUsbManager {
       try {
          this.b = D2xxManager.getInstance(var1);
       } catch (D2xxManager.D2xxException var3) {
-         RobotLog.e("Unable to create D2xxManager; cannot open USB devices");
+         RobotLog.log("Unable to create D2xxManager; cannot open USB devices");
       }
    }
 

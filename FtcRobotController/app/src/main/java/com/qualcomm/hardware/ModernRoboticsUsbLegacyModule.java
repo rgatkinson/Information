@@ -366,8 +366,8 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
         }
     }
 
-    private boolean a(int var1, byte var2) {
-        return (var2 & BUFFER_FLAG_MAP[var1]) == 0;
+    private boolean a(int physicalPort, byte var2) {
+        return (var2 & BUFFER_FLAG_MAP[physicalPort]) == 0;
     }
 
     public Lock getI2cReadCacheLock(int physicalPort) {

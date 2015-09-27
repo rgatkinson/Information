@@ -98,7 +98,7 @@ public class ModernRoboticsUsbUtil {
          a("error reading USB device headers");
       }
 
-      if(!ModernRoboticsPacket.validatePacket0(var1, 3)) {
+      if(!ModernRoboticsPacket.validatePacket(var1, 3)) {
          return var2;
       } else {
          var0.read(var2);

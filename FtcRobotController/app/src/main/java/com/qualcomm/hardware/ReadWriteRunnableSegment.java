@@ -18,6 +18,7 @@ public class ReadWriteRunnableSegment {
       this.writeBuffer = new byte[cb];
    }
 
+   /** returns the 'register' address at which this segment starts in the CDIM (or whomever) map*/
    public int getAddress() {
       return this.address;
    }

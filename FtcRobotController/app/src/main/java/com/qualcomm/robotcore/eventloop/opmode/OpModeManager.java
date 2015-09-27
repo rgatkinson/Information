@@ -1,7 +1,5 @@
 package com.qualcomm.robotcore.eventloop.opmode;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -50,7 +48,7 @@ public class OpModeManager {
    }
 
    private void a(Exception var1) {
-      RobotLog.e("Unable to start op mode " + this.c);
+      RobotLog.log("Unable to start op mode " + this.c);
       RobotLog.logStacktrace(var1);
       this.c = "Stop Robot";
       this.d = DEFAULT_OP_MODE;

@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 import com.qualcomm.robotcore.exception.RobotCoreException;
-import com.qualcomm.robotcore.util.RunShellCommand;
+
 import java.io.File;
 
 public class RobotLog {
@@ -43,7 +43,7 @@ public class RobotLog {
       Log.d("RobotCore", var0);
    }
 
-   public static void e(String var0) {
+   public static void log(String var0) {
       Log.e("RobotCore", var0);
    }
 
@@ -70,16 +70,16 @@ public class RobotLog {
    }
 
    public static void logStacktrace(RobotCoreException var0) {
-      e(var0.toString());
+      log(var0.toString());
       StackTraceElement[] var1 = var0.getStackTrace();
       int var2 = var1.length;
 
       for(int var3 = 0; var3 < var2; ++var3) {
-         e(var1[var3].toString());
+         log(var1[var3].toString());
       }
 
       if(var0.isChainedException()) {
-         e("Exception chained from:");
+         log("Exception chained from:");
          if(!(var0.getChainedException() instanceof RobotCoreException)) {
             logStacktrace(var0.getChainedException());
             return;
@@ -91,12 +91,12 @@ public class RobotLog {
    }
 
    public static void logStacktrace(Exception var0) {
-      e(var0.toString());
+      log(var0.toString());
       StackTraceElement[] var1 = var0.getStackTrace();
       int var2 = var1.length;
 
       for(int var3 = 0; var3 < var2; ++var3) {
-         e(var1[var3].toString());
+         log(var1[var3].toString());
       }
 
    }
