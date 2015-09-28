@@ -30,8 +30,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
     public static final byte NXT_MODE_9V_ENABLED = 0x02;
     public static final byte NXT_MODE_DIGITAL_0  = 0x04;
     public static final byte NXT_MODE_DIGITAL_1  = 0x08;
-    // What do the missing three bits do? Anything? I'm guessing no...
-    public static final byte NXT_MODE_READ       = 0x80;
+    public static final byte NXT_MODE_READ       = (byte)0x80;
     public static final byte NXT_MODE_WRITE      = 0;
     public static final byte BUFFER_FLAG_S0 = 1;
     public static final byte BUFFER_FLAG_S1 = 2;
@@ -57,7 +56,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
     public static final byte OFFSET_I2C_PORT_MEMORY_ADDRESS = 2;
     public static final byte OFFSET_I2C_PORT_MEMORY_LENGTH = 3;
     public static final byte OFFSET_I2C_PORT_MEMORY_BUFFER = 4;
-    public static final byte OFFSET_I2C_PORT_FLAG = 31;
+    public static final byte OFFSET_I2C_PORT_FLAG = SIZE_OF_PORT_BUFFER-1;
     public static final int[] ADDRESS_ANALOG_PORT_MAP = new int[]{4, 6, 8, 10, 12, 14};
     public static final int[] ADDRESS_I2C_PORT_MAP = new int[]{16, 48, 80, 112, 144, 176};
     public static final int[] BUFFER_FLAG_MAP = new int[]{1, 2, 4, 8, 16, 32};
@@ -74,7 +73,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
 
         for(int port = 0; port < NUMBER_OF_PORTS; ++port) {
             this.runnableSegments[port]                   = this.readWriteRunnable.createSegment(port, ADDRESS_I2C_PORT_MAP[port], SIZE_OF_PORT_BUFFER);
-            this.runnableSegments[port + NUMBER_OF_PORTS] = this.readWriteRunnable.createSegment(port + NUMBER_OF_PORTS, ADDRESS_I2C_PORT_MAP[port] + 31, 1);
+            this.runnableSegments[port + NUMBER_OF_PORTS] = this.readWriteRunnable.createSegment(port + NUMBER_OF_PORTS, ADDRESS_I2C_PORT_MAP[port] + OFFSET_I2C_PORT_FLAG, 1);
             this.enableAnalogReadMode(port);
             this.readWriteRunnable.queueSegmentWrite(port);
         }
@@ -107,7 +106,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
         try {
             this.runnableSegments[physicalPort].getWriteLock().lock();
             byte[] buffer = this.runnableSegments[physicalPort].getWriteBuffer();
-            buffer[0] = (NXT_MODE_I2C | NXT_MODE_READ);
+            buffer[OFFSET_I2C_PORT_MODE] = (NXT_MODE_I2C | NXT_MODE_READ);
             buffer[1] = (byte)i2cAddress;
             buffer[2] = (byte)memAddress;
             buffer[3] = (byte)length;
@@ -123,7 +122,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
         try {
             this.runnableSegments[physicalPort].getWriteLock().lock();
             byte[] buffer = this.runnableSegments[physicalPort].getWriteBuffer();
-            buffer[0] = NXT_MODE_I2C;
+            buffer[OFFSET_I2C_PORT_MODE = NXT_MODE_I2C;
             buffer[1] = (byte)i2cAddress;
             buffer[2] = (byte)memAddress;
             buffer[3] = (byte)length;
@@ -139,7 +138,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
         try {
             this.runnableSegments[physicalPort].getWriteLock().lock();
             byte[] buffer = this.runnableSegments[physicalPort].getWriteBuffer();
-            buffer[0] = NXT_MODE_ANALOG;
+            buffer[OFFSET_I2C_PORT_MODE] = NXT_MODE_ANALOG;
         } finally {
             this.runnableSegments[physicalPort].getWriteLock().unlock();
         }
@@ -153,14 +152,14 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
         } else {
             try {
                 this.runnableSegments[physicalPort].getWriteLock().lock();
-                byte b = this.runnableSegments[physicalPort].getWriteBuffer()[0];
+                byte bMode = this.runnableSegments[physicalPort].getWriteBuffer()[OFFSET_I2C_PORT_MODE];
                 if(enable) {
-                    b = (byte)(b | NXT_MODE_9V_ENABLED /*2*/);
+                    bMode = (byte)(bMode | NXT_MODE_9V_ENABLED /*2*/);
                 } else {
-                    b &= ~NXT_MODE_9V_ENABLED /*-3*/;
+                    bMode &= ~NXT_MODE_9V_ENABLED /*-3*/;
                 }
 
-                this.runnableSegments[physicalPort].getWriteBuffer()[0] = b;
+                this.runnableSegments[physicalPort].getWriteBuffer()[OFFSET_I2C_PORT_MODE] = bMode;
             } finally {
                 this.runnableSegments[physicalPort].getWriteLock().unlock();
             }
@@ -175,14 +174,14 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
 
         try {
             this.runnableSegments[physicalPort].getWriteLock().lock();
-            byte b = this.runnableSegments[physicalPort].getWriteBuffer()[0];
+            byte bMode = this.runnableSegments[physicalPort].getWriteBuffer()[OFFSET_I2C_PORT_MODE];
             if(set) {
-                b = (byte)(b | DIGITAL_LINE[line]);
+                bMode = (byte)(bMode | DIGITAL_LINE[line]);
             } else {
-                b = (byte)(b & ~DIGITAL_LINE[line]);
+                bMode = (byte)(bMode & ~DIGITAL_LINE[line]);
             }
 
-            this.runnableSegments[physicalPort].getWriteBuffer()[0] = b;
+            this.runnableSegments[physicalPort].getWriteBuffer()[OFFSET_I2C_PORT_MODE] = bMode;
         } finally {
             this.runnableSegments[physicalPort].getWriteLock().unlock();
         }
@@ -251,7 +250,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
         try {
             this.runnableSegments[physicalPort].getWriteLock().lock();
             byte[] buffer = this.runnableSegments[physicalPort].getWriteBuffer();
-            buffer[31] = I2C_ACTION_FLAG;
+            buffer[OFFSET_I2C_PORT_FLAG] = I2C_ACTION_FLAG;
         } finally {
             this.runnableSegments[physicalPort].getWriteLock().unlock();
         }
@@ -265,7 +264,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
         try {
             this.runnableSegments[physicalPort].getReadLock().lock();
             byte[] var3 = this.runnableSegments[physicalPort].getReadBuffer();
-            var2 = var3[31] == I2C_ACTION_FLAG;
+            var2 = var3[OFFSET_I2C_PORT_FLAG] == I2C_ACTION_FLAG;
         } finally {
             this.runnableSegments[physicalPort].getReadLock().unlock();
         }
@@ -291,7 +290,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
         try {
             writeSegment.getWriteLock().lock();
             actionFlagSegment.getWriteLock().lock();
-            actionFlagSegment.getWriteBuffer()[0] = writeSegment.getWriteBuffer()[31];
+            actionFlagSegment.getWriteBuffer()[0] = writeSegment.getWriteBuffer()[OFFSET_I2C_PORT_FLAG];
         } finally {
             writeSegment.getWriteLock().unlock();
             actionFlagSegment.getWriteLock().unlock();
@@ -302,17 +301,17 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
 
     public boolean isI2cPortInReadMode(int physicalPort) {
         this.validatePort(physicalPort);
-        boolean var2 = false;
+        boolean result = false;
 
         try {
             this.runnableSegments[physicalPort].getReadLock().lock();
-            byte[] var3 = this.runnableSegments[physicalPort].getReadBuffer();
-            var2 = var3[0] == (NXT_MODE_I2C | NXT_MODE_READ);
+            byte[] buffer = this.runnableSegments[physicalPort].getReadBuffer();
+            result = buffer[0] == (NXT_MODE_I2C | NXT_MODE_READ);
         } finally {
             this.runnableSegments[physicalPort].getReadLock().unlock();
         }
 
-        return var2;
+        return result;
     }
 
     public boolean isI2cPortInWriteMode(int physicalPort) {

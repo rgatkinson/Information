@@ -88,60 +88,60 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
    public static final int SIZE_I2C_BUFFER = 27;
    public static final int START_ADDRESS = 3;
    public static final int WORD_SIZE = 2;
-   private static final int[] a = new int[]{0, 1};
-   private static final int[] b = new int[]{2, 3};
-   private static final int[] c = new int[]{4, 5, 6, 7, 8, 9};
-   private static final int[] d = new int[]{10, 11, 12, 13, 14, 15};
+   private static final int[] analogOutputSegmentNumbers = new int[]{0, 1};
+   private static final int[] pwmSegmentNumbers = new int[]{2, 3};
+   private static final int[] i2cSegmentNumbers = new int[]{4, 5, 6, 7, 8, 9};
+   private static final int[] i2cFlagSegmentNumbers = new int[]{10, 11, 12, 13, 14, 15};
    private final I2cController.I2cPortReadyCallback[] callbacks = new I2cController.I2cPortReadyCallback[NUMBER_OF_PORTS];
    private final ElapsedTime[] elapsed = new ElapsedTime[NUMBER_OF_PORTS];
-   private ReadWriteRunnableSegment[] g;
-   private ReadWriteRunnableSegment[] h;
+   private ReadWriteRunnableSegment[] analogOutputSegments;
+   private ReadWriteRunnableSegment[] pwmSegments;
    private ReadWriteRunnableSegment[] i2cSegments;
    private ReadWriteRunnableSegment[] i2cFlagSegments;
 
    protected ModernRoboticsUsbDeviceInterfaceModule(SerialNumber serialNumber, RobotUsbDevice usbDevice, EventLoopManager eventLoopManager) throws RobotCoreException, InterruptedException {
       super(serialNumber, eventLoopManager, new ReadWriteRunnableStandard(serialNumber, usbDevice, MONITOR_LENGTH, START_ADDRESS, false));
-      this.g = new ReadWriteRunnableSegment[a.length];
-      this.h = new ReadWriteRunnableSegment[b.length];
-      this.i2cSegments = new ReadWriteRunnableSegment[c.length];
-      this.i2cFlagSegments = new ReadWriteRunnableSegment[d.length];
+      this.analogOutputSegments = new ReadWriteRunnableSegment[analogOutputSegmentNumbers.length];
+      this.pwmSegments = new ReadWriteRunnableSegment[pwmSegmentNumbers.length];
+      this.i2cSegments = new ReadWriteRunnableSegment[i2cSegmentNumbers.length];
+      this.i2cFlagSegments = new ReadWriteRunnableSegment[i2cFlagSegmentNumbers.length];
 
-      for(int var4 = 0; var4 < a.length; ++var4) {
-         this.g[var4] = this.readWriteRunnable.createSegment(a[var4], ADDRESS_VOLTAGE_OUTPUT_PORT_MAP[var4], 5);
+      int i;
+      for(i = 0; i < analogOutputSegmentNumbers.length; ++i) {
+         this.analogOutputSegments[i] = this.readWriteRunnable.createSegment(analogOutputSegmentNumbers[i], ADDRESS_VOLTAGE_OUTPUT_PORT_MAP[i], 5);
       }
 
-      int var5 = 0;
+      i = 0;
 
       while(true) {
-         int var6 = b.length;
+         int var6 = pwmSegmentNumbers.length;
          int port = 0;
-         if(var5 >= var6) {
-            while(port < c.length) {
-               this.i2cSegments[port] = this.readWriteRunnable.createSegment(c[port], ADDRESS_I2C_PORT_MAP[port], I2C_PORT_BUFFER_SIZE);
-               this.i2cFlagSegments[port] = this.readWriteRunnable.createSegment(d[port], 31 + ADDRESS_I2C_PORT_MAP[port], 1);
+         if(i >= var6) {
+            while(port < i2cSegmentNumbers.length) {
+               this.i2cSegments[port]     = this.readWriteRunnable.createSegment(i2cSegmentNumbers[port], ADDRESS_I2C_PORT_MAP[port], I2C_PORT_BUFFER_SIZE);
+               this.i2cFlagSegments[port] = this.readWriteRunnable.createSegment(i2cFlagSegmentNumbers[port], OFFSET_I2C_PORT_FLAG + ADDRESS_I2C_PORT_MAP[port], 1);
                ++port;
             }
 
             return;
          }
 
-         this.h[var5] = this.readWriteRunnable.createSegment(b[var5], ADDRESS_PULSE_OUTPUT_PORT_MAP[var5], 4);
-         ++var5;
+         this.pwmSegments[i] = this.readWriteRunnable.createSegment(pwmSegmentNumbers[i], ADDRESS_PULSE_OUTPUT_PORT_MAP[i], 4);
+         ++i;
       }
    }
 
-   private int a(int var1, DigitalChannelController.Mode var2) {
-      return var2 == DigitalChannelController.Mode.OUTPUT?ADDRESS_DIGITAL_BIT_MASK[var1]:~ADDRESS_DIGITAL_BIT_MASK[var1];
+   private int a(int port, DigitalChannelController.Mode mode) {
+      return mode == DigitalChannelController.Mode.OUTPUT?ADDRESS_DIGITAL_BIT_MASK[port]:~ADDRESS_DIGITAL_BIT_MASK[port];
    }
 
-   private DigitalChannelController.Mode a(int var1, int var2) {
-      return (var2 & ADDRESS_DIGITAL_BIT_MASK[var1]) > 0?DigitalChannelController.Mode.OUTPUT:DigitalChannelController.Mode.INPUT;
+   private DigitalChannelController.Mode a(int port, int var2) {
+      return (var2 & ADDRESS_DIGITAL_BIT_MASK[port]) > 0?DigitalChannelController.Mode.OUTPUT:DigitalChannelController.Mode.INPUT;
    }
 
-   private void a(int var1) {
-      if(var1 != 0 && var1 != 1) {
-         Object[] var2 = new Object[]{Integer.valueOf(var1)};
-         throw new IllegalArgumentException(String.format("port %d is invalid; valid ports are 0 and 1.", var2));
+   private void validateLEDPort(int port) {
+      if(port != 0 && port != 1) {
+         throw new IllegalArgumentException(String.format("port %d is invalid; valid ports are 0 and 1.", port));
       }
    }
 
@@ -151,15 +151,13 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
 
    private void b(int var1) {
       if(var1 != 0 && var1 != 1) {
-         Object[] var2 = new Object[]{Integer.valueOf(var1)};
-         throw new IllegalArgumentException(String.format("port %d is invalid; valid ports are 0 and 1.", var2));
+         throw new IllegalArgumentException(String.format("port %d is invalid; valid ports are 0 and 1.", var1));
       }
    }
 
    private void c(int var1) {
       if(var1 != 0 && var1 != 1) {
-         Object[] var2 = new Object[]{Integer.valueOf(var1)};
-         throw new IllegalArgumentException(String.format("port %d is invalid; valid ports are 0 and 1.", var2));
+         throw new IllegalArgumentException(String.format("port %d is invalid; valid ports are 0 and 1.", var1));
       }
    }
 
@@ -177,10 +175,9 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
       }
    }
 
-   private void validateI2cBufferLength(int var1) {
-      if(var1 > 27) {
-         Object[] var2 = new Object[]{Integer.valueOf(var1), Integer.valueOf(27)};
-         throw new IllegalArgumentException(String.format("buffer is too large (%d byte), max size is %d bytes", var2));
+   private void validateI2cBufferLength(int length) {
+      if(length > SIZE_I2C_BUFFER) {
+         throw new IllegalArgumentException(String.format("buffer is too large (%d byte), max size is %d bytes", length, SIZE_I2C_BUFFER));
       }
    }
 
@@ -201,35 +198,35 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
       this.callbacks[var1] = null;
    }
 
-   public void enableI2cReadMode(int port, int var2, int var3, int var4) {
+   public void enableI2cReadMode(int port, int i2cAddr, int memAddr, int cb) {
       this.validateI2cPort(port);
-      this.validateI2cBufferLength(var4);
+      this.validateI2cBufferLength(cb);
 
       try {
          this.i2cSegments[port].getWriteLock().lock();
          byte[] var6 = this.i2cSegments[port].getWriteBuffer();
-         var6[0] = -128;
-         var6[1] = (byte)var2;
-         var6[2] = (byte)var3;
-         var6[3] = (byte)var4;
+         var6[OFFSET_I2C_PORT_MODE]             = -128;
+         var6[OFFSET_I2C_PORT_I2C_ADDRESS]      = (byte)i2cAddr;
+         var6[OFFSET_I2C_PORT_MEMORY_ADDRESS]   = (byte)memAddr;
+         var6[OFFSET_I2C_PORT_MEMORY_LENGTH]    = (byte)cb;
       } finally {
          this.i2cSegments[port].getWriteLock().unlock();
       }
    }
 
-   public void enableI2cWriteMode(int var1, int var2, int var3, int var4) {
-      this.validateI2cPort(var1);
-      this.validateI2cBufferLength(var4);
+   public void enableI2cWriteMode(int port, int i2cAddr, int memAddr, int cb) {
+      this.validateI2cPort(port);
+      this.validateI2cBufferLength(cb);
 
       try {
-         this.i2cSegments[var1].getWriteLock().lock();
-         byte[] var6 = this.i2cSegments[var1].getWriteBuffer();
-         var6[0] = 0;
-         var6[1] = (byte)var2;
-         var6[2] = (byte)var3;
-         var6[3] = (byte)var4;
+         this.i2cSegments[port].getWriteLock().lock();
+         byte[] var6 = this.i2cSegments[port].getWriteBuffer();
+         var6[OFFSET_I2C_PORT_MODE]             = 0;
+         var6[OFFSET_I2C_PORT_I2C_ADDRESS]      = (byte)i2cAddr;
+         var6[OFFSET_I2C_PORT_MEMORY_ADDRESS]   = (byte)memAddr;
+         var6[OFFSET_I2C_PORT_MEMORY_LENGTH]    = (byte)cb;
       } finally {
-         this.i2cSegments[var1].getWriteLock().unlock();
+         this.i2cSegments[port].getWriteLock().unlock();
       }
 
    }
@@ -243,173 +240,175 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
       return "USB " + this.getSerialNumber();
    }
 
-   public byte[] getCopyOfReadBuffer(int var1) {
-      this.validateI2cPort(var1);
+   public byte[] getCopyOfReadBuffer(int port) {
+      this.validateI2cPort(port);
 
-      byte[] var4;
+      byte[] result;
       try {
-         this.i2cSegments[var1].getReadLock().lock();
-         byte[] var3 = this.i2cSegments[var1].getReadBuffer();
-         var4 = new byte[var3[3]];
-         System.arraycopy(var3, 4, var4, 0, var4.length);
+         this.i2cSegments[port].getReadLock().lock();
+         byte[] readBuffer = this.i2cSegments[port].getReadBuffer();
+         result = new byte[readBuffer[OFFSET_I2C_PORT_MEMORY_LENGTH]];
+         System.arraycopy(readBuffer, OFFSET_I2C_PORT_MEMORY_BUFFER, result, 0, result.length);
       } finally {
-         this.i2cSegments[var1].getReadLock().unlock();
+         this.i2cSegments[port].getReadLock().unlock();
       }
 
-      return var4;
+      return result;
    }
 
    public byte[] getCopyOfWriteBuffer(int var1) {
       this.validateI2cPort(var1);
 
-      byte[] var4;
+      byte[] result;
       try {
          this.i2cSegments[var1].getWriteLock().lock();
-         byte[] var3 = this.i2cSegments[var1].getWriteBuffer();
-         var4 = new byte[var3[3]];
-         System.arraycopy(var3, 4, var4, 0, var4.length);
+         byte[] writeBuffer = this.i2cSegments[var1].getWriteBuffer();
+         result = new byte[writeBuffer[OFFSET_I2C_PORT_MEMORY_LENGTH]];
+         System.arraycopy(writeBuffer, OFFSET_I2C_PORT_MEMORY_BUFFER, result, 0, result.length);
       } finally {
          this.i2cSegments[var1].getWriteLock().unlock();
       }
 
-      return var4;
+      return result;
    }
 
    public String getDeviceName() {
       return "Modern Robotics USB Device Interface Module";
    }
 
-   public DigitalChannelController.Mode getDigitalChannelMode(int var1) {
-      return this.a(var1, (int)this.getDigitalIOControlByte());
+   public DigitalChannelController.Mode getDigitalChannelMode(int port) {
+      return this.a(port, (int)this.getDigitalIOControlByte());
    }
 
-   public boolean getDigitalChannelState(int var1) {
+   public boolean getDigitalChannelState(int port) {
       int var2;
-      if(DigitalChannelController.Mode.OUTPUT == this.getDigitalChannelMode(var1)) {
+      if(DigitalChannelController.Mode.OUTPUT == this.getDigitalChannelMode(port)) {
          var2 = this.getDigitalOutputStateByte();
       } else {
          var2 = this.getDigitalInputStateByte();
       }
 
-      return (var2 & ADDRESS_DIGITAL_BIT_MASK[var1]) > 0;
+      return (var2 & ADDRESS_DIGITAL_BIT_MASK[port]) > 0;
    }
 
    public byte getDigitalIOControlByte() {
-      return this.read(21);
+      return this.read(ADDRESS_DIGITAL_IO_CONTROL);
    }
 
    public int getDigitalInputStateByte() {
-      return TypeConversion.unsignedByteToInt(this.read(20));
+      return TypeConversion.unsignedByteToInt(this.read(ADDRESS_DIGITAL_INPUT_STATE));
    }
 
    public byte getDigitalOutputStateByte() {
-      return this.read(22);
+      return this.read(ADDRESS_DIGITAL_OUTPUT_STATE);
    }
 
-   public byte[] getI2cReadCache(int var1) {
-      return this.i2cSegments[var1].getReadBuffer();
+   public byte[] getI2cReadCache(int port) {
+      return this.i2cSegments[port].getReadBuffer();
    }
 
-   public Lock getI2cReadCacheLock(int var1) {
-      return this.i2cSegments[var1].getReadLock();
+   public Lock getI2cReadCacheLock(int port) {
+      return this.i2cSegments[port].getReadLock();
    }
 
-   public byte[] getI2cWriteCache(int var1) {
-      return this.i2cSegments[var1].getWriteBuffer();
+   public byte[] getI2cWriteCache(int port) {
+      return this.i2cSegments[port].getWriteBuffer();
    }
 
-   public Lock getI2cWriteCacheLock(int var1) {
-      return this.i2cSegments[var1].getWriteLock();
+   public Lock getI2cWriteCacheLock(int port) {
+      return this.i2cSegments[port].getWriteLock();
    }
 
-   public boolean getLEDState(int var1) {
-      this.a(var1);
-      return (this.read(23) & LED_BIT_MASK_MAP[var1]) > 0;
+   public boolean getLEDState(int port) {
+      this.validateLEDPort(port);
+      return (this.read(ADDRESS_LED_SET) & LED_BIT_MASK_MAP[port]) > 0;
    }
 
-   public int getPulseWidthOutputTime(int var1) {
+   public int getPulseWidthOutputTime(int port) {
       throw new UnsupportedOperationException("getPulseWidthOutputTime is not implemented.");
    }
 
-   public int getPulseWidthPeriod(int var1) {
+   public int getPulseWidthPeriod(int port) {
       throw new UnsupportedOperationException("getPulseWidthOutputTime is not implemented.");
    }
 
-   public boolean isI2cPortActionFlagSet(int var1) {
-      this.validateI2cPort(var1);
-      boolean var6 = false;
+   // Note that this returns the state of the action flag as it has been *read* from the
+   // controller. Is that ever actually useful? Isn't it significant only on *writes*, not reads?
+   public boolean isI2cPortActionFlagSet(int port) {
+      this.validateI2cPort(port);
+      boolean unlockNeeded = false;
 
-      byte var3;
+      byte readBuffer;
       try {
-         var6 = true;
-         this.i2cSegments[var1].getReadLock().lock();
-         var3 = this.i2cSegments[var1].getReadBuffer()[31];
-         var6 = false;
+         unlockNeeded = true;
+         this.i2cSegments[port].getReadLock().lock();
+         readBuffer = this.i2cSegments[port].getReadBuffer()[31];
+         unlockNeeded = false;
       } finally {
-         if(var6) {
-            this.i2cSegments[var1].getReadLock().unlock();
+         if(unlockNeeded) {
+            this.i2cSegments[port].getReadLock().unlock();
          }
       }
 
-      boolean var4;
-      if(var3 == -1) {
-         var4 = true;
+      boolean result;
+      if(readBuffer == I2C_ACTION_FLAG) {
+         result = true;
       } else {
-         var4 = false;
+         result = false;
       }
 
-      this.i2cSegments[var1].getReadLock().unlock();
-      return var4;
+      this.i2cSegments[port].getReadLock().unlock();
+      return result;
    }
 
-   public boolean isI2cPortInReadMode(int var1) {
-      this.validateI2cPort(var1);
-      boolean var6 = false;
+   public boolean isI2cPortInReadMode(int port) {
+      this.validateI2cPort(port);
+      boolean unlockNeeded = false;
 
-      byte var3;
+      byte bStatus;
       try {
-         var6 = true;
-         this.i2cSegments[var1].getReadLock().lock();
-         var3 = this.i2cSegments[var1].getReadBuffer()[0];
-         var6 = false;
+         unlockNeeded = true;
+         this.i2cSegments[port].getReadLock().lock();
+         bStatus = this.i2cSegments[port].getReadBuffer()[OFFSET_I2C_PORT_MODE];
+         unlockNeeded = false;
       } finally {
-         if(var6) {
-            this.i2cSegments[var1].getReadLock().unlock();
+         if(unlockNeeded) {
+            this.i2cSegments[port].getReadLock().unlock();
          }
       }
 
-      boolean var4 = false;
-      if(var3 == -128) {
-         var4 = true;
+      boolean result = false;
+      if(bStatus == -128) {
+         result = true;
       }
 
-      this.i2cSegments[var1].getReadLock().unlock();
-      return var4;
+      this.i2cSegments[port].getReadLock().unlock();
+      return result;
    }
 
    public boolean isI2cPortInWriteMode(int var1) {
       this.validateI2cPort(var1);
-      boolean var6 = false;
+      boolean unlockNeeded = false;
 
-      byte var3;
+      byte bStatus;
       try {
-         var6 = true;
+         unlockNeeded = true;
          this.i2cSegments[var1].getReadLock().lock();
-         var3 = this.i2cSegments[var1].getReadBuffer()[0];
-         var6 = false;
+         bStatus = this.i2cSegments[var1].getReadBuffer()[OFFSET_I2C_PORT_MODE];
+         unlockNeeded = false;
       } finally {
-         if(var6) {
+         if(unlockNeeded) {
             this.i2cSegments[var1].getReadLock().unlock();
          }
       }
 
-      boolean var4 = false;
-      if(var3 == 0) {
-         var4 = true;
+      boolean result = false;
+      if(bStatus == 0) {
+         result = true;
       }
 
       this.i2cSegments[var1].getReadLock().unlock();
-      return var4;
+      return result;
    }
 
    public boolean isI2cPortReady(int port) {
@@ -431,7 +430,7 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
 
    public void readI2cCacheFromController(int var1) {
       this.validateI2cPort(var1);
-      this.readWriteRunnable.queueSegmentRead(c[var1]);
+      this.readWriteRunnable.queueSegmentRead(i2cSegmentNumbers[var1]);
    }
 
    @Deprecated
@@ -445,8 +444,8 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
 
    public void setAnalogOutputFrequency(int var1, int var2) {
       this.b(var1);
-      Lock var3 = this.g[var1].getWriteLock();
-      byte[] var4 = this.g[var1].getWriteBuffer();
+      Lock var3 = this.analogOutputSegments[var1].getWriteLock();
+      byte[] var4 = this.analogOutputSegments[var1].getWriteBuffer();
       byte[] var5 = TypeConversion.shortToByteArray((short)var2, ByteOrder.LITTLE_ENDIAN);
 
       try {
@@ -456,13 +455,13 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
          var3.unlock();
       }
 
-      this.readWriteRunnable.queueSegmentWrite(a[var1]);
+      this.readWriteRunnable.queueSegmentWrite(analogOutputSegmentNumbers[var1]);
    }
 
    public void setAnalogOutputMode(int var1, byte var2) {
       this.b(var1);
-      Lock var3 = this.g[var1].getWriteLock();
-      byte[] var4 = this.g[var1].getWriteBuffer();
+      Lock var3 = this.analogOutputSegments[var1].getWriteLock();
+      byte[] var4 = this.analogOutputSegments[var1].getWriteBuffer();
 
       try {
          var3.lock();
@@ -471,13 +470,13 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
          var3.unlock();
       }
 
-      this.readWriteRunnable.queueSegmentWrite(a[var1]);
+      this.readWriteRunnable.queueSegmentWrite(analogOutputSegmentNumbers[var1]);
    }
 
    public void setAnalogOutputVoltage(int var1, int var2) {
       this.b(var1);
-      Lock var3 = this.g[var1].getWriteLock();
-      byte[] var4 = this.g[var1].getWriteBuffer();
+      Lock var3 = this.analogOutputSegments[var1].getWriteLock();
+      byte[] var4 = this.analogOutputSegments[var1].getWriteBuffer();
       byte[] var5 = TypeConversion.shortToByteArray((short)var2, ByteOrder.LITTLE_ENDIAN);
 
       try {
@@ -487,7 +486,7 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
          var3.unlock();
       }
 
-      this.readWriteRunnable.queueSegmentWrite(a[var1]);
+      this.readWriteRunnable.queueSegmentWrite(analogOutputSegmentNumbers[var1]);
    }
 
    public void setDigitalChannelMode(int var1, DigitalChannelController.Mode var2) {
@@ -531,7 +530,7 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
 
       try {
          this.i2cSegments[var1].getWriteLock().lock();
-         this.i2cSegments[var1].getWriteBuffer()[31] = -1;
+         this.i2cSegments[var1].getWriteBuffer()[31] = I2C_ACTION_FLAG;
       } finally {
          this.i2cSegments[var1].getWriteLock().unlock();
       }
@@ -539,7 +538,7 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
    }
 
    public void setLED(int var1, boolean var2) {
-      this.a(var1);
+      this.validateLEDPort(var1);
       byte var3 = this.readFromWriteCache(23);
       int var4;
       if(var2) {
@@ -553,8 +552,8 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
 
    public void setPulseWidthOutputTime(int var1, int var2) {
       this.c(var1);
-      Lock var3 = this.h[var1].getWriteLock();
-      byte[] var4 = this.h[var1].getWriteBuffer();
+      Lock var3 = this.pwmSegments[var1].getWriteLock();
+      byte[] var4 = this.pwmSegments[var1].getWriteBuffer();
       byte[] var5 = TypeConversion.shortToByteArray((short)var2, ByteOrder.LITTLE_ENDIAN);
 
       try {
@@ -564,13 +563,13 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
          var3.unlock();
       }
 
-      this.readWriteRunnable.queueSegmentWrite(b[var1]);
+      this.readWriteRunnable.queueSegmentWrite(pwmSegmentNumbers[var1]);
    }
 
    public void setPulseWidthPeriod(int var1, int var2) {
       this.validateI2cPort(var1);
-      Lock var3 = this.h[var1].getWriteLock();
-      byte[] var4 = this.h[var1].getWriteBuffer();
+      Lock var3 = this.pwmSegments[var1].getWriteLock();
+      byte[] var4 = this.pwmSegments[var1].getWriteBuffer();
       byte[] var5 = TypeConversion.shortToByteArray((short)var2, ByteOrder.LITTLE_ENDIAN);
 
       try {
@@ -580,12 +579,12 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
          var3.unlock();
       }
 
-      this.readWriteRunnable.queueSegmentWrite(b[var1]);
+      this.readWriteRunnable.queueSegmentWrite(pwmSegmentNumbers[var1]);
    }
 
    public void writeI2cCacheToController(int port) {
       this.validateI2cPort(port);
-      this.readWriteRunnable.queueSegmentWrite(c[port]);
+      this.readWriteRunnable.queueSegmentWrite(i2cSegmentNumbers[port]);
    }
 
    @Deprecated
@@ -607,7 +606,7 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
          var3.getWriteLock().unlock();
       }
 
-      this.readWriteRunnable.queueSegmentWrite(d[var1]);
+      this.readWriteRunnable.queueSegmentWrite(i2cFlagSegmentNumbers[var1]);
    }
 
    @Deprecated
