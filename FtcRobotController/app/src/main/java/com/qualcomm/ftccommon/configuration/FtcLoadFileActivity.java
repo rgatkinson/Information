@@ -16,8 +16,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.ftccommon.R;
-import com.qualcomm.ftccommon.configuration.AutoConfigureActivity;
-import com.qualcomm.ftccommon.configuration.FtcConfigurationActivity;
 import com.qualcomm.robotcore.hardware.configuration.Utility;
 import java.io.File;
 import java.util.ArrayList;
@@ -30,12 +28,12 @@ public class FtcLoadFileActivity extends Activity {
       }
    };
    private ArrayList<String> b = new ArrayList();
-   private Context c;
-   private Utility d;
+   private Context context;
+   private Utility utility;
 
-   private String a(View var1, boolean var2) {
-      String var3 = ((TextView)((LinearLayout)((LinearLayout)var1.getParent()).getParent()).findViewById(R.id.filename_editText)).getText().toString();
-      if(var2) {
+   private String getFileName(View view, boolean addDotXml) {
+      String var3 = ((TextView)((LinearLayout)((LinearLayout)view.getParent()).getParent()).findViewById(R.id.filename_editText)).getText().toString();
+      if(addDotXml) {
          var3 = var3 + ".xml";
       }
 
@@ -45,7 +43,7 @@ public class FtcLoadFileActivity extends Activity {
    private void a() {
       ((Button)this.findViewById(R.id.files_holder).findViewById(R.id.info_btn)).setOnClickListener(new android.view.View.OnClickListener() {
          public void onClick(View var1) {
-            Builder var2 = FtcLoadFileActivity.this.d.buildBuilder("Available files", "These are the files the Hardware Wizard was able to find. You can edit each file by clicking the edit button. The \'Activate\' button will set that file as the current configuration file, which will be used to start the robot.");
+            Builder var2 = FtcLoadFileActivity.this.utility.buildBuilder("Available files", "These are the files the Hardware Wizard was able to find. You can edit each file by clicking the edit button. The \'Activate\' button will set that file as the current configuration file, which will be used to start the robot.");
             var2.setPositiveButton("Ok", FtcLoadFileActivity.this.a);
             AlertDialog var4 = var2.create();
             var4.show();
@@ -54,7 +52,7 @@ public class FtcLoadFileActivity extends Activity {
       });
       ((Button)this.findViewById(R.id.autoconfigure_holder).findViewById(R.id.info_btn)).setOnClickListener(new android.view.View.OnClickListener() {
          public void onClick(View var1) {
-            Builder var2 = FtcLoadFileActivity.this.d.buildBuilder("AutoConfigure", "This is the fastest way to get a new machine up and running. The AutoConfigure tool will automatically enter some default names for devices. AutoConfigure expects certain devices.  If there are other devices attached, the AutoConfigure tool will not name them.");
+            Builder var2 = FtcLoadFileActivity.this.utility.buildBuilder("AutoConfigure", "This is the fastest way to get a new machine up and running. The AutoConfigure tool will automatically enter some default names for devices. AutoConfigure expects certain devices.  If there are other devices attached, the AutoConfigure tool will not name them.");
             var2.setPositiveButton("Ok", FtcLoadFileActivity.this.a);
             AlertDialog var4 = var2.create();
             var4.show();
@@ -65,7 +63,7 @@ public class FtcLoadFileActivity extends Activity {
 
    private void b() {
       if(this.b.size() == 0) {
-         this.d.setOrangeText("No files found!", "In order to proceed, you must create a new file", R.id.empty_filelist, R.layout.orange_warning, R.id.orangetext0, R.id.orangetext1);
+         this.utility.setOrangeText("No files found!", "In order to proceed, you must create a new file", R.id.empty_filelist, R.layout.orange_warning, R.id.orangetext0, R.id.orangetext1);
       } else {
          ViewGroup var1 = (ViewGroup)this.findViewById(R.id.empty_filelist);
          var1.removeAllViews();
@@ -87,32 +85,32 @@ public class FtcLoadFileActivity extends Activity {
 
    }
 
-   public void file_activate_button(View var1) {
-      String var2 = this.a(var1, false);
-      this.d.saveToPreferences(var2, R.string.pref_hardware_config_filename);
-      this.d.updateHeader("No current file!", R.string.pref_hardware_config_filename, R.id.active_filename, R.id.included_header);
+   public void file_activate_button(View view) {
+      String fileNameNoDotXml = this.getFileName(view, false);
+      this.utility.saveToPreferences(fileNameNoDotXml, R.string.pref_hardware_config_filename);
+      this.utility.updateHeader("No current file!", R.string.pref_hardware_config_filename, R.id.active_filename, R.id.included_header);
    }
 
    public void file_delete_button(View var1) {
-      String var2 = this.a(var1, true);
+      String var2 = this.getFileName(var1, true);
       File var3 = new File(Utility.CONFIG_FILES_DIR + var2);
       if(var3.exists()) {
          var3.delete();
       } else {
-         this.d.complainToast("That file does not exist: " + var2, this.c);
+         this.utility.complainToast("That file does not exist: " + var2, this.context);
          DbgLog.error("Tried to delete a file that does not exist: " + var2);
       }
 
-      this.b = this.d.getXMLFiles();
-      this.d.saveToPreferences("No current file!", R.string.pref_hardware_config_filename);
-      this.d.updateHeader("No current file!", R.string.pref_hardware_config_filename, R.id.active_filename, R.id.included_header);
+      this.b = this.utility.getXMLFiles();
+      this.utility.saveToPreferences("No current file!", R.string.pref_hardware_config_filename);
+      this.utility.updateHeader("No current file!", R.string.pref_hardware_config_filename, R.id.active_filename, R.id.included_header);
       this.c();
    }
 
    public void file_edit_button(View var1) {
-      String var2 = this.a(var1, true);
-      this.d.saveToPreferences(var2, R.string.pref_hardware_config_filename);
-      this.startActivity(new Intent(this.c, FtcConfigurationActivity.class));
+      String var2 = this.getFileName(var1, true);
+      this.utility.saveToPreferences(var2, R.string.pref_hardware_config_filename);
+      this.startActivity(new Intent(this.context, FtcConfigurationActivity.class));
    }
 
    public void launch_autoConfigure(View var1) {
@@ -120,32 +118,32 @@ public class FtcLoadFileActivity extends Activity {
    }
 
    public void new_button(View var1) {
-      this.d.saveToPreferences("No current file!", R.string.pref_hardware_config_filename);
-      this.startActivity(new Intent(this.c, FtcConfigurationActivity.class));
+      this.utility.saveToPreferences("No current file!", R.string.pref_hardware_config_filename);
+      this.startActivity(new Intent(this.context, FtcConfigurationActivity.class));
    }
 
    public void onBackPressed() {
-      String var1 = this.d.getFilenameFromPrefs(R.string.pref_hardware_config_filename, "No current file!");
-      Intent var2 = new Intent();
-      var2.putExtra("CONFIGURE_FILENAME", var1);
-      this.setResult(-1, var2);
+      String selectedConfigurationFile = this.utility.getFilenameFromPrefs(R.string.pref_hardware_config_filename, "No current file!");
+      Intent intent = new Intent();
+      intent.putExtra("CONFIGURE_FILENAME", selectedConfigurationFile);
+      this.setResult(-1, intent);
       this.finish();
    }
 
    protected void onCreate(Bundle var1) {
       super.onCreate(var1);
       this.setContentView(R.layout.activity_load);
-      this.c = this;
-      this.d = new Utility(this);
-      this.d.createConfigFolder();
+      this.context = this;
+      this.utility = new Utility(this);
+      this.utility.createConfigFolder();
       this.a();
    }
 
    protected void onStart() {
       super.onStart();
-      this.b = this.d.getXMLFiles();
+      this.b = this.utility.getXMLFiles();
       this.b();
-      this.d.updateHeader("No current file!", R.string.pref_hardware_config_filename, R.id.active_filename, R.id.included_header);
+      this.utility.updateHeader("No current file!", R.string.pref_hardware_config_filename, R.id.active_filename, R.id.included_header);
       this.c();
    }
 }

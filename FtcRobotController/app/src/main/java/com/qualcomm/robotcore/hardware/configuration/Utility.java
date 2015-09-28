@@ -33,19 +33,19 @@ public class Utility {
    public static final String NO_FILE = "No current file!";
    public static final String UNSAVED = "Unsaved";
    private static int c = 1;
-   private Activity a;
-   private SharedPreferences b;
-   private WriteXMLFileHandler d;
+   private Activity activity;
+   private SharedPreferences sharedPreferences;
+   private WriteXMLFileHandler writeXMLFileHandler;
    private String e;
 
-   public Utility(Activity var1) {
-      this.a = var1;
-      this.b = PreferenceManager.getDefaultSharedPreferences(var1);
-      this.d = new WriteXMLFileHandler(var1);
+   public Utility(Activity activity) {
+      this.activity = activity;
+      this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
+      this.writeXMLFileHandler = new WriteXMLFileHandler(activity);
    }
 
    public Builder buildBuilder(String var1, String var2) {
-      Builder var3 = new Builder(this.a);
+      Builder var3 = new Builder(this.activity);
       var3.setTitle(var1).setMessage(var2);
       return var3;
    }
@@ -83,7 +83,7 @@ public class Utility {
    }
 
    public void changeBackground(int var1, int var2) {
-      ((LinearLayout)this.a.findViewById(var2)).setBackgroundColor(var1);
+      ((LinearLayout)this.activity.findViewById(var2)).setBackgroundColor(var1);
    }
 
    public void complainToast(String var1, Context var2) {
@@ -96,7 +96,7 @@ public class Utility {
    }
 
    public void confirmSave() {
-      Toast var1 = Toast.makeText(this.a, "Saved", 0);
+      Toast var1 = Toast.makeText(this.activity, "Saved", 0);
       var1.setGravity(80, 0, 50);
       var1.show();
    }
@@ -130,7 +130,7 @@ public class Utility {
 
       if(!var2) {
          RobotLog.log("Can\'t create the Robot Config Files directory!");
-         this.complainToast("Can\'t create the Robot Config Files directory!", this.a);
+         this.complainToast("Can\'t create the Robot Config Files directory!", this.activity);
       }
 
    }
@@ -217,7 +217,7 @@ public class Utility {
    }
 
    public String getFilenameFromPrefs(int var1, String var2) {
-      return this.b.getString(this.a.getString(var1), var2);
+      return this.sharedPreferences.getString(this.activity.getString(var1), var2);
    }
 
    public String getOutput() {
@@ -261,18 +261,18 @@ public class Utility {
       c = 1;
    }
 
-   public void saveToPreferences(String var1, int var2) {
-      String var3 = var1.replaceFirst("[.][^.]+$", "");
-      Editor var4 = this.b.edit();
-      var4.putString(this.a.getString(var2), var3);
-      var4.apply();
+   public void saveToPreferences(String value, int preferenceId) {
+      String cleaned = value.replaceFirst("[.][^.]+$", "");
+      Editor editor = this.sharedPreferences.edit();
+      editor.putString(this.activity.getString(preferenceId), cleaned);
+      editor.apply();
    }
 
    public void setOrangeText(String var1, String var2, int var3, int var4, int var5, int var6) {
-      LinearLayout var7 = (LinearLayout)this.a.findViewById(var3);
+      LinearLayout var7 = (LinearLayout)this.activity.findViewById(var3);
       var7.setVisibility(0);
       var7.removeAllViews();
-      this.a.getLayoutInflater().inflate(var4, var7, true);
+      this.activity.getLayoutInflater().inflate(var4, var7, true);
       TextView var9 = (TextView)var7.findViewById(var5);
       TextView var10 = (TextView)var7.findViewById(var6);
       var10.setGravity(3);
@@ -281,8 +281,8 @@ public class Utility {
    }
 
    public void updateHeader(String var1, int var2, int var3, int var4) {
-      String var5 = this.b.getString(this.a.getString(var2), var1).replaceFirst("[.][^.]+$", "");
-      ((TextView)this.a.findViewById(var3)).setText(var5);
+      String var5 = this.sharedPreferences.getString(this.activity.getString(var2), var1).replaceFirst("[.][^.]+$", "");
+      ((TextView)this.activity.findViewById(var3)).setText(var5);
       if(var5.equalsIgnoreCase("No current file!")) {
          this.changeBackground(Color.parseColor("#bf0510"), var4);
       } else if(var5.toLowerCase().contains("Unsaved".toLowerCase())) {
@@ -293,7 +293,7 @@ public class Utility {
    }
 
    public void writeToFile(String var1) throws RobotCoreException, IOException {
-      this.d.writeToFile(this.e, CONFIG_FILES_DIR, var1);
+      this.writeXMLFileHandler.writeToFile(this.e, CONFIG_FILES_DIR, var1);
    }
 
    public boolean writeXML(Map<SerialNumber, ControllerConfiguration> var1) {
@@ -301,10 +301,10 @@ public class Utility {
       var2.addAll(var1.values());
 
       try {
-         this.e = this.d.writeXml(var2);
+         this.e = this.writeXMLFileHandler.writeXml(var2);
       } catch (RuntimeException var5) {
          if(var5.getMessage().contains("Duplicate name")) {
-            this.complainToast("Found " + var5.getMessage(), this.a);
+            this.complainToast("Found " + var5.getMessage(), this.activity);
             RobotLog.log("Found " + var5.getMessage());
             return true;
          }
