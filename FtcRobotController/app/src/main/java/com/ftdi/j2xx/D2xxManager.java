@@ -8,8 +8,7 @@ import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.util.Log;
-import com.ftdi.j2xx.FT_Device;
-import com.ftdi.j2xx.m;
+
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -171,7 +170,7 @@ public class D2xxManager {
             var2.setDriverParameters(var3);
          }
 
-         if(var2.a(g) && var2.isOpen()) {
+         if(var2.open(g) && var2.isOpen()) {
             return true;
          }
       }

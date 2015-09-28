@@ -31,12 +31,12 @@ public class RobotUsbManagerFtdi implements RobotUsbManager {
       return new SerialNumber(this.b.getDeviceInfoListDetail(var1).serialNumber);
    }
 
-   public RobotUsbDevice openBySerialNumber(SerialNumber var1) throws RobotCoreException {
-      FT_Device var2 = this.b.openBySerialNumber(this.a, var1.toString());
-      if(var2 == null) {
-         throw new RobotCoreException("Unable to open USB device with serial number " + var1);
+   public RobotUsbDevice openBySerialNumber(SerialNumber serialNumber) throws RobotCoreException {
+      FT_Device ftDevice = this.b.openBySerialNumber(this.a, serialNumber.toString());
+      if(ftDevice == null) {
+         throw new RobotCoreException("Unable to open USB device with serial number " + serialNumber);
       } else {
-         return new RobotUsbDeviceFtdi(var2);
+         return new RobotUsbDeviceFtdi(ftDevice);
       }
    }
 

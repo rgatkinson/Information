@@ -145,8 +145,8 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
       }
    }
 
-   private boolean a(int var1, byte var2) {
-      return (var2 & BUFFER_FLAG_MAP[var1]) == 0;
+   private boolean isI2cPortReady(int port, byte grfPortStatus) {
+      return (grfPortStatus & BUFFER_FLAG_MAP[port]) == 0;
    }
 
    private void b(int var1) {
@@ -412,17 +412,17 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
       return var4;
    }
 
-   public boolean isI2cPortReady(int var1) {
-      return this.a(var1, this.read(3));
+   public boolean isI2cPortReady(int port) {
+      return this.isI2cPortReady(port, this.read(3));
    }
 
    public void readComplete() throws InterruptedException {
       if(this.callbacks != null) {
-         byte var1 = this.read(3);
+         byte grfStatus = this.read(3);
 
-         for(int var2 = 0; var2 < 6; ++var2) {
-            if(this.callbacks[var2] != null && this.a(var2, var1)) {
-               this.callbacks[var2].portIsReady(var2);
+         for(int port = 0; port < 6; ++port) {
+            if(this.callbacks[port] != null && this.isI2cPortReady(port, grfStatus)) {
+               this.callbacks[port].portIsReady(port);
             }
          }
       }

@@ -2,10 +2,12 @@ package com.qualcomm.robotcore.hardware.usb;
 
 import com.qualcomm.robotcore.exception.RobotCoreException;
 
+// Idea: create a shim implementation of this interface so we can see read() and write()
+// requests as they fly by
 public interface RobotUsbDevice {
    void close();
 
-   void purge(RobotUsbDevice.Channel var1) throws RobotCoreException;
+   void purge(RobotUsbDevice.Channel channel) throws RobotCoreException;
 
    int read(byte[] var1) throws RobotCoreException;
 
@@ -17,7 +19,7 @@ public interface RobotUsbDevice {
 
    void setLatencyTimer(int var1) throws RobotCoreException;
 
-   void write(byte[] var1) throws RobotCoreException;
+   void write(byte[] packet) throws RobotCoreException;
 
    public static enum Channel {
       BOTH,
@@ -26,7 +28,7 @@ public interface RobotUsbDevice {
       TX;
 
       static {
-         RobotUsbDevice.Channel[] var0 = new RobotUsbDevice.Channel[]{RX, TX, NONE, BOTH};
+         RobotUsbDevice.Channel[] channels = new RobotUsbDevice.Channel[]{RX, TX, NONE, BOTH};
       }
    }
 }
