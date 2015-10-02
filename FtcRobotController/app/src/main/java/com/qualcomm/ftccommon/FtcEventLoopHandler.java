@@ -32,11 +32,11 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
    HardwareFactory hardwareFactory;
    HardwareMap hardwareMap = new HardwareMap();
 
-   public FtcEventLoopHandler(HardwareFactory var1, UpdateUI.Callback var2, Context var3) {
-      this.hardwareFactory = var1;
-      this.updateUICallback = var2;
-      this.context = var3;
-      this.batteryChecker = new BatteryChecker(var3, this, 180000L);
+   public FtcEventLoopHandler(HardwareFactory hardwareFactory, UpdateUI.Callback updateUICallback, Context context) {
+      this.hardwareFactory = hardwareFactory;
+      this.updateUICallback = updateUICallback;
+      this.context = context;
+      this.batteryChecker = new BatteryChecker(context, this, 180000L);
       this.batteryChecker.startBatteryMonitoring();
    }
 
@@ -68,9 +68,9 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
       this.sendTelemetry("Robot Battery Level", var4);
    }
 
-   public void displayGamePadInfo(String var1) {
+   public void displayGamePadInfo(String activeOpModeName) {
       Gamepad[] gamepads = this.eventLoopManager.getGamepads();
-      this.updateUICallback.updateUi(var1, gamepads);
+      this.updateUICallback.updateUi(activeOpModeName, gamepads);
    }
 
    public Gamepad[] getGamepads() {
@@ -104,8 +104,8 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
       this.sendRootBatterLevelTelemetry();
    }
 
-   public void sendCommand(Command var1) {
-      this.eventLoopManager.sendCommand(var1);
+   public void sendCommand(Command command) {
+      this.eventLoopManager.sendCommand(command);
    }
 
    public void sendTelemetry(String var1, String var2) {

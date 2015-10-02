@@ -98,9 +98,9 @@ public class FtcRobotControllerActivity extends Activity {
       if(this.controllerService != null) {
          FileInputStream var1 = this.fileSetup();
          if(var1 != null) {
-            ModernRoboticsHardwareFactory var2 = new ModernRoboticsHardwareFactory(this.context);
-            var2.setXmlInputStream(var1);
-            this.eventLoop = new FtcEventLoop(var2, new FtcOpModeRegister(), this.callback, this);
+            ModernRoboticsHardwareFactory hardwareFactory = new ModernRoboticsHardwareFactory(this.context);
+            hardwareFactory.setXmlInputStream(var1);
+            this.eventLoop = new FtcEventLoop(hardwareFactory, new FtcOpModeRegister(), this.callback, this);
             this.controllerService.setCallback(this.callback);
             this.controllerService.setupRobot(this.eventLoop);
             return;

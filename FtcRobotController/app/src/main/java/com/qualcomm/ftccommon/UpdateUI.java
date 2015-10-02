@@ -113,7 +113,8 @@ public class UpdateUI {
          });
       }
 
-      public void updateUi(final String var1, final Gamepad[] gamepads) {
+      // called at the top of every loop() (in the big sense, independent of opmodes) cycle
+      public void updateUi(final String activeOpModeName, final Gamepad[] gamepads) {
          UpdateUI.this.activity.runOnUiThread(new Runnable()
          {
          public void run()
@@ -130,7 +131,7 @@ public class UpdateUI {
                   }
                }
 
-            UpdateUI.this.textOpMode.setText("Op Mode: " + var1);
+            UpdateUI.this.textOpMode.setText("Op Mode: " + activeOpModeName);
             UpdateUI.this.textErrorMessage.setText(RobotLog.getGlobalErrorMsg());
             }
          });
