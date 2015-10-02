@@ -35,7 +35,7 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
     private Callback callback;
     private final MonitorRobotStatus monitorRobotStatus;
     private final ElapsedTime elapsed;
-    private Thread thread;
+    private Thread runRobotThread;
 
     public FtcRobotControllerService() {
         this.event = Event.DISCONNECTED;
@@ -43,7 +43,7 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
         this.callback = null;
         this.monitorRobotStatus = new MonitorRobotStatus();
         this.elapsed = new ElapsedTime();
-        this.thread = null;
+        this.runRobotThread = null;
     }
 
     public WifiDirectAssistant getWifiDirectAssistant() {
@@ -85,11 +85,11 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
     }
 
     public synchronized void setupRobot(EventLoop eventLoop) {
-        if(this.thread != null && this.thread.isAlive()) {
+        if(this.runRobotThread != null && this.runRobotThread.isAlive()) {
             DbgLog.msg("FtcRobotControllerService.setupRobot() is currently running, stopping old setup");
-            this.thread.interrupt();
+            this.runRobotThread.interrupt();
 
-            while(this.thread.isAlive()) {
+            while(this.runRobotThread.isAlive()) {
                 Thread.yield();
             }
 
@@ -99,18 +99,18 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
         RobotLog.clearGlobalErrorMsg();
         DbgLog.msg("Processing robot setup");
         this.eventLoop = eventLoop;
-        this.thread = new Thread(new RunRobotThread(null));
-        this.thread.start();
+        this.runRobotThread = new Thread(new RunRobotThread());
+        this.runRobotThread.start();
 
-        while(this.thread.getState() == State.NEW) {
+        while(this.runRobotThread.getState() == State.NEW) {
             Thread.yield();
         }
 
     }
 
     public synchronized void shutdownRobot() {
-        if(this.thread != null && this.thread.isAlive()) {
-            this.thread.interrupt();
+        if(this.runRobotThread != null && this.runRobotThread.isAlive()) {
+            this.runRobotThread.interrupt();
         }
 
         if(this.robot != null) {

@@ -354,16 +354,16 @@ public class EventLoopManager {
             RobotLog.v("EventLoopRunnable has started");
 
             try {
-                ElapsedTime var1 = new ElapsedTime();
+                ElapsedTime elapsed = new ElapsedTime();
                 double var2 = 0.001D;
                 long var4 = 5L;
 
                 while(!Thread.interrupted()) {
-                    while(var1.time() < 0.001D) {
+                    while(elapsed.time() < 0.001D) {
                         Thread.sleep(5L);
                     }
 
-                    var1.reset();
+                    elapsed.reset();
                     if(RobotLog.hasGlobalErrorMsg()) {
                         EventLoopManager.this.buildAndSendTelemetry("SYSTEM_TELEMETRY", RobotLog.getGlobalErrorMsg());
                     }
@@ -376,12 +376,12 @@ public class EventLoopManager {
                         EventLoopManager.this.elapsed = new ElapsedTime(0L);
                     }
 
-                    Iterator var6 = EventLoopManager.this.syncdDevices.iterator();
+                    Iterator iterator1 = EventLoopManager.this.syncdDevices.iterator();
 
-                    SyncdDevice var7;
-                    while(var6.hasNext()) {
-                        var7 = (SyncdDevice)var6.next();
-                        var7.blockUntilReady();
+                    SyncdDevice syncdDevice1;
+                    while(iterator1.hasNext()) {
+                        syncdDevice1 = (SyncdDevice)iterator1.next();
+                        syncdDevice1.blockUntilReady();
                     }
 
                     boolean inUserEventLoop = false;
@@ -411,11 +411,11 @@ public class EventLoopManager {
                         }
                     }
 
-                    var6 = EventLoopManager.this.syncdDevices.iterator();
+                    iterator1 = EventLoopManager.this.syncdDevices.iterator();
 
-                    while(var6.hasNext()) {
-                        var7 = (SyncdDevice)var6.next();
-                        var7.startBlockingWork();
+                    while(iterator1.hasNext()) {
+                        syncdDevice1 = (SyncdDevice)iterator1.next();
+                        syncdDevice1.startBlockingWork();
                     }
                 }
             } catch (InterruptedException var18) {
