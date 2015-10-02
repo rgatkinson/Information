@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ReadWriteRunnableStandard implements ReadWriteRunnable {
-    protected final byte[]                      localDeviceReadCache = new byte[256];
+    protected final byte[]                      localDeviceReadCache  = new byte[256];
     protected final byte[]                      localDeviceWriteCache = new byte[256];
     protected Map<Integer, ReadWriteRunnableSegment> segments = new HashMap();
     protected ConcurrentLinkedQueue<Integer>    segmentReadQueue = new ConcurrentLinkedQueue();
@@ -61,6 +61,7 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
         this.writeCacheIsDirty = set;
     }
 
+    // Write to the monitor buffer
     public void write(int address, byte[] data) {
         synchronized(this.localDeviceWriteCache) {
             System.arraycopy(data, 0, this.localDeviceWriteCache, address, data.length);
@@ -74,9 +75,10 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
         }
     }
 
-    public byte[] read(int address, int size) {
+    // Read from the monitor buffer
+    public byte[] read(int monitoredAddress, int cb) {
         synchronized(this.localDeviceReadCache) {
-            return Arrays.copyOfRange(this.localDeviceReadCache, address, address + size);
+            return Arrays.copyOfRange(this.localDeviceReadCache, monitoredAddress, monitoredAddress + cb);
         }
     }
 
@@ -125,12 +127,12 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
     public void run() {
         // The first time through we read the bytes [0, startAddress), but only the one
         // time, as that data doesn't change.
-        boolean firstTime = true;
-        int iregRead = 0;
-        byte[] monitorBuffer = new byte[this.monitorLength + this.startAddress];
-        ElapsedTime elapsed = new ElapsedTime();
+        boolean firstTime        = true;
+        int iregRead             = 0;
+        byte[] monitorBuffer     = new byte[this.monitorLength + this.startAddress];
+        ElapsedTime elapsed      = new ElapsedTime();
         String deviceDescription = "Device " + this.serialNumber.toString();
-        this.running = true;
+        this.running             = true;
         RobotLog.v(String.format("starting read/write loop for device %s", this.serialNumber));
 
         try {
@@ -145,8 +147,11 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
                 ReadWriteRunnableSegment segment;
                 byte[] bytes;
                 try {
+                    // Read the initial reagisters, which are the monitor bytes. This contains
+                    // the port-ready flag group, for example
                     this.usbHandler.read(iregRead, monitorBuffer);
 
+                    // Read anything users have asked us to read
                     while(!this.segmentReadQueue.isEmpty()) {
                         segment = (ReadWriteRunnableSegment)this.segments.get(this.segmentReadQueue.remove());
                         bytes = new byte[segment.getReadBuffer().length];
@@ -172,26 +177,33 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
                     this.dumpBuffers("read", this.localDeviceReadCache);
                 }
 
+                // Send callbacks to them that is now ready
                 this.callback.readComplete();
+
+                // Synchronize with loop() if we have to
                 this.waitForSyncdEvents();
 
+                // There's a readonly set of initial bytes that we read only once
                 if (firstTime) {
                     iregRead = this.startAddress;
                     monitorBuffer = new byte[this.monitorLength];
                     firstTime = false;
                 }
 
+                // Prepare monitor buffer for writing
                 cacheT = this.localDeviceWriteCache;
                 synchronized(this.localDeviceWriteCache) {
                     System.arraycopy(this.localDeviceWriteCache, iregRead, monitorBuffer, 0, monitorBuffer.length);
                 }
 
                 try {
+                    // Write the monitor if we need to
                     if (this.writeNeeded()) {
                         this.usbHandler.write(iregRead, monitorBuffer);
                         this.setWriteNeeded(false);
                     }
 
+                    // Write things the user has asked us to write
                     for(; !this.segmentWriteQueue.isEmpty(); this.usbHandler.write(segment.getAddress(), bytes)) {
                         segment = (ReadWriteRunnableSegment)this.segments.get(this.segmentWriteQueue.remove());
 

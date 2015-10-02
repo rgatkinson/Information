@@ -42,7 +42,7 @@ public class FtcRobotControllerActivity extends Activity {
    public static final String CONFIGURE_FILENAME = "CONFIGURE_FILENAME";
    private static final int NUM_GAMEPADS = 2;
    private static final int REQUEST_CONFIG_WIFI_CHANNEL = 1;
-   private static final boolean USE_DEVICE_EMULATION;
+   private static final boolean USE_DEVICE_EMULATION = false;
    protected ImageButton buttonMenu;
    protected UpdateUI.Callback callback;
    protected ServiceConnection connection = new ServiceConnection() {

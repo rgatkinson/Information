@@ -412,14 +412,14 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
    }
 
    public boolean isI2cPortReady(int port) {
-      return this.isI2cPortReady(port, this.read(3));
+      return this.isI2cPortReady(port, this.read(ADDRESS_BUFFER_STATUS));
    }
 
    public void readComplete() throws InterruptedException {
       if(this.callbacks != null) {
-         byte grfStatus = this.read(3);
+         byte grfStatus = this.read(ADDRESS_BUFFER_STATUS);
 
-         for(int port = 0; port < 6; ++port) {
+         for(int port = 0; port < NUMBER_OF_PORTS; ++port) {
             if(this.callbacks[port] != null && this.isI2cPortReady(port, grfStatus)) {
                this.callbacks[port].portIsReady(port);
             }
@@ -428,9 +428,9 @@ public class ModernRoboticsUsbDeviceInterfaceModule extends ModernRoboticsUsbDev
 
    }
 
-   public void readI2cCacheFromController(int var1) {
-      this.validateI2cPort(var1);
-      this.readWriteRunnable.queueSegmentRead(i2cSegmentNumbers[var1]);
+   public void readI2cCacheFromController(int port) {
+      this.validateI2cPort(port);
+      this.readWriteRunnable.queueSegmentRead(i2cSegmentNumbers[port]);
    }
 
    @Deprecated

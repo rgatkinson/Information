@@ -44,12 +44,12 @@ public abstract class ModernRoboticsUsbDevice implements ReadWriteRunnable.Callb
       return this.read(0);
    }
 
-   public byte read(int var1) {
-      return this.read(var1, 1)[0];
+   public byte read(int monitoredAddress) {
+      return this.read(monitoredAddress, 1)[0];
    }
 
-   public byte[] read(int var1, int var2) {
-      return this.readWriteRunnable.read(var1, var2);
+   public byte[] read(int monitoredAddress, int cb) {
+      return this.readWriteRunnable.read(monitoredAddress, cb);
    }
 
    public void readComplete() throws InterruptedException {

@@ -15,7 +15,7 @@ interface ReadWriteRunnable extends SyncdDevice, Runnable {
 
    void queueSegmentWrite(int var1);
 
-   byte[] read(int var1, int var2);
+   byte[] read(int monitoredAddress, int cb);
 
    byte[] readFromWriteCache(int var1, int var2);
 
