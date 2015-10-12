@@ -1,3 +1,8 @@
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by Fernflower decompiler)
+//
+
 package com.ftdi.j2xx;
 
 import android.app.PendingIntent;
@@ -11,461 +16,598 @@ import android.util.Log;
 import com.ftdi.j2xx.FT_Device;
 import com.ftdi.j2xx.m;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 public class D2xxManager {
-   protected static final String ACTION_USB_PERMISSION = "com.ftdi.j2xx";
-   public static final int FTDI_BREAK_OFF = 0;
-   public static final int FTDI_BREAK_ON = 16384;
-   public static final byte FT_BI = 16;
-   public static final byte FT_BITMODE_ASYNC_BITBANG = 1;
-   public static final byte FT_BITMODE_CBUS_BITBANG = 32;
-   public static final byte FT_BITMODE_FAST_SERIAL = 16;
-   public static final byte FT_BITMODE_MCU_HOST = 8;
-   public static final byte FT_BITMODE_MPSSE = 2;
-   public static final byte FT_BITMODE_RESET = 0;
-   public static final byte FT_BITMODE_SYNC_BITBANG = 4;
-   public static final byte FT_BITMODE_SYNC_FIFO = 64;
-   public static final byte FT_CTS = 16;
-   public static final byte FT_DATA_BITS_7 = 7;
-   public static final byte FT_DATA_BITS_8 = 8;
-   public static final byte FT_DCD = -128;
-   public static final int FT_DEVICE_2232 = 4;
-   public static final int FT_DEVICE_2232H = 6;
-   public static final int FT_DEVICE_232B = 0;
-   public static final int FT_DEVICE_232H = 8;
-   public static final int FT_DEVICE_232R = 5;
-   public static final int FT_DEVICE_245R = 5;
-   public static final int FT_DEVICE_4222_0 = 10;
-   public static final int FT_DEVICE_4222_1_2 = 11;
-   public static final int FT_DEVICE_4222_3 = 12;
-   public static final int FT_DEVICE_4232H = 7;
-   public static final int FT_DEVICE_8U232AM = 1;
-   public static final int FT_DEVICE_UNKNOWN = 3;
-   public static final int FT_DEVICE_X_SERIES = 9;
-   public static final byte FT_DSR = 32;
-   public static final byte FT_EVENT_LINE_STATUS = 4;
-   public static final byte FT_EVENT_MODEM_STATUS = 2;
-   public static final byte FT_EVENT_REMOVED = 8;
-   public static final byte FT_EVENT_RXCHAR = 1;
-   public static final byte FT_FE = 8;
-   public static final byte FT_FLAGS_HI_SPEED = 2;
-   public static final byte FT_FLAGS_OPENED = 1;
-   public static final short FT_FLOW_DTR_DSR = 512;
-   public static final short FT_FLOW_NONE = 0;
-   public static final short FT_FLOW_RTS_CTS = 256;
-   public static final short FT_FLOW_XON_XOFF = 1024;
-   public static final byte FT_OE = 2;
-   public static final byte FT_PARITY_EVEN = 2;
-   public static final byte FT_PARITY_MARK = 3;
-   public static final byte FT_PARITY_NONE = 0;
-   public static final byte FT_PARITY_ODD = 1;
-   public static final byte FT_PARITY_SPACE = 4;
-   public static final byte FT_PE = 4;
-   public static final byte FT_PURGE_RX = 1;
-   public static final byte FT_PURGE_TX = 2;
-   public static final byte FT_RI = 64;
-   public static final byte FT_STOP_BITS_1 = 0;
-   public static final byte FT_STOP_BITS_2 = 2;
-   private static D2xxManager a = null;
-   private static Context b = null;
-   private static PendingIntent c = null;
-   private static IntentFilter d = null;
-   private static List<m> e;
-   private static UsbManager g;
-   private static BroadcastReceiver i;
-   private ArrayList<FT_Device> f;
-   private BroadcastReceiver h = new BroadcastReceiver() {
-      public void onReceive(Context param1, Intent param2) {
-         // $FF: Couldn't be decompiled
-      }
-   };
+    private static D2xxManager a = null;
+    protected static final String ACTION_USB_PERMISSION = "com.ftdi.j2xx";
+    public static final byte FT_DATA_BITS_7 = 7;
+    public static final byte FT_DATA_BITS_8 = 8;
+    public static final byte FT_STOP_BITS_1 = 0;
+    public static final byte FT_STOP_BITS_2 = 2;
+    public static final byte FT_PARITY_NONE = 0;
+    public static final byte FT_PARITY_ODD = 1;
+    public static final byte FT_PARITY_EVEN = 2;
+    public static final byte FT_PARITY_MARK = 3;
+    public static final byte FT_PARITY_SPACE = 4;
+    public static final short FT_FLOW_NONE = 0;
+    public static final short FT_FLOW_RTS_CTS = 256;
+    public static final short FT_FLOW_DTR_DSR = 512;
+    public static final short FT_FLOW_XON_XOFF = 1024;
+    public static final byte FT_PURGE_RX = 1;
+    public static final byte FT_PURGE_TX = 2;
+    public static final byte FT_CTS = 16;
+    public static final byte FT_DSR = 32;
+    public static final byte FT_RI = 64;
+    public static final byte FT_DCD = -128;
+    public static final byte FT_OE = 2;
+    public static final byte FT_PE = 4;
+    public static final byte FT_FE = 8;
+    public static final byte FT_BI = 16;
+    public static final byte FT_EVENT_RXCHAR = 1;
+    public static final byte FT_EVENT_MODEM_STATUS = 2;
+    public static final byte FT_EVENT_LINE_STATUS = 4;
+    public static final byte FT_EVENT_REMOVED = 8;
+    public static final byte FT_FLAGS_OPENED = 1;
+    public static final byte FT_FLAGS_HI_SPEED = 2;
+    public static final int FT_DEVICE_232B = 0;
+    public static final int FT_DEVICE_8U232AM = 1;
+    public static final int FT_DEVICE_UNKNOWN = 3;
+    public static final int FT_DEVICE_2232 = 4;
+    public static final int FT_DEVICE_232R = 5;
+    public static final int FT_DEVICE_245R = 5;
+    public static final int FT_DEVICE_2232H = 6;
+    public static final int FT_DEVICE_4232H = 7;
+    public static final int FT_DEVICE_232H = 8;
+    public static final int FT_DEVICE_X_SERIES = 9;
+    public static final int FT_DEVICE_4222_0 = 10;
+    public static final int FT_DEVICE_4222_1_2 = 11;
+    public static final int FT_DEVICE_4222_3 = 12;
+    public static final byte FT_BITMODE_RESET = 0;
+    public static final byte FT_BITMODE_ASYNC_BITBANG = 1;
+    public static final byte FT_BITMODE_MPSSE = 2;
+    public static final byte FT_BITMODE_SYNC_BITBANG = 4;
+    public static final byte FT_BITMODE_MCU_HOST = 8;
+    public static final byte FT_BITMODE_FAST_SERIAL = 16;
+    public static final byte FT_BITMODE_CBUS_BITBANG = 32;
+    public static final byte FT_BITMODE_SYNC_FIFO = 64;
+    public static final int FTDI_BREAK_OFF = 0;
+    public static final int FTDI_BREAK_ON = 16384;
+    private static Context b = null;
+    private static PendingIntent c = null;
+    private static IntentFilter d = null;
+    private static List<m> e = new ArrayList(Arrays.asList(new m[]{new m(1027, 24597), new m(1027, 24596), new m(1027, 24593), new m(1027, 24592), new m(1027, 24577), new m(1027, 24582), new m(1027, 24604), new m(1027, '贈'), new m(1027, '輸'), new m(1027, '遲'), new m(1027, '醙'), new m(1027, '鉶'), new m(1027, '陼'), new m(1027, 24594), new m(2220, 4133), new m(5590, 1), new m(1027, 24599)}));
+    private ArrayList<FT_Device> f;
+    private static UsbManager g;
+    private BroadcastReceiver h = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String var3 = intent.getAction();
+            UsbDevice var4 = null;
+            FT_Device var5 = null;
+            if("android.hardware.usb.action.USB_DEVICE_DETACHED".equals(var3)) {
+                var4 = (UsbDevice)intent.getParcelableExtra("device");
 
-   static {
-      m[] var0 = new m[]{new m(1027, 24597), new m(1027, 24596), new m(1027, 24593), new m(1027, 24592), new m(1027, 24577), new m(1027, 24582), new m(1027, 24604), new m(1027, '贈'), new m(1027, '輸'), new m(1027, '遲'), new m(1027, '醙'), new m(1027, '鉶'), new m(1027, '陼'), new m(1027, 24594), new m(2220, 4133), new m(5590, 1), new m(1027, 24599)};
-      e = new ArrayList(Arrays.asList(var0));
-      i = new BroadcastReceiver() {
-         public void onReceive(Context param1, Intent param2) {
-            // $FF: Couldn't be decompiled
-         }
-      };
-   }
+                for(var5 = D2xxManager.this.a(var4); var5 != null; var5 = D2xxManager.this.a(var4)) {
+                    var5.close();
+                    synchronized(D2xxManager.this.f) {
+                        D2xxManager.this.f.remove(var5);
+                    }
+                }
+            } else if("android.hardware.usb.action.USB_DEVICE_ATTACHED".equals(var3)) {
+                var4 = (UsbDevice)intent.getParcelableExtra("device");
+                D2xxManager.this.addUsbDevice(var4);
+            }
 
-   private D2xxManager(Context var1) throws D2xxManager.D2xxException {
-      Log.v("D2xx::", "Start constructor");
-      if(var1 == null) {
-         throw new D2xxManager.D2xxException("D2xx init failed: Can not find parentContext!");
-      } else {
-         a(var1);
-         if(!a()) {
-            throw new D2xxManager.D2xxException("D2xx init failed: Can not find UsbManager!");
-         } else {
-            this.f = new ArrayList();
-            IntentFilter var4 = new IntentFilter();
-            var4.addAction("android.hardware.usb.action.USB_DEVICE_ATTACHED");
-            var4.addAction("android.hardware.usb.action.USB_DEVICE_DETACHED");
-            var1.getApplicationContext().registerReceiver(this.h, var4);
-            Log.v("D2xx::", "End constructor");
-         }
-      }
-   }
+        }
+    };
+    private static BroadcastReceiver i = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String var3 = intent.getAction();
+            if("com.ftdi.j2xx".equals(var3)) {
+                synchronized(this) {
+                    UsbDevice var5 = (UsbDevice)intent.getParcelableExtra("device");
+                    if(!intent.getBooleanExtra("permission", false)) {
+                        Log.d("D2xx::", "permission denied for device " + var5);
+                    }
+                }
+            }
 
-   private FT_Device a(UsbDevice param1) {
-      // $FF: Couldn't be decompiled
-   }
+        }
+    };
 
-   // $FF: synthetic method
-   static FT_Device a(D2xxManager var0, UsbDevice var1) {
-      return var0.a(var1);
-   }
+    private FT_Device a(UsbDevice var1) {
+        FT_Device var2 = null;
+        ArrayList var3 = this.f;
+        synchronized(this.f) {
+            int var4 = this.f.size();
 
-   // $FF: synthetic method
-   static ArrayList a(D2xxManager var0) {
-      return var0.f;
-   }
+            for(int var5 = 0; var5 < var4; ++var5) {
+                FT_Device var6 = (FT_Device)this.f.get(var5);
+                UsbDevice var7 = var6.getUsbDevice();
+                if(var7.equals(var1)) {
+                    var2 = var6;
+                    break;
+                }
+            }
 
-   private static boolean a() {
-      if(g == null && b != null) {
-         g = (UsbManager)b.getApplicationContext().getSystemService("usb");
-      }
+            return var2;
+        }
+    }
 
-      return g != null;
-   }
+    public boolean isFtDevice(UsbDevice dev) {
+        boolean var3 = false;
+        if(b == null) {
+            return var3;
+        } else {
+            m var2 = new m(dev.getVendorId(), dev.getProductId());
+            if(e.contains(var2)) {
+                var3 = true;
+            }
 
-   private static boolean a(Context var0) {
-      synchronized(D2xxManager.class){}
-      boolean var1 = false;
-      if(var0 != null) {
-         boolean var4 = false;
+            Log.v("D2xx::", var2.toString());
+            return var3;
+        }
+    }
 
-         try {
-            var4 = true;
+    private static synchronized boolean a(Context var0) {
+        boolean var1 = false;
+        if(var0 == null) {
+            return var1;
+        } else {
             if(b != var0) {
-               b = var0;
-               c = PendingIntent.getBroadcast(b.getApplicationContext(), 0, new Intent("com.ftdi.j2xx"), 134217728);
-               d = new IntentFilter("com.ftdi.j2xx");
-               b.getApplicationContext().registerReceiver(i, d);
-               var4 = false;
+                b = var0;
+                c = PendingIntent.getBroadcast(b.getApplicationContext(), 0, new Intent("com.ftdi.j2xx"), 134217728);
+                d = new IntentFilter("com.ftdi.j2xx");
+                b.getApplicationContext().registerReceiver(i, d);
+            }
+
+            var1 = true;
+            return var1;
+        }
+    }
+
+    private boolean b(UsbDevice var1) {
+        boolean var2 = false;
+        if(!g.hasPermission(var1)) {
+            g.requestPermission(var1, c);
+        }
+
+        if(g.hasPermission(var1)) {
+            var2 = true;
+        }
+
+        return var2;
+    }
+
+    private D2xxManager(Context parentContext) throws D2xxManager.D2xxException {
+        Log.v("D2xx::", "Start constructor");
+        if(parentContext == null) {
+            throw new D2xxManager.D2xxException("D2xx init failed: Can not find parentContext!");
+        } else {
+            a(parentContext);
+            if(!a()) {
+                throw new D2xxManager.D2xxException("D2xx init failed: Can not find UsbManager!");
             } else {
-               var4 = false;
+                this.f = new ArrayList();
+                IntentFilter var2 = new IntentFilter();
+                var2.addAction("android.hardware.usb.action.USB_DEVICE_ATTACHED");
+                var2.addAction("android.hardware.usb.action.USB_DEVICE_DETACHED");
+                parentContext.getApplicationContext().registerReceiver(this.h, var2);
+                Log.v("D2xx::", "End constructor");
             }
-         } finally {
-            if(var4) {
-               ;
-            }
-         }
+        }
+    }
 
-         var1 = true;
-      }
+    public static synchronized D2xxManager getInstance(Context parentContext) throws D2xxManager.D2xxException {
+        if(a == null) {
+            a = new D2xxManager(parentContext);
+        }
 
-      return var1;
-   }
+        if(parentContext != null) {
+            a(parentContext);
+        }
 
-   private boolean a(Context var1, FT_Device var2, D2xxManager.DriverParameters var3) {
-      if(var2 != null && var1 != null) {
-         var2.a(var1);
-         if(var3 != null) {
-            var2.setDriverParameters(var3);
-         }
+        return a;
+    }
 
-         if(var2.a(g) && var2.isOpen()) {
-            return true;
-         }
-      }
+    private static boolean a() {
+        if(g == null && b != null) {
+            g = (UsbManager)b.getApplicationContext().getSystemService("usb");
+        }
 
-      return false;
-   }
+        return g != null;
+    }
 
-   private void b() {
-      // $FF: Couldn't be decompiled
-   }
-
-   private boolean b(UsbDevice var1) {
-      if(!g.hasPermission(var1)) {
-         g.requestPermission(var1, c);
-      }
-
-      boolean var2 = g.hasPermission(var1);
-      boolean var3 = false;
-      if(var2) {
-         var3 = true;
-      }
-
-      return var3;
-   }
-
-   public static D2xxManager getInstance(Context param0) throws D2xxManager.D2xxException {
-      // $FF: Couldn't be decompiled
-   }
-
-   public static int getLibraryVersion() {
-      return 537919488;
-   }
-
-   public int addUsbDevice(UsbDevice param1) {
-      // $FF: Couldn't be decompiled
-   }
-
-   public int createDeviceInfoList(Context param1) {
-      // $FF: Couldn't be decompiled
-   }
-
-   public int getDeviceInfoList(int param1, D2xxManager.FtDeviceInfoListNode[] param2) {
-      // $FF: Couldn't be decompiled
-   }
-
-   public D2xxManager.FtDeviceInfoListNode getDeviceInfoListDetail(int param1) {
-      // $FF: Couldn't be decompiled
-   }
-
-   public int[][] getVIDPID() {
-      int var1 = e.size();
-      int[] var2 = new int[]{2, var1};
-      int[][] var3 = (int[][])Array.newInstance(Integer.TYPE, var2);
-
-      for(int var4 = 0; var4 < var1; ++var4) {
-         m var5 = (m)e.get(var4);
-         var3[0][var4] = var5.a();
-         var3[1][var4] = var5.b();
-      }
-
-      return var3;
-   }
-
-   public boolean isFtDevice(UsbDevice var1) {
-      if(b == null) {
-         return false;
-      } else {
-         m var2 = new m(var1.getVendorId(), var1.getProductId());
-         boolean var3 = e.contains(var2);
-         boolean var4 = false;
-         if(var3) {
-            var4 = true;
-         }
-
-         Log.v("D2xx::", var2.toString());
-         return var4;
-      }
-   }
-
-   public FT_Device openByDescription(Context var1, String var2) {
-      synchronized(this){}
-
-      FT_Device var4;
-      try {
-         var4 = this.openByDescription(var1, var2, (D2xxManager.DriverParameters)null);
-      } finally {
-         ;
-      }
-
-      return var4;
-   }
-
-   public FT_Device openByDescription(Context param1, String param2, D2xxManager.DriverParameters param3) {
-      // $FF: Couldn't be decompiled
-   }
-
-   public FT_Device openByIndex(Context var1, int var2) {
-      synchronized(this){}
-
-      FT_Device var4;
-      try {
-         var4 = this.openByIndex(var1, var2, (D2xxManager.DriverParameters)null);
-      } finally {
-         ;
-      }
-
-      return var4;
-   }
-
-   public FT_Device openByIndex(Context var1, int var2, D2xxManager.DriverParameters var3) {
-      synchronized(this){}
-      FT_Device var4 = null;
-      if(var2 >= 0) {
-         var4 = null;
-         if(var1 != null) {
-            boolean var10 = false;
-
-            FT_Device var7;
-            boolean var8;
-            try {
-               var10 = true;
-               a(var1);
-               var7 = (FT_Device)this.f.get(var2);
-               var8 = this.a(var1, var7, var3);
-               var10 = false;
-            } finally {
-               if(var10) {
-                  ;
-               }
+    public boolean setVIDPID(int vendorId, int productId) {
+        boolean var3 = false;
+        if(vendorId != 0 && productId != 0) {
+            m var4 = new m(vendorId, productId);
+            if(e.contains(var4)) {
+                Log.i("D2xx::", "Existing vid:" + vendorId + "  pid:" + productId);
+                return true;
             }
 
-            if(!var8) {
-               var7 = null;
+            if(!e.add(var4)) {
+                Log.d("D2xx::", "Failed to add VID/PID combination to list.");
+            } else {
+                var3 = true;
+            }
+        } else {
+            Log.d("D2xx::", "Invalid parameter to setVIDPID");
+        }
+
+        return var3;
+    }
+
+    public int[][] getVIDPID() {
+        int var1 = e.size();
+        int[][] var2 = new int[2][var1];
+
+        for(int var3 = 0; var3 < var1; ++var3) {
+            m var4 = (m)e.get(var3);
+            var2[0][var3] = var4.a();
+            var2[1][var3] = var4.b();
+        }
+
+        return var2;
+    }
+
+    private void b() {
+        ArrayList var1 = this.f;
+        synchronized(this.f) {
+            int var2 = this.f.size();
+
+            for(int var3 = 0; var3 < var2; ++var3) {
+                this.f.remove(var3);
             }
 
-            var4 = var7;
-         }
-      }
+        }
+    }
 
-      return var4;
-   }
+    public int createDeviceInfoList(Context parentContext) {
+        HashMap var2 = g.getDeviceList();
+        Iterator var3 = var2.values().iterator();
+        ArrayList var4 = new ArrayList();
+        FT_Device var5 = null;
+        byte var6 = 0;
+        if(parentContext == null) {
+            return var6;
+        } else {
+            a(parentContext);
 
-   public FT_Device openByLocation(Context var1, int var2) {
-      synchronized(this){}
+            while(true) {
+                UsbDevice var7;
+                do {
+                    if(!var3.hasNext()) {
+                        ArrayList var14 = this.f;
+                        synchronized(this.f) {
+                            this.b();
+                            this.f = var4;
+                            int var13 = this.f.size();
+                            return var13;
+                        }
+                    }
 
-      FT_Device var4;
-      try {
-         var4 = this.openByLocation(var1, var2, (D2xxManager.DriverParameters)null);
-      } finally {
-         ;
-      }
+                    var7 = (UsbDevice)var3.next();
+                } while(!this.isFtDevice(var7));
 
-      return var4;
-   }
+                boolean var8 = false;
+                int var15 = var7.getInterfaceCount();
 
-   public FT_Device openByLocation(Context param1, int param2, D2xxManager.DriverParameters param3) {
-      // $FF: Couldn't be decompiled
-   }
+                for(int var9 = 0; var9 < var15; ++var9) {
+                    if(this.b(var7)) {
+                        ArrayList var10 = this.f;
+                        synchronized(this.f) {
+                            var5 = this.a(var7);
+                            if(var5 == null) {
+                                var5 = new FT_Device(parentContext, g, var7, var7.getInterface(var9));
+                            } else {
+                                this.f.remove(var5);
+                                var5.a(parentContext);
+                            }
 
-   public FT_Device openBySerialNumber(Context var1, String var2) {
-      synchronized(this){}
+                            var4.add(var5);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-      FT_Device var4;
-      try {
-         var4 = this.openBySerialNumber(var1, var2, (D2xxManager.DriverParameters)null);
-      } finally {
-         ;
-      }
+    public synchronized int getDeviceInfoList(int numDevs, D2xxManager.FtDeviceInfoListNode[] deviceList) {
+        for(int var3 = 0; var3 < numDevs; ++var3) {
+            deviceList[var3] = ((FT_Device)this.f.get(var3)).g;
+        }
 
-      return var4;
-   }
+        return this.f.size();
+    }
 
-   public FT_Device openBySerialNumber(Context param1, String param2, D2xxManager.DriverParameters param3) {
-      // $FF: Couldn't be decompiled
-   }
+    public synchronized D2xxManager.FtDeviceInfoListNode getDeviceInfoListDetail(int index) {
+        return index <= this.f.size() && index >= 0?((FT_Device)this.f.get(index)).g:null;
+    }
 
-   public FT_Device openByUsbDevice(Context var1, UsbDevice var2) {
-      synchronized(this){}
+    public static int getLibraryVersion() {
+        return 537919488;
+    }
 
-      FT_Device var4;
-      try {
-         var4 = this.openByUsbDevice(var1, var2, (D2xxManager.DriverParameters)null);
-      } finally {
-         ;
-      }
+    private boolean a(Context var1, FT_Device var2, D2xxManager.DriverParameters var3) {
+        boolean var4 = false;
+        if(var2 == null) {
+            return var4;
+        } else if(var1 == null) {
+            return var4;
+        } else {
+            var2.a(var1);
+            if(var3 != null) {
+                var2.setDriverParameters(var3);
+            }
 
-      return var4;
-   }
+            if(var2.a(g) && var2.isOpen()) {
+                var4 = true;
+            }
 
-   public FT_Device openByUsbDevice(Context param1, UsbDevice param2, D2xxManager.DriverParameters param3) {
-      // $FF: Couldn't be decompiled
-   }
+            return var4;
+        }
+    }
 
-   public boolean setVIDPID(int var1, int var2) {
-      boolean var3 = false;
-      if(var1 != 0 && var2 != 0) {
-         m var5 = new m(var1, var2);
-         if(e.contains(var5)) {
-            Log.i("D2xx::", "Existing vid:" + var1 + "  pid:" + var2);
+    public synchronized FT_Device openByUsbDevice(Context parentContext, UsbDevice dev, D2xxManager.DriverParameters params) {
+        FT_Device var4 = null;
+        if(this.isFtDevice(dev)) {
+            var4 = this.a(dev);
+            if(!this.a(parentContext, var4, params)) {
+                var4 = null;
+            }
+        }
+
+        return var4;
+    }
+
+    public synchronized FT_Device openByUsbDevice(Context parentContext, UsbDevice dev) {
+        return this.openByUsbDevice(parentContext, dev, (D2xxManager.DriverParameters)null);
+    }
+
+    public synchronized FT_Device openByIndex(Context parentContext, int index, D2xxManager.DriverParameters params) {
+        FT_Device var4 = null;
+        if(index < 0) {
+            return var4;
+        } else if(parentContext == null) {
+            return var4;
+        } else {
+            a(parentContext);
+            var4 = (FT_Device)this.f.get(index);
+            if(!this.a(parentContext, var4, params)) {
+                var4 = null;
+            }
+
+            return var4;
+        }
+    }
+
+    public synchronized FT_Device openByIndex(Context parentContext, int index) {
+        return this.openByIndex(parentContext, index, (D2xxManager.DriverParameters)null);
+    }
+
+    public synchronized FT_Device openBySerialNumber(Context parentContext, String serialNumber, D2xxManager.DriverParameters params) {
+        D2xxManager.FtDeviceInfoListNode var4 = null;
+        FT_Device var5 = null;
+        if(parentContext == null) {
+            return var5;
+        } else {
+            a(parentContext);
+
+            for(int var7 = 0; var7 < this.f.size(); ++var7) {
+                FT_Device var6 = (FT_Device)this.f.get(var7);
+                if(var6 != null) {
+                    var4 = var6.g;
+                    if(var4 == null) {
+                        Log.d("D2xx::", "***devInfo cannot be null***");
+                    } else if(var4.serialNumber.equals(serialNumber)) {
+                        var5 = var6;
+                        break;
+                    }
+                }
+            }
+
+            if(!this.a(parentContext, var5, params)) {
+                var5 = null;
+            }
+
+            return var5;
+        }
+    }
+
+    public synchronized FT_Device openBySerialNumber(Context parentContext, String serialNumber) {
+        return this.openBySerialNumber(parentContext, serialNumber, (D2xxManager.DriverParameters)null);
+    }
+
+    public synchronized FT_Device openByDescription(Context parentContext, String description, D2xxManager.DriverParameters params) {
+        D2xxManager.FtDeviceInfoListNode var4 = null;
+        FT_Device var5 = null;
+        if(parentContext == null) {
+            return var5;
+        } else {
+            a(parentContext);
+
+            for(int var7 = 0; var7 < this.f.size(); ++var7) {
+                FT_Device var6 = (FT_Device)this.f.get(var7);
+                if(var6 != null) {
+                    var4 = var6.g;
+                    if(var4 == null) {
+                        Log.d("D2xx::", "***devInfo cannot be null***");
+                    } else if(var4.description.equals(description)) {
+                        var5 = var6;
+                        break;
+                    }
+                }
+            }
+
+            if(!this.a(parentContext, var5, params)) {
+                var5 = null;
+            }
+
+            return var5;
+        }
+    }
+
+    public synchronized FT_Device openByDescription(Context parentContext, String description) {
+        return this.openByDescription(parentContext, description, (D2xxManager.DriverParameters)null);
+    }
+
+    public synchronized FT_Device openByLocation(Context parentContext, int location, D2xxManager.DriverParameters params) {
+        D2xxManager.FtDeviceInfoListNode var4 = null;
+        FT_Device var5 = null;
+        if(parentContext == null) {
+            return var5;
+        } else {
+            a(parentContext);
+
+            for(int var7 = 0; var7 < this.f.size(); ++var7) {
+                FT_Device var6 = (FT_Device)this.f.get(var7);
+                if(var6 != null) {
+                    var4 = var6.g;
+                    if(var4 == null) {
+                        Log.d("D2xx::", "***devInfo cannot be null***");
+                    } else if(var4.location == location) {
+                        var5 = var6;
+                        break;
+                    }
+                }
+            }
+
+            if(!this.a(parentContext, var5, params)) {
+                var5 = null;
+            }
+
+            return var5;
+        }
+    }
+
+    public synchronized FT_Device openByLocation(Context parentContext, int location) {
+        return this.openByLocation(parentContext, location, (D2xxManager.DriverParameters)null);
+    }
+
+    public int addUsbDevice(UsbDevice dev) {
+        int var3 = 0;
+        if(this.isFtDevice(dev)) {
+            boolean var4 = false;
+            int var8 = dev.getInterfaceCount();
+
+            for(int var5 = 0; var5 < var8; ++var5) {
+                if(this.b(dev)) {
+                    ArrayList var6 = this.f;
+                    synchronized(this.f) {
+                        FT_Device var2 = this.a(dev);
+                        if(var2 == null) {
+                            var2 = new FT_Device(b, g, dev, dev.getInterface(var5));
+                        } else {
+                            var2.a(b);
+                        }
+
+                        this.f.add(var2);
+                        ++var3;
+                    }
+                }
+            }
+        }
+
+        return var3;
+    }
+
+    public static class D2xxException extends IOException {
+        public D2xxException() {
+        }
+
+        public D2xxException(String ftStatusMsg) {
+            super(ftStatusMsg);
+        }
+    }
+
+    public static class DriverParameters {
+        private int a = 16384;
+        private int b = 16384;
+        private int c = 16;
+        private int d = 5000;
+
+        public DriverParameters() {
+        }
+
+        public boolean setMaxBufferSize(int size) {
+            boolean var2 = false;
+            if(size >= 64 && size <= 262144) {
+                this.a = size;
+                var2 = true;
+            } else {
+                Log.e("D2xx::", "***bufferSize Out of correct range***");
+            }
+
+            return var2;
+        }
+
+        public int getMaxBufferSize() {
+            return this.a;
+        }
+
+        public boolean setMaxTransferSize(int size) {
+            boolean var2 = false;
+            if(size >= 64 && size <= 262144) {
+                this.b = size;
+                var2 = true;
+            } else {
+                Log.e("D2xx::", "***maxTransferSize Out of correct range***");
+            }
+
+            return var2;
+        }
+
+        public int getMaxTransferSize() {
+            return this.b;
+        }
+
+        public boolean setBufferNumber(int number) {
+            boolean var2 = false;
+            if(number >= 2 && number <= 16) {
+                this.c = number;
+                var2 = true;
+            } else {
+                Log.e("D2xx::", "***nrBuffers Out of correct range***");
+            }
+
+            return var2;
+        }
+
+        public int getBufferNumber() {
+            return this.c;
+        }
+
+        public boolean setReadTimeout(int timeout) {
+            this.d = timeout;
             return true;
-         }
+        }
 
-         if(!e.add(var5)) {
-            Log.d("D2xx::", "Failed to add VID/PID combination to list.");
-         } else {
-            var3 = true;
-         }
-      } else {
-         Log.d("D2xx::", "Invalid parameter to setVIDPID");
-         var3 = false;
-      }
+        public int getReadTimeout() {
+            return this.d;
+        }
+    }
 
-      return var3;
-   }
+    public static class FtDeviceInfoListNode {
+        public int flags;
+        public short bcdDevice;
+        public int type;
+        public byte iSerialNumber;
+        public int id;
+        public int location;
+        public String serialNumber;
+        public String description;
+        public int handle;
+        public int breakOnParam;
+        public short modemStatus;
+        public short lineStatus;
 
-   public static class D2xxException extends IOException {
-      public D2xxException() {
-      }
-
-      public D2xxException(String var1) {
-         super(var1);
-      }
-   }
-
-   public static class DriverParameters {
-      private int a = 16384;
-      private int b = 16384;
-      private int c = 16;
-      private int d = 5000;
-
-      public int getBufferNumber() {
-         return this.c;
-      }
-
-      public int getMaxBufferSize() {
-         return this.a;
-      }
-
-      public int getMaxTransferSize() {
-         return this.b;
-      }
-
-      public int getReadTimeout() {
-         return this.d;
-      }
-
-      public boolean setBufferNumber(int var1) {
-         if(var1 >= 2 && var1 <= 16) {
-            this.c = var1;
-            return true;
-         } else {
-            Log.e("D2xx::", "***nrBuffers Out of correct range***");
-            return false;
-         }
-      }
-
-      public boolean setMaxBufferSize(int var1) {
-         if(var1 >= 64 && var1 <= 262144) {
-            this.a = var1;
-            return true;
-         } else {
-            Log.e("D2xx::", "***bufferSize Out of correct range***");
-            return false;
-         }
-      }
-
-      public boolean setMaxTransferSize(int var1) {
-         if(var1 >= 64 && var1 <= 262144) {
-            this.b = var1;
-            return true;
-         } else {
-            Log.e("D2xx::", "***maxTransferSize Out of correct range***");
-            return false;
-         }
-      }
-
-      public boolean setReadTimeout(int var1) {
-         this.d = var1;
-         return true;
-      }
-   }
-
-   public static class FtDeviceInfoListNode {
-      public short bcdDevice;
-      public int breakOnParam;
-      public String description;
-      public int flags;
-      public int handle;
-      public byte iSerialNumber;
-      public int id;
-      public short lineStatus;
-      public int location;
-      public short modemStatus;
-      public String serialNumber;
-      public int type;
-   }
+        public FtDeviceInfoListNode() {
+        }
+    }
 }
