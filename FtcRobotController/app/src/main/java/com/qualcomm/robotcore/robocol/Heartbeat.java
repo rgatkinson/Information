@@ -2,21 +2,24 @@ package com.qualcomm.robotcore.robocol;
 
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.robocol.RobocolParsable;
+import com.qualcomm.robotcore.robot.RobotState;
 import com.qualcomm.robotcore.util.RobotLog;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 
 public class Heartbeat implements RobocolParsable {
-   public static final short BUFFER_SIZE = 13;
+   public static final short BUFFER_SIZE = 14;
    public static final short MAX_SEQUENCE_NUMBER = 10000;
-   public static final short PAYLOAD_SIZE = 10;
+   public static final short PAYLOAD_SIZE = 11;
    private static short a = 0;
    private long b;
    private short c;
+   private RobotState d;
 
    public Heartbeat() {
       this.c = a();
       this.b = System.nanoTime();
+      this.d = RobotState.NOT_STARTED;
    }
 
    public Heartbeat(Heartbeat.Token var1) {
@@ -24,6 +27,7 @@ public class Heartbeat implements RobocolParsable {
       case 1:
          this.c = 0;
          this.b = 0L;
+         this.d = RobotState.NOT_STARTED;
          return;
       default:
       }
@@ -46,12 +50,13 @@ public class Heartbeat implements RobocolParsable {
    }
 
    public void fromByteArray(byte[] var1) throws RobotCoreException {
-      if(var1.length < 13) {
-         throw new RobotCoreException("Expected buffer of at least 13 bytes, received " + var1.length);
+      if(var1.length < 14) {
+         throw new RobotCoreException("Expected buffer of at least 14 bytes, received " + var1.length);
       } else {
-         ByteBuffer var2 = ByteBuffer.wrap(var1, 3, 10);
+         ByteBuffer var2 = ByteBuffer.wrap(var1, 3, 11);
          this.c = var2.getShort();
          this.b = var2.getLong();
+         this.d = RobotState.fromByte(var2.get());
       }
    }
 
@@ -63,6 +68,10 @@ public class Heartbeat implements RobocolParsable {
       return RobocolParsable.MsgType.HEARTBEAT;
    }
 
+   public byte getRobotState() {
+      return this.d.asByte();
+   }
+
    public short getSequenceNumber() {
       return this.c;
    }
@@ -71,14 +80,19 @@ public class Heartbeat implements RobocolParsable {
       return this.b;
    }
 
+   public void setRobotState(RobotState var1) {
+      this.d = var1;
+   }
+
    public byte[] toByteArray() throws RobotCoreException {
-      ByteBuffer var1 = ByteBuffer.allocate(13);
+      ByteBuffer var1 = ByteBuffer.allocate(14);
 
       try {
          var1.put(this.getRobocolMsgType().asByte());
-         var1.putShort((short)10);
+         var1.putShort((short)11);
          var1.putShort(this.c);
          var1.putLong(this.b);
+         var1.put(this.d.asByte());
       } catch (BufferOverflowException var3) {
          RobotLog.logStacktrace((Exception)var3);
       }

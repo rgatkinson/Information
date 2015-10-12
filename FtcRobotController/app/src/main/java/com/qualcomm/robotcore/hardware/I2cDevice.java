@@ -1,45 +1,47 @@
 package com.qualcomm.robotcore.hardware;
 
+import com.qualcomm.robotcore.hardware.HardwareDevice;
+import com.qualcomm.robotcore.hardware.I2cController;
 import java.util.concurrent.locks.Lock;
 
 public class I2cDevice implements HardwareDevice {
-   private I2cController controller = null;
-   private int port = -1;
+   private I2cController a = null;
+   private int b = -1;
 
-   public I2cDevice(I2cController controller, int port) {
-      this.controller = controller;
-      this.port = port;
+   public I2cDevice(I2cController var1, int var2) {
+      this.a = var1;
+      this.b = var2;
    }
 
    public void close() {
    }
 
    public void copyBufferIntoWriteBuffer(byte[] var1) {
-      this.controller.copyBufferIntoWriteBuffer(this.port, var1);
+      this.a.copyBufferIntoWriteBuffer(this.b, var1);
    }
 
    public void deregisterForPortReadyCallback() {
-      this.controller.deregisterForPortReadyCallback(this.port);
+      this.a.deregisterForPortReadyCallback(this.b);
    }
 
    public void enableI2cReadMode(int var1, int var2, int var3) {
-      this.controller.enableI2cReadMode(this.port, var1, var2, var3);
+      this.a.enableI2cReadMode(this.b, var1, var2, var3);
    }
 
    public void enableI2cWriteMode(int var1, int var2, int var3) {
-      this.controller.enableI2cWriteMode(this.port, var1, var2, var3);
+      this.a.enableI2cWriteMode(this.b, var1, var2, var3);
    }
 
    public String getConnectionInfo() {
-      return this.controller.getConnectionInfo() + "; port " + this.port;
+      return this.a.getConnectionInfo() + "; port " + this.b;
    }
 
    public byte[] getCopyOfReadBuffer() {
-      return this.controller.getCopyOfReadBuffer(this.port);
+      return this.a.getCopyOfReadBuffer(this.b);
    }
 
    public byte[] getCopyOfWriteBuffer() {
-      return this.controller.getCopyOfWriteBuffer(this.port);
+      return this.a.getCopyOfWriteBuffer(this.b);
    }
 
    public String getDeviceName() {
@@ -47,19 +49,19 @@ public class I2cDevice implements HardwareDevice {
    }
 
    public byte[] getI2cReadCache() {
-      return this.controller.getI2cReadCache(this.port);
+      return this.a.getI2cReadCache(this.b);
    }
 
    public Lock getI2cReadCacheLock() {
-      return this.controller.getI2cReadCacheLock(this.port);
+      return this.a.getI2cReadCacheLock(this.b);
    }
 
    public byte[] getI2cWriteCache() {
-      return this.controller.getI2cWriteCache(this.port);
+      return this.a.getI2cWriteCache(this.b);
    }
 
    public Lock getI2cWriteCacheLock() {
-      return this.controller.getI2cWriteCacheLock(this.port);
+      return this.a.getI2cWriteCacheLock(this.b);
    }
 
    public int getVersion() {
@@ -67,23 +69,23 @@ public class I2cDevice implements HardwareDevice {
    }
 
    public boolean isI2cPortActionFlagSet() {
-      return this.controller.isI2cPortActionFlagSet(this.port);
+      return this.a.isI2cPortActionFlagSet(this.b);
    }
 
    public boolean isI2cPortInReadMode() {
-      return this.controller.isI2cPortInReadMode(this.port);
+      return this.a.isI2cPortInReadMode(this.b);
    }
 
    public boolean isI2cPortInWriteMode() {
-      return this.controller.isI2cPortInWriteMode(this.port);
+      return this.a.isI2cPortInWriteMode(this.b);
    }
 
    public boolean isI2cPortReady() {
-      return this.controller.isI2cPortReady(this.port);
+      return this.a.isI2cPortReady(this.b);
    }
 
    public void readI2cCacheFromController() {
-      this.controller.readI2cCacheFromController(this.port);
+      this.a.readI2cCacheFromController(this.b);
    }
 
    @Deprecated
@@ -92,15 +94,15 @@ public class I2cDevice implements HardwareDevice {
    }
 
    public void registerForI2cPortReadyCallback(I2cController.I2cPortReadyCallback var1) {
-      this.controller.registerForI2cPortReadyCallback(var1, this.port);
+      this.a.registerForI2cPortReadyCallback(var1, this.b);
    }
 
    public void setI2cPortActionFlag() {
-      this.controller.setI2cPortActionFlag(this.port);
+      this.a.setI2cPortActionFlag(this.b);
    }
 
    public void writeI2cCacheToController() {
-      this.controller.writeI2cCacheToController(this.port);
+      this.a.writeI2cCacheToController(this.b);
    }
 
    @Deprecated
@@ -109,7 +111,7 @@ public class I2cDevice implements HardwareDevice {
    }
 
    public void writeI2cPortFlagOnlyToController() {
-      this.controller.writeI2cPortFlagOnlyToController(this.port);
+      this.a.writeI2cPortFlagOnlyToController(this.b);
    }
 
    @Deprecated

@@ -1,18 +1,13 @@
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by Fernflower decompiler)
-//
-
 package com.qualcomm.robotcore.eventloop.opmode;
 
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.LightSensor;
 import com.qualcomm.robotcore.hardware.ServoController;
-import com.qualcomm.robotcore.hardware.DcMotorController.DeviceMode;
-import com.qualcomm.robotcore.hardware.DcMotorController.RunMode;
 import com.qualcomm.robotcore.util.RobotLog;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -22,240 +17,212 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 public class OpModeManager {
-    public static final String DEFAULT_OP_MODE_NAME = "Stop Robot";
-    public static final OpMode DEFAULT_OP_MODE = new StopRobotOpMode();
-    private Map<String, Class<?>> registeredOpModeClasses = new LinkedHashMap();
-    private Map<String, OpMode> registeredOpModeInstances = new LinkedHashMap();
-    private String activeOpModeName = "Stop Robot";
-    private OpMode activeOpMode;
-    private String initOpModeName;
-    private HardwareMap masterHardwareMap;
-    private HardwareMap otherHardwareMap;
-    private OPMODE_STATE opmodeState;
-    private boolean opModeSwitchNeeded;
-    private boolean opmodeInitNeeded;
-    private boolean opmodeStartNeeded;
+   public static final OpMode DEFAULT_OP_MODE = new OpModeManager.a();
+   public static final String DEFAULT_OP_MODE_NAME = "Stop Robot";
+   private Map<String, Class<?>> a = new LinkedHashMap();
+   private Map<String, OpMode> b = new LinkedHashMap();
+   private String c = "Stop Robot";
+   private OpMode d;
+   private String e;
+   private HardwareMap f;
+   private HardwareMap g;
+   private OpModeManager.b h;
+   private boolean i;
+   private boolean j;
+   private boolean k;
 
-    public OpModeManager(HardwareMap hardwareMap) {
-        this.activeOpMode = DEFAULT_OP_MODE;
-        this.initOpModeName = "Stop Robot";
-        this.masterHardwareMap = new HardwareMap();
-        this.otherHardwareMap = new HardwareMap();
-        this.opmodeState = OPMODE_STATE.INITING;
-        this.opModeSwitchNeeded = false;
-        this.opmodeInitNeeded = false;
-        this.opmodeStartNeeded = false;
-        this.masterHardwareMap = hardwareMap;
-        this.register("Stop Robot", StopRobotOpMode.class);
-        this.initActiveOpMode("Stop Robot");
-    }
+   public OpModeManager(HardwareMap var1) {
+      this.d = DEFAULT_OP_MODE;
+      this.e = "Stop Robot";
+      this.f = new HardwareMap();
+      this.g = new HardwareMap();
+      this.h = OpModeManager.b.a;
+      this.i = false;
+      this.j = false;
+      this.k = false;
+      this.f = var1;
+      this.register("Stop Robot", OpModeManager.a.class);
+      this.initActiveOpMode("Stop Robot");
+   }
 
-    public void registerOpModes(OpModeRegister register) {
-        register.register(this);
-    }
+   private void a() {
+      // $FF: Couldn't be decompiled
+   }
 
-    public void setHardwareMap(HardwareMap hardwareMap) {
-        this.masterHardwareMap = hardwareMap;
-    }
+   private void a(Exception var1) {
+      RobotLog.e("Unable to start op mode " + this.c);
+      RobotLog.logStacktrace(var1);
+      this.c = "Stop Robot";
+      this.d = DEFAULT_OP_MODE;
+   }
 
-    public HardwareMap getHardwareMap() {
-        return this.masterHardwareMap;
-    }
+   private boolean a(String var1) {
+      return this.getOpModes().contains(var1);
+   }
 
-    public Set<String> getOpModes() {
-        LinkedHashSet result = new LinkedHashSet();
-        result.addAll(this.registeredOpModeClasses.keySet());
-        result.addAll(this.registeredOpModeInstances.keySet());
-        return result;
-    }
+   public OpMode getActiveOpMode() {
+      return this.d;
+   }
 
-    public String getActiveOpModeName() {
-        return this.activeOpModeName;
-    }
+   public String getActiveOpModeName() {
+      return this.c;
+   }
 
-    public OpMode getActiveOpMode() {
-        return this.activeOpMode;
-    }
+   public HardwareMap getHardwareMap() {
+      return this.f;
+   }
 
-    public void initActiveOpMode(String name) {
-        this.initOpModeName = name;
-        this.opModeSwitchNeeded = true;
-        this.opmodeInitNeeded = true;
-        this.opmodeState = OPMODE_STATE.INITING;
-    }
+   public Set<String> getOpModes() {
+      LinkedHashSet var1 = new LinkedHashSet();
+      var1.addAll(this.a.keySet());
+      var1.addAll(this.b.keySet());
+      return var1;
+   }
 
-    public void startActiveOpMode() {
-        this.opmodeState = OPMODE_STATE.STARTING;
-        this.opmodeStartNeeded = true;
-    }
+   public void initActiveOpMode(String var1) {
+      this.e = var1;
+      this.i = true;
+      this.j = true;
+      this.h = OpModeManager.b.a;
+   }
 
-    public void stopActiveOpMode() {
-        this.activeOpMode.stop();
-        this.initActiveOpMode("Stop Robot");
-    }
+   public void logOpModes() {
+      int var1 = this.a.size() + this.b.size();
+      RobotLog.i("There are " + var1 + " Op Modes");
+      Iterator var2 = this.a.entrySet().iterator();
 
-    // Called repeatedly by FtcEventLoop.loop()
-    public void runActiveOpMode(Gamepad[] gamepads) {
-        this.activeOpMode.time = this.activeOpMode.getRuntime();
-        this.activeOpMode.gamepad1 = gamepads[0];
-        this.activeOpMode.gamepad2 = gamepads[1];
+      while(var2.hasNext()) {
+         Entry var5 = (Entry)var2.next();
+         RobotLog.i("   Op Mode: " + (String)var5.getKey());
+      }
 
-        if (this.opModeSwitchNeeded) {
-            this.activeOpMode.stop();
-            this.tryToActivateInitOpMode();
-            this.opmodeState = OPMODE_STATE.INITING;
-            this.opmodeInitNeeded = true;
-        }
+      Iterator var3 = this.b.entrySet().iterator();
 
-        if (this.opmodeState == OPMODE_STATE.INITING) {
-            if(this.opmodeInitNeeded) {
-                this.activeOpMode.hardwareMap = this.masterHardwareMap;
-                this.activeOpMode.resetStartTime();
-                this.activeOpMode.init();
-                this.opmodeInitNeeded = false;
-            }
+      while(var3.hasNext()) {
+         Entry var4 = (Entry)var3.next();
+         RobotLog.i("   Op Mode: " + (String)var4.getKey());
+      }
 
-            this.activeOpMode.init_loop();
-        } else {
-            if(this.opmodeStartNeeded) {
-                this.activeOpMode.start();
-                this.opmodeStartNeeded = false;
-            }
+   }
 
-            this.activeOpMode.loop();
-        }
+   public void register(String var1, OpMode var2) {
+      if(this.a(var1)) {
+         throw new IllegalArgumentException("Cannot register the same op mode name twice");
+      } else {
+         this.b.put(var1, var2);
+      }
+   }
 
-    }
+   public void register(String var1, Class var2) {
+      if(this.a(var1)) {
+         throw new IllegalArgumentException("Cannot register the same op mode name twice");
+      } else {
+         this.a.put(var1, var2);
+      }
+   }
 
-    public void logOpModes() {
-        int var1 = this.registeredOpModeClasses.size() + this.registeredOpModeInstances.size();
-        RobotLog.i("There are " + var1 + " Op Modes");
-        Iterator var2 = this.registeredOpModeClasses.entrySet().iterator();
+   public void registerOpModes(OpModeRegister var1) {
+      var1.register(this);
+   }
 
-        Entry var3;
-        while(var2.hasNext()) {
-            var3 = (Entry)var2.next();
-            RobotLog.i("   Op Mode: " + (String)var3.getKey());
-        }
+   public void runActiveOpMode(Gamepad[] var1) {
+      this.d.time = this.d.getRuntime();
+      this.d.gamepad1 = var1[0];
+      this.d.gamepad2 = var1[1];
+      if(this.i) {
+         this.d.stop();
+         this.a();
+         this.h = OpModeManager.b.a;
+         this.j = true;
+      }
 
-        var2 = this.registeredOpModeInstances.entrySet().iterator();
+      if(this.h == OpModeManager.b.a) {
+         if(this.j) {
+            this.d.hardwareMap = this.f;
+            this.d.resetStartTime();
+            this.d.init();
+            this.j = false;
+         }
 
-        while(var2.hasNext()) {
-            var3 = (Entry)var2.next();
-            RobotLog.i("   Op Mode: " + (String)var3.getKey());
-        }
+         this.d.init_loop();
+      } else {
+         if(this.k) {
+            this.d.start();
+            this.k = false;
+         }
 
-    }
+         this.d.loop();
+      }
+   }
 
-    public void register(String name, Class opMode) {
-        if(this.isOpMode(name)) {
-            throw new IllegalArgumentException("Cannot register the same op mode name twice");
-        } else {
-            this.registeredOpModeClasses.put(name, opMode);
-        }
-    }
+   public void setHardwareMap(HardwareMap var1) {
+      this.f = var1;
+   }
 
-    public void register(String name, OpMode opMode) {
-        if(this.isOpMode(name)) {
-            throw new IllegalArgumentException("Cannot register the same op mode name twice");
-        } else {
-            this.registeredOpModeInstances.put(name, opMode);
-        }
-    }
+   public void startActiveOpMode() {
+      this.h = OpModeManager.b.b;
+      this.k = true;
+   }
 
-    private void tryToActivateInitOpMode() {
-        RobotLog.i("Attempting to switch to op mode " + this.initOpModeName);
+   public void stopActiveOpMode() {
+      this.d.stop();
+      this.initActiveOpMode("Stop Robot");
+   }
 
-        try {
-            if(this.registeredOpModeInstances.containsKey(this.initOpModeName)) {
-                this.activeOpMode = (OpMode)this.registeredOpModeInstances.get(this.initOpModeName);
-            } else {
-                this.activeOpMode = (OpMode)((Class)this.registeredOpModeClasses.get(this.initOpModeName)).newInstance();
-            }
+   private static class a extends OpMode {
+      private void a() {
+         Iterator var1 = this.hardwareMap.servoController.iterator();
 
-            this.activeOpModeName = this.initOpModeName;
-        } catch (InstantiationException var2) {
-            this.exceptionWhileStartingOpMOde((Exception) var2);
-        } catch (IllegalAccessException var3) {
-            this.exceptionWhileStartingOpMOde((Exception) var3);
-        }
+         while(var1.hasNext()) {
+            ((ServoController)var1.next()).pwmDisable();
+         }
 
-        this.opModeSwitchNeeded = false;
-    }
+         Iterator var2 = this.hardwareMap.dcMotorController.iterator();
 
-    private boolean isOpMode(String opModeName) {
-        return this.getOpModes().contains(opModeName);
-    }
+         while(var2.hasNext()) {
+            ((DcMotorController)var2.next()).setMotorControllerDeviceMode(DcMotorController.DeviceMode.WRITE_ONLY);
+         }
 
-    private void exceptionWhileStartingOpMOde(Exception var1) {
-        RobotLog.e("Unable to start op mode " + this.activeOpModeName);
-        RobotLog.logStacktrace(var1);
-        this.activeOpModeName = "Stop Robot";
-        this.activeOpMode = DEFAULT_OP_MODE;
-    }
+         Iterator var3 = this.hardwareMap.dcMotor.iterator();
 
-    //----------------------------------------------------------------------------------------------
+         while(var3.hasNext()) {
+            DcMotor var5 = (DcMotor)var3.next();
+            var5.setPower(0.0D);
+            var5.setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
+         }
 
-    private static class StopRobotOpMode extends OpMode {
-        public StopRobotOpMode() {
-        }
+         Iterator var4 = this.hardwareMap.lightSensor.iterator();
 
-        public void init() {
-            this.doStop();
-        }
+         while(var4.hasNext()) {
+            ((LightSensor)var4.next()).enableLed(false);
+         }
 
-        public void init_loop() {
-            this.doStop();
-            this.telemetry.addData("Status", "Robot is stopped");
-        }
+      }
 
-        public void loop() {
-            this.doStop();
-            this.telemetry.addData("Status", "Robot is stopped");
-        }
+      public void init() {
+         this.a();
+      }
 
-        public void stop() {
-        }
+      public void init_loop() {
+         this.a();
+         this.telemetry.addData("Status", "Robot is stopped");
+      }
 
-        private void doStop() {
-            Iterator var1 = this.hardwareMap.servoController.iterator();
+      public void loop() {
+         this.a();
+         this.telemetry.addData("Status", "Robot is stopped");
+      }
 
-            while(var1.hasNext()) {
-                ServoController var2 = (ServoController)var1.next();
-                var2.pwmDisable();
-            }
+      public void stop() {
+      }
+   }
 
-            var1 = this.hardwareMap.dcMotorController.iterator();
+   private static enum b {
+      a,
+      b;
 
-            while(var1.hasNext()) {
-                DcMotorController var3 = (DcMotorController)var1.next();
-                var3.setMotorControllerDeviceMode(DeviceMode.WRITE_ONLY);
-            }
-
-            var1 = this.hardwareMap.dcMotor.iterator();
-
-            while(var1.hasNext()) {
-                DcMotor var4 = (DcMotor)var1.next();
-                var4.setPower(0.0D);
-                var4.setChannelMode(RunMode.RUN_WITHOUT_ENCODERS);
-            }
-
-            var1 = this.hardwareMap.lightSensor.iterator();
-
-            while(var1.hasNext()) {
-                LightSensor var5 = (LightSensor)var1.next();
-                var5.enableLed(false);
-            }
-
-        }
-    }
-
-    private static enum OPMODE_STATE
-        {
-            INITING,
-            STARTING;
-
-        private OPMODE_STATE() {
-        }
-    }
+      static {
+         OpModeManager.b[] var0 = new OpModeManager.b[]{a, b};
+      }
+   }
 }

@@ -8,7 +8,7 @@ import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.widget.ScrollView;
 import android.widget.TextView;
-
+import com.qualcomm.ftccommon.R;
 import com.qualcomm.robotcore.util.RobotLog;
 import java.io.BufferedReader;
 import java.io.File;
@@ -66,7 +66,7 @@ public class ViewLogsActivity extends Activity {
                Spannable var3 = ViewLogsActivity.this.a(var2);
                ViewLogsActivity.this.a.setText(var3);
             } catch (IOException var4) {
-               RobotLog.log(var4.toString());
+               RobotLog.e(var4.toString());
                ViewLogsActivity.this.a.setText("File not found: " + ViewLogsActivity.this.c);
             }
          }

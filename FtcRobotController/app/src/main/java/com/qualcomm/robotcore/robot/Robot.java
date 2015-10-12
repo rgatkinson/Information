@@ -27,13 +27,13 @@ public class Robot {
 
    }
 
-   public void start(InetAddress groupOwnerAddress, EventLoop eventLoop) throws RobotCoreException {
+   public void start(InetAddress var1, EventLoop var2) throws RobotCoreException {
       try {
-         this.socket.listen(groupOwnerAddress);
-         this.eventLoopManager.start(eventLoop);
-      } catch (SocketException e) {
-         RobotLog.logStacktrace((Exception)e);
-         throw new RobotCoreException("Robot start failed: " + e.toString());
+         this.socket.listen(var1);
+         this.eventLoopManager.start(var2);
+      } catch (SocketException var4) {
+         RobotLog.logStacktrace((Exception)var4);
+         throw new RobotCoreException("Robot start failed: " + var4.toString());
       }
    }
 }

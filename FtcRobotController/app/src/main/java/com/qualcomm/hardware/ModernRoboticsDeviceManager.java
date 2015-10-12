@@ -1,22 +1,22 @@
 package com.qualcomm.hardware;
 
 import android.content.Context;
-import com.qualcomm.hardware.AdafruitColorSensor;
-import com.qualcomm.hardware.ModernRoboticsColorSensor;
-import com.qualcomm.hardware.ModernRoboticsIrSeekerSensorV3;
-import com.qualcomm.hardware.ModernRoboticsNxtAccelerationSensor;
-import com.qualcomm.hardware.ModernRoboticsNxtColorSensor;
-import com.qualcomm.hardware.ModernRoboticsNxtCompassSensor;
-import com.qualcomm.hardware.ModernRoboticsNxtDcMotorController;
-import com.qualcomm.hardware.ModernRoboticsNxtGyroSensor;
-import com.qualcomm.hardware.ModernRoboticsNxtIrSeekerSensor;
-import com.qualcomm.hardware.ModernRoboticsNxtLightSensor;
-import com.qualcomm.hardware.ModernRoboticsNxtServoController;
-import com.qualcomm.hardware.ModernRoboticsNxtTouchSensor;
-import com.qualcomm.hardware.ModernRoboticsNxtTouchSensorMultiplexer;
-import com.qualcomm.hardware.ModernRoboticsNxtUltrasonicSensor;
-import com.qualcomm.hardware.ModernRoboticsOpticalDistanceSensor;
-import com.qualcomm.hardware.ModernRoboticsTouchSensor;
+import com.qualcomm.hardware.AdafruitI2cColorSensor;
+import com.qualcomm.hardware.HiTechnicNxtAccelerationSensor;
+import com.qualcomm.hardware.HiTechnicNxtColorSensor;
+import com.qualcomm.hardware.HiTechnicNxtCompassSensor;
+import com.qualcomm.hardware.HiTechnicNxtDcMotorController;
+import com.qualcomm.hardware.HiTechnicNxtGyroSensor;
+import com.qualcomm.hardware.HiTechnicNxtIrSeekerSensor;
+import com.qualcomm.hardware.HiTechnicNxtLightSensor;
+import com.qualcomm.hardware.HiTechnicNxtServoController;
+import com.qualcomm.hardware.HiTechnicNxtTouchSensor;
+import com.qualcomm.hardware.HiTechnicNxtTouchSensorMultiplexer;
+import com.qualcomm.hardware.HiTechnicNxtUltrasonicSensor;
+import com.qualcomm.hardware.ModernRoboticsAnalogOpticalDistanceSensor;
+import com.qualcomm.hardware.ModernRoboticsDigitalTouchSensor;
+import com.qualcomm.hardware.ModernRoboticsI2cColorSensor;
+import com.qualcomm.hardware.ModernRoboticsI2cIrSeekerSensorV3;
 import com.qualcomm.hardware.ModernRoboticsUsbDcMotorController;
 import com.qualcomm.hardware.ModernRoboticsUsbDeviceInterfaceModule;
 import com.qualcomm.hardware.ModernRoboticsUsbLegacyModule;
@@ -106,14 +106,19 @@ public class ModernRoboticsDeviceManager extends DeviceManager {
       a = ModernRoboticsDeviceManager.a.b;
    }
 
-   public ColorSensor createAdafruitColorSensor(DeviceInterfaceModule var1, int var2) {
-      RobotLog.v("Creating Adafruit Color Sensor - Port: " + var2);
-      return new AdafruitColorSensor(var1, var2);
+   public ColorSensor createAdafruitI2cColorSensor(DeviceInterfaceModule var1, int var2) {
+      RobotLog.v("Creating Adafruit I2C Color Sensor - Port: " + var2);
+      return new AdafruitI2cColorSensor(var1, var2);
    }
 
    public AnalogInput createAnalogInputDevice(AnalogInputController var1, int var2) {
       RobotLog.v("Creating Analog Input Device - Port: " + var2);
       return new AnalogInput(var1, var2);
+   }
+
+   public OpticalDistanceSensor createAnalogOpticalDistanceSensor(DeviceInterfaceModule var1, int var2) {
+      RobotLog.v("Creating Modern Robotics Analog Optical Distance Sensor - Port: " + var2);
+      return new ModernRoboticsAnalogOpticalDistanceSensor(this.a(var1), var2);
    }
 
    public AnalogOutput createAnalogOutputDevice(AnalogOutputController var1, int var2) {
@@ -143,14 +148,19 @@ public class ModernRoboticsDeviceManager extends DeviceManager {
       return new DigitalChannel(var1, var2);
    }
 
+   public TouchSensor createDigitalTouchSensor(DeviceInterfaceModule var1, int var2) {
+      RobotLog.v("Creating Modern Robotics Digital Touch Sensor - Port: " + var2);
+      return new ModernRoboticsDigitalTouchSensor(this.a(var1), var2);
+   }
+
    public I2cDevice createI2cDevice(I2cController var1, int var2) {
       RobotLog.v("Creating I2C Device - Port: " + var2);
       return new I2cDevice(var1, var2);
    }
 
-   public IrSeekerSensor createIrSeekerSensorV3(DeviceInterfaceModule var1, int var2) {
-      RobotLog.v("Creating Modern Robotics IR Seeker Sensor V3 - Port: " + var2);
-      return new ModernRoboticsIrSeekerSensorV3(this.a(var1), var2);
+   public IrSeekerSensor createI2cIrSeekerSensorV3(DeviceInterfaceModule var1, int var2) {
+      RobotLog.v("Creating Modern Robotics I2C IR Seeker Sensor V3 - Port: " + var2);
+      return new ModernRoboticsI2cIrSeekerSensorV3(this.a(var1), var2);
    }
 
    public LED createLED(DigitalChannelController var1, int var2) {
@@ -158,79 +168,69 @@ public class ModernRoboticsDeviceManager extends DeviceManager {
       return new LED(var1, var2);
    }
 
-   public ColorSensor createModernRoboticsColorSensor(DeviceInterfaceModule var1, int var2) {
-      RobotLog.v("Creating ModernRobotics Color Sensor - Port: " + var2);
-      return new ModernRoboticsColorSensor(var1, var2);
+   public ColorSensor createModernRoboticsI2cColorSensor(DeviceInterfaceModule var1, int var2) {
+      RobotLog.v("Creating Modern Robotics I2C Color Sensor - Port: " + var2);
+      return new ModernRoboticsI2cColorSensor(var1, var2);
    }
 
    public AccelerationSensor createNxtAccelerationSensor(LegacyModule var1, int var2) {
-      RobotLog.v("Creating Modern Robotics NXT Acceleration Sensor - Port: " + var2);
-      return new ModernRoboticsNxtAccelerationSensor(this.a(var1), var2);
+      RobotLog.v("Creating HiTechnic NXT Acceleration Sensor - Port: " + var2);
+      return new HiTechnicNxtAccelerationSensor(this.a(var1), var2);
    }
 
    public ColorSensor createNxtColorSensor(LegacyModule var1, int var2) {
-      RobotLog.v("Creating NXT Color Sensor - Port: " + var2);
-      return new ModernRoboticsNxtColorSensor(var1, var2);
+      RobotLog.v("Creating HiTechnic NXT Color Sensor - Port: " + var2);
+      return new HiTechnicNxtColorSensor(var1, var2);
    }
 
    public CompassSensor createNxtCompassSensor(LegacyModule var1, int var2) {
-      RobotLog.v("Creating Modern Robotics NXT Compass Sensor - Port: " + var2);
-      return new ModernRoboticsNxtCompassSensor(this.a(var1), var2);
+      RobotLog.v("Creating HiTechnic NXT Compass Sensor - Port: " + var2);
+      return new HiTechnicNxtCompassSensor(this.a(var1), var2);
    }
 
    public DcMotorController createNxtDcMotorController(LegacyModule var1, int var2) {
-      RobotLog.v("Creating Modern Robotics NXT DC Motor Controller - Port: " + var2);
-      return new ModernRoboticsNxtDcMotorController(this.a(var1), var2);
+      RobotLog.v("Creating HiTechnic NXT DC Motor Controller - Port: " + var2);
+      return new HiTechnicNxtDcMotorController(this.a(var1), var2);
    }
 
    public GyroSensor createNxtGyroSensor(LegacyModule var1, int var2) {
-      RobotLog.v("Creating Modern Robotics NXT Gyro Sensor - Port: " + var2);
-      return new ModernRoboticsNxtGyroSensor(this.a(var1), var2);
+      RobotLog.v("Creating HiTechnic NXT Gyro Sensor - Port: " + var2);
+      return new HiTechnicNxtGyroSensor(this.a(var1), var2);
    }
 
    public IrSeekerSensor createNxtIrSeekerSensor(LegacyModule var1, int var2) {
-      RobotLog.v("Creating Modern Robotics NXT IR Seeker Sensor - Port: " + var2);
-      return new ModernRoboticsNxtIrSeekerSensor(this.a(var1), var2);
+      RobotLog.v("Creating HiTechnic NXT IR Seeker Sensor - Port: " + var2);
+      return new HiTechnicNxtIrSeekerSensor(this.a(var1), var2);
    }
 
    public LightSensor createNxtLightSensor(LegacyModule var1, int var2) {
-      RobotLog.v("Creating Modern Robotics NXT Light Sensor - Port: " + var2);
-      return new ModernRoboticsNxtLightSensor(this.a(var1), var2);
+      RobotLog.v("Creating HiTechnic NXT Light Sensor - Port: " + var2);
+      return new HiTechnicNxtLightSensor(this.a(var1), var2);
    }
 
    public ServoController createNxtServoController(LegacyModule var1, int var2) {
-      RobotLog.v("Creating Modern Robotics NXT Servo Controller - Port: " + var2);
-      return new ModernRoboticsNxtServoController(this.a(var1), var2);
+      RobotLog.v("Creating HiTechnic NXT Servo Controller - Port: " + var2);
+      return new HiTechnicNxtServoController(this.a(var1), var2);
    }
 
    public TouchSensor createNxtTouchSensor(LegacyModule var1, int var2) {
-      RobotLog.v("Creating Modern Robotics NXT Touch Sensor - Port: " + var2);
-      return new ModernRoboticsNxtTouchSensor(this.a(var1), var2);
+      RobotLog.v("Creating HiTechnic NXT Touch Sensor - Port: " + var2);
+      return new HiTechnicNxtTouchSensor(this.a(var1), var2);
    }
 
    public TouchSensorMultiplexer createNxtTouchSensorMultiplexer(LegacyModule var1, int var2) {
-      RobotLog.v("Creating Modern Robotics NXT Touch Sensor Multiplexer - Port: " + var2);
-      return new ModernRoboticsNxtTouchSensorMultiplexer(this.a(var1), var2);
+      RobotLog.v("Creating HiTechnic NXT Touch Sensor Multiplexer - Port: " + var2);
+      return new HiTechnicNxtTouchSensorMultiplexer(this.a(var1), var2);
    }
 
    public UltrasonicSensor createNxtUltrasonicSensor(LegacyModule var1, int var2) {
-      RobotLog.v("Creating Modern Robotics NXT Ultrasonic Sensor - Port: " + var2);
-      return new ModernRoboticsNxtUltrasonicSensor(this.a(var1), var2);
-   }
-
-   public OpticalDistanceSensor createOpticalDistanceSensor(DeviceInterfaceModule var1, int var2) {
-      RobotLog.v("Creating Modern Robotics Optical Distance Sensor - Port: " + var2);
-      return new ModernRoboticsOpticalDistanceSensor(this.a(var1), var2);
+      RobotLog.v("Creating HiTechnic NXT Ultrasonic Sensor - Port: " + var2);
+      return new HiTechnicNxtUltrasonicSensor(this.a(var1), var2);
    }
 
    public PWMOutput createPwmOutputDevice(DeviceInterfaceModule var1, int var2) {
       RobotLog.v("Creating PWM Output Device - Port: " + var2);
       return new PWMOutput(var1, var2);
-   }
-
-   public TouchSensor createTouchSensor(DeviceInterfaceModule var1, int var2) {
-      RobotLog.v("Creating Modern Robotics Touch Sensor - Port: " + var2);
-      return new ModernRoboticsTouchSensor(this.a(var1), var2);
    }
 
    public DcMotorController createUsbDcMotorController(SerialNumber var1) throws RobotCoreException, InterruptedException {

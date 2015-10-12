@@ -9,13 +9,13 @@ interface ReadWriteRunnable extends SyncdDevice, Runnable {
 
    void close();
 
-   ReadWriteRunnableSegment createSegment(int key, int address, int size);
+   ReadWriteRunnableSegment createSegment(int var1, int var2, int var3);
 
    void queueSegmentRead(int var1);
 
    void queueSegmentWrite(int var1);
 
-   byte[] read(int monitoredAddress, int cb);
+   byte[] read(int var1, int var2);
 
    byte[] readFromWriteCache(int var1, int var2);
 

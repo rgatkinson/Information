@@ -2,8 +2,10 @@ package com.qualcomm.modernrobotics;
 
 import android.content.Context;
 import com.qualcomm.analytics.Analytics;
+import com.qualcomm.modernrobotics.ModernRoboticsPacket;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DeviceManager;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbManager;
 import com.qualcomm.robotcore.util.SerialNumber;
@@ -35,22 +37,22 @@ public class ModernRoboticsUsbUtil {
       }
    }
 
-   private static RobotUsbDevice a(RobotUsbManager robotUsbManager, SerialNumber serialNumber) throws RobotCoreException {
-      int scanResult = robotUsbManager.scanForDevices();
+   private static RobotUsbDevice a(RobotUsbManager var0, SerialNumber var1) throws RobotCoreException {
+      int var2 = var0.scanForDevices();
       int var3 = 0;
 
       String var4;
       boolean var5;
       while(true) {
-         if(var3 >= scanResult) {
+         if(var3 >= var2) {
             var4 = "";
             var5 = false;
             break;
          }
 
-         if(serialNumber.equals(robotUsbManager.getDeviceSerialNumberByIndex(var3))) {
+         if(var1.equals(var0.getDeviceSerialNumberByIndex(var3))) {
             var5 = true;
-            var4 = robotUsbManager.getDeviceDescriptionByIndex(var3) + " [" + serialNumber.getSerialNumber() + "]";
+            var4 = var0.getDeviceDescriptionByIndex(var3) + " [" + var1.getSerialNumber() + "]";
             break;
          }
 
@@ -58,18 +60,18 @@ public class ModernRoboticsUsbUtil {
       }
 
       if(!var5) {
-         a("unable to find USB device with serial number " + serialNumber.toString());
+         a("unable to find USB device with serial number " + var1.toString());
       }
 
       RobotUsbDevice var6 = null;
 
       try {
-         var6 = robotUsbManager.openBySerialNumber(serialNumber);
+         var6 = var0.openBySerialNumber(var1);
          var6.setBaudRate(250000);
          var6.setDataCharacteristics((byte)8, (byte)0, (byte)0);
          var6.setLatencyTimer(2);
       } catch (RobotCoreException var10) {
-         a("Unable to open USB device " + serialNumber + " - " + var4 + ": " + var10.getMessage());
+         a("Unable to open USB device " + var1 + " - " + var4 + ": " + var10.getMessage());
       }
 
       try {
@@ -98,7 +100,7 @@ public class ModernRoboticsUsbUtil {
          a("error reading USB device headers");
       }
 
-      if(!ModernRoboticsPacket.validatePacket(var1, 3)) {
+      if(!ModernRoboticsPacket.a(var1, 3)) {
          return var2;
       } else {
          var0.read(var2);
@@ -114,9 +116,9 @@ public class ModernRoboticsUsbUtil {
       return a(var0);
    }
 
-   public static void init(Context var0) {
-      if(a != null) {
-         a = new Analytics(var0, "update_rc");
+   public static void init(Context var0, HardwareMap var1) {
+      if(a == null) {
+         a = new Analytics(var0, "update_rc", var1);
       }
 
    }

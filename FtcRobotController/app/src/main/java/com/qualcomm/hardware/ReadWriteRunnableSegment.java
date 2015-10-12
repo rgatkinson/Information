@@ -4,47 +4,46 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ReadWriteRunnableSegment {
-   final Lock readLock;
-   final Lock writeLock;
-   private int address;
-   private final byte[] readBuffer;
-   private final byte[] writeBuffer;
+   final Lock a;
+   final Lock b;
+   private int c;
+   private final byte[] d;
+   private final byte[] e;
 
-   public ReadWriteRunnableSegment(int address, int cb) {
-      this.address = address;
-      this.readLock = new ReentrantLock();
-      this.readBuffer = new byte[cb];
-      this.writeLock = new ReentrantLock();
-      this.writeBuffer = new byte[cb];
+   public ReadWriteRunnableSegment(int var1, int var2) {
+      this.c = var1;
+      this.a = new ReentrantLock();
+      this.d = new byte[var2];
+      this.b = new ReentrantLock();
+      this.e = new byte[var2];
    }
 
-   /** returns the 'register' address at which this segment starts in the CDIM (or whomever) map*/
    public int getAddress() {
-      return this.address;
+      return this.c;
    }
 
    public byte[] getReadBuffer() {
-      return this.readBuffer;
+      return this.d;
    }
 
    public Lock getReadLock() {
-      return this.readLock;
+      return this.a;
    }
 
    public byte[] getWriteBuffer() {
-      return this.writeBuffer;
+      return this.e;
    }
 
    public Lock getWriteLock() {
-      return this.writeLock;
+      return this.b;
    }
 
    public void setAddress(int var1) {
-      this.address = var1;
+      this.c = var1;
    }
 
    public String toString() {
-      Object[] var1 = new Object[]{Integer.valueOf(this.address), Integer.valueOf(this.readBuffer.length), Integer.valueOf(this.writeBuffer.length)};
+      Object[] var1 = new Object[]{Integer.valueOf(this.c), Integer.valueOf(this.d.length), Integer.valueOf(this.e.length)};
       return String.format("Segment - address:%d read:%d write:%d", var1);
    }
 }

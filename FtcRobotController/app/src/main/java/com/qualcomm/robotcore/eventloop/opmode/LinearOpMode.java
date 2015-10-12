@@ -1,5 +1,6 @@
 package com.qualcomm.robotcore.eventloop.opmode;
 
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -11,7 +12,7 @@ public abstract class LinearOpMode extends OpMode {
 
    public final void init() {
       this.a = new LinearOpMode.a(this);
-      this.b = new Thread(this.a);
+      this.b = new Thread(this.a, "Linear OpMode Helper");
       this.b.start();
    }
 
@@ -49,10 +50,10 @@ public abstract class LinearOpMode extends OpMode {
       }
 
       if(!this.a.c()) {
-         RobotLog.log("*****************************************************************");
-         RobotLog.log("User Linear Op Mode took too long to exit; emergency killing app.");
-         RobotLog.log("Possible infinite loop in user code?");
-         RobotLog.log("*****************************************************************");
+         RobotLog.e("*****************************************************************");
+         RobotLog.e("User Linear Op Mode took too long to exit; emergency killing app.");
+         RobotLog.e("Possible infinite loop in user code?");
+         RobotLog.e("*****************************************************************");
          System.exit(-1);
       }
 
@@ -102,9 +103,9 @@ public abstract class LinearOpMode extends OpMode {
             return;
          } catch (InterruptedException var7) {
             RobotLog.d("LinearOpMode received an Interrupted Exception; shutting down this linear op mode");
+            return;
          } catch (RuntimeException var8) {
             this.a = var8;
-            return;
          } finally {
             this.b = true;
          }

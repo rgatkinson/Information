@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 public class ElapsedTime {
    private long a = 0L;
+   private double b = 1.0E9D;
 
    public ElapsedTime() {
       this.reset();
@@ -13,9 +14,26 @@ public class ElapsedTime {
       this.a = var1;
    }
 
+   public ElapsedTime(ElapsedTime.Resolution var1) {
+      this.reset();
+      switch(null.a[var1.ordinal()]) {
+      case 1:
+         this.b = 1.0E9D;
+         return;
+      case 2:
+         this.b = 1000000.0D;
+         return;
+      default:
+      }
+   }
+
+   private String a() {
+      return this.b == 1.0E9D?"seconds":(this.b == 1000000.0D?"milliseconds":"Unknown units");
+   }
+
    public void log(String var1) {
-      Object[] var2 = new Object[]{var1, Double.valueOf(this.time())};
-      RobotLog.v(String.format("TIMER: %20s - %1.3f", var2));
+      Object[] var2 = new Object[]{var1, Double.valueOf(this.time()), this.a()};
+      RobotLog.v(String.format("TIMER: %20s - %1.3f %s", var2));
    }
 
    public void reset() {
@@ -23,15 +41,24 @@ public class ElapsedTime {
    }
 
    public double startTime() {
-      return (double)this.a / 1.0E9D;
+      return (double)this.a / this.b;
    }
 
    public double time() {
-      return (double)(System.nanoTime() - this.a) / 1.0E9D;
+      return (double)(System.nanoTime() - this.a) / this.b;
    }
 
    public String toString() {
-      Object[] var1 = new Object[]{Double.valueOf(this.time())};
-      return String.format("%1.4f seconds", var1);
+      Object[] var1 = new Object[]{Double.valueOf(this.time()), this.a()};
+      return String.format("%1.4f %s", var1);
+   }
+
+   public static enum Resolution {
+      MILLISECONDS,
+      SECONDS;
+
+      static {
+         ElapsedTime.Resolution[] var0 = new ElapsedTime.Resolution[]{SECONDS, MILLISECONDS};
+      }
    }
 }

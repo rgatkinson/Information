@@ -2,6 +2,15 @@ package com.qualcomm.robotcore.hardware.configuration;
 
 import android.content.Context;
 import com.qualcomm.robotcore.exception.RobotCoreException;
+import com.qualcomm.robotcore.hardware.configuration.ControllerConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.DeviceInterfaceModuleConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.LegacyModuleControllerConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.MatrixControllerConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.MotorConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.MotorControllerConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.ServoConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.ServoControllerConfiguration;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.SerialNumber;
 import java.io.IOException;
@@ -53,7 +62,7 @@ public class ReadXMLFileHandler {
 
             if(var9 != null) {
                if(b) {
-                  RobotLog.log("[handleDeviceInterfaceModule] tagname: " + var9);
+                  RobotLog.e("[handleDeviceInterfaceModule] tagname: " + var9);
                }
 
                if(var9.equalsIgnoreCase(DeviceConfiguration.ConfigurationType.DEVICE_INTERFACE_MODULE.toString())) {
@@ -283,7 +292,7 @@ public class ReadXMLFileHandler {
 
          if(var4 == 2) {
             if(b) {
-               RobotLog.log("[handleLegacyModule] tagname: " + var5);
+               RobotLog.e("[handleLegacyModule] tagname: " + var5);
             }
 
             if(!var5.equalsIgnoreCase(DeviceConfiguration.ConfigurationType.COMPASS.toString()) && !var5.equalsIgnoreCase(DeviceConfiguration.ConfigurationType.LIGHT_SENSOR.toString()) && !var5.equalsIgnoreCase(DeviceConfiguration.ConfigurationType.IR_SEEKER.toString()) && !var5.equalsIgnoreCase(DeviceConfiguration.ConfigurationType.ACCELEROMETER.toString()) && !var5.equalsIgnoreCase(DeviceConfiguration.ConfigurationType.GYRO.toString()) && !var5.equalsIgnoreCase(DeviceConfiguration.ConfigurationType.TOUCH_SENSOR.toString()) && !var5.equalsIgnoreCase(DeviceConfiguration.ConfigurationType.TOUCH_SENSOR_MULTIPLEXER.toString()) && !var5.equalsIgnoreCase(DeviceConfiguration.ConfigurationType.ULTRASONIC_SENSOR.toString()) && !var5.equalsIgnoreCase(DeviceConfiguration.ConfigurationType.COLOR_SENSOR.toString()) && !var5.equalsIgnoreCase(DeviceConfiguration.ConfigurationType.NOTHING.toString())) {
@@ -366,7 +375,7 @@ public class ReadXMLFileHandler {
       }
 
       if(b) {
-         RobotLog.log("[handleDevice] name: " + var2.getName() + ", port: " + var2.getPort() + ", type: " + var2.getType());
+         RobotLog.e("[handleDevice] name: " + var2.getName() + ", port: " + var2.getPort() + ", type: " + var2.getType());
       }
 
       return var2;

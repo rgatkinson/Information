@@ -42,7 +42,7 @@ public class FtcRobotControllerActivity extends Activity {
    public static final String CONFIGURE_FILENAME = "CONFIGURE_FILENAME";
    private static final int NUM_GAMEPADS = 2;
    private static final int REQUEST_CONFIG_WIFI_CHANNEL = 1;
-   private static final boolean USE_DEVICE_EMULATION = false;
+   private static final boolean USE_DEVICE_EMULATION;
    protected ImageButton buttonMenu;
    protected UpdateUI.Callback callback;
    protected ServiceConnection connection = new ServiceConnection() {
@@ -72,21 +72,21 @@ public class FtcRobotControllerActivity extends Activity {
    private Utility utility;
 
    private FileInputStream fileSetup() {
-      String var1 = Utility.CONFIG_FILES_DIR + this.utility.getFilenameFromPrefs(R.string.pref_hardware_config_filename, "No current file!") + ".xml";
+      String var1 = Utility.CONFIG_FILES_DIR + this.utility.getFilenameFromPrefs(2131296333, "No current file!") + ".xml";
 
-      FileInputStream fis;
+      FileInputStream var2;
       try {
-         fis = new FileInputStream(var1);
+         var2 = new FileInputStream(var1);
       } catch (FileNotFoundException var5) {
-         String msg = "Cannot open robot configuration file - " + var1;
-         this.utility.complainToast(msg, this.context);
-         DbgLog.msg(msg);
-         this.utility.saveToPreferences("No current file!",R.string.pref_hardware_config_filename);
-         fis = null;
+         String var4 = "Cannot open robot configuration file - " + var1;
+         this.utility.complainToast(var4, this.context);
+         DbgLog.msg(var4);
+         this.utility.saveToPreferences("No current file!", 2131296333);
+         var2 = null;
       }
 
-      this.utility.updateHeader("No current file!", R.string.pref_hardware_config_filename, 2131427434, 2131427329);
-      return fis;
+      this.utility.updateHeader("No current file!", 2131296333, 2131427434, 2131427329);
+      return var2;
    }
 
    private void requestRobotRestart() {
@@ -98,9 +98,9 @@ public class FtcRobotControllerActivity extends Activity {
       if(this.controllerService != null) {
          FileInputStream var1 = this.fileSetup();
          if(var1 != null) {
-            ModernRoboticsHardwareFactory hardwareFactory = new ModernRoboticsHardwareFactory(this.context);
-            hardwareFactory.setXmlInputStream(var1);
-            this.eventLoop = new FtcEventLoop(hardwareFactory, new FtcOpModeRegister(), this.callback, this);
+            ModernRoboticsHardwareFactory var2 = new ModernRoboticsHardwareFactory(this.context);
+            var2.setXmlInputStream(var1);
+            this.eventLoop = new FtcEventLoop(var2, new FtcOpModeRegister(), this.callback, this);
             this.controllerService.setCallback(this.callback);
             this.controllerService.setupRobot(this.eventLoop);
             return;
@@ -140,8 +140,8 @@ public class FtcRobotControllerActivity extends Activity {
       if(var1 == 3 && var2 == -1) {
          Serializable var4 = var3.getSerializableExtra("CONFIGURE_FILENAME");
          if(var4 != null) {
-            this.utility.saveToPreferences(var4.toString(), R.string.pref_hardware_config_filename);
-            this.utility.updateHeader("No current file!", R.string.pref_hardware_config_filename, 2131427434, 2131427329);
+            this.utility.saveToPreferences(var4.toString(), 2131296333);
+            this.utility.updateHeader("No current file!", 2131296333, 2131427434, 2131427329);
          }
       }
 
@@ -244,7 +244,7 @@ public class FtcRobotControllerActivity extends Activity {
       super.onStart();
       RobotLog.writeLogcatToDisk(this, 4096);
       this.bindService(new Intent(this, FtcRobotControllerService.class), this.connection, 1);
-      this.utility.updateHeader("No current file!", R.string.pref_hardware_config_filename, 2131427434, 2131427329);
+      this.utility.updateHeader("No current file!", 2131296333, 2131427434, 2131427329);
       this.callback.wifiDirectUpdate(WifiDirectAssistant.Event.DISCONNECTED);
       this.entireScreenLayout.setOnTouchListener(new OnTouchListener() {
          public boolean onTouch(View var1, MotionEvent var2) {
