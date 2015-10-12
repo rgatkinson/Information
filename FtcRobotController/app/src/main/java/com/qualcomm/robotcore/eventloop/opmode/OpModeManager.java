@@ -29,7 +29,7 @@ public class OpModeManager {
     private String activeOpModeName = "Stop Robot";
     private OpMode activeOpMode;
     private String initOpModeName;
-    private HardwareMap hwmap;
+    private HardwareMap masterHardwareMap;
     private HardwareMap otherHardwareMap;
     private OPMODE_STATE opmodeState;
     private boolean opModeSwitchNeeded;
@@ -39,13 +39,13 @@ public class OpModeManager {
     public OpModeManager(HardwareMap hardwareMap) {
         this.activeOpMode = DEFAULT_OP_MODE;
         this.initOpModeName = "Stop Robot";
-        this.hwmap = new HardwareMap();
+        this.masterHardwareMap = new HardwareMap();
         this.otherHardwareMap = new HardwareMap();
         this.opmodeState = OPMODE_STATE.INITING;
         this.opModeSwitchNeeded = false;
         this.opmodeInitNeeded = false;
         this.opmodeStartNeeded = false;
-        this.hwmap = hardwareMap;
+        this.masterHardwareMap = hardwareMap;
         this.register("Stop Robot", StopRobotOpMode.class);
         this.initActiveOpMode("Stop Robot");
     }
@@ -55,11 +55,11 @@ public class OpModeManager {
     }
 
     public void setHardwareMap(HardwareMap hardwareMap) {
-        this.hwmap = hardwareMap;
+        this.masterHardwareMap = hardwareMap;
     }
 
     public HardwareMap getHardwareMap() {
-        return this.hwmap;
+        return this.masterHardwareMap;
     }
 
     public Set<String> getOpModes() {
@@ -109,7 +109,7 @@ public class OpModeManager {
 
         if (this.opmodeState == OPMODE_STATE.INITING) {
             if(this.opmodeInitNeeded) {
-                this.activeOpMode.hardwareMap = this.hwmap;
+                this.activeOpMode.hardwareMap = this.masterHardwareMap;
                 this.activeOpMode.resetStartTime();
                 this.activeOpMode.init();
                 this.opmodeInitNeeded = false;
@@ -193,6 +193,8 @@ public class OpModeManager {
         this.activeOpModeName = "Stop Robot";
         this.activeOpMode = DEFAULT_OP_MODE;
     }
+
+    //----------------------------------------------------------------------------------------------
 
     private static class StopRobotOpMode extends OpMode {
         public StopRobotOpMode() {

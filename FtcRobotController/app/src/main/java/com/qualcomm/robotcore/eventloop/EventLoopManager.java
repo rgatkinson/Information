@@ -157,15 +157,15 @@ public class EventLoopManager {
                 SyncdDevice var2 = (SyncdDevice)var1.next();
                 var2.startBlockingWork();
             }
-        } catch (Exception var3) {
-            RobotLog.w("Caught exception during looper init: " + var3.toString());
-            RobotLog.logStacktrace(var3);
+        } catch (Exception e) {
+            RobotLog.w("Caught exception during looper init: " + e.toString());
+            RobotLog.logStacktrace(e);
             this.onStateChange(EventLoopManager.State.EMERGENCY_STOP);
             if(RobotLog.hasGlobalErrorMsg()) {
                 this.buildAndSendTelemetry("SYSTEM_TELEMETRY", RobotLog.getGlobalErrorMsg());
             }
 
-            throw new RobotCoreException("Robot failed to start: " + var3.getMessage());
+            throw new RobotCoreException("Robot failed to start: " + e.getMessage());
         }
 
         this.elapsed = new ElapsedTime(0L);
@@ -184,12 +184,12 @@ public class EventLoopManager {
         }
 
         this.onStateChange(EventLoopManager.State.STOPPED);
-        this.c();
+        this.teardownEventLoop();
         this.eventLoop = trivialEventLoop;
         this.syncdDevices.clear();
     }
 
-    private void c() {
+    private void teardownEventLoop() {
         try {
             this.eventLoop.teardown();
         } catch (Exception var2) {
@@ -426,7 +426,7 @@ public class EventLoopManager {
                 EventLoopManager.this.buildAndSendTelemetry("SYSTEM_TELEMETRY", RobotLog.getGlobalErrorMsg());
             }
 
-            EventLoopManager.this.c();
+            EventLoopManager.this.teardownEventLoop();
             RobotLog.v("EventLoopRunnable has exited");
         }
     }
