@@ -5,6 +5,7 @@ import com.qualcomm.analytics.Analytics;
 import com.qualcomm.modernrobotics.ModernRoboticsPacket;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DeviceManager;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbManager;
 import com.qualcomm.robotcore.util.SerialNumber;
@@ -115,9 +116,9 @@ public class ModernRoboticsUsbUtil {
       return a(var0);
    }
 
-   public static void init(Context var0) {
-      if(a != null) {
-         a = new Analytics(var0, "update_rc");
+   public static void init(Context var0, HardwareMap var1) {
+      if(a == null) {
+         a = new Analytics(var0, "update_rc", var1);
       }
 
    }

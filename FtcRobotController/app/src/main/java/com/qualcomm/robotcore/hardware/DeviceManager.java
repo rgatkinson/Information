@@ -31,9 +31,11 @@ import com.qualcomm.robotcore.util.SerialNumber;
 import java.util.Map;
 
 public abstract class DeviceManager {
-   public abstract ColorSensor createAdafruitColorSensor(DeviceInterfaceModule var1, int var2);
+   public abstract ColorSensor createAdafruitI2cColorSensor(DeviceInterfaceModule var1, int var2);
 
    public abstract AnalogInput createAnalogInputDevice(AnalogInputController var1, int var2);
+
+   public abstract OpticalDistanceSensor createAnalogOpticalDistanceSensor(DeviceInterfaceModule var1, int var2);
 
    public abstract AnalogOutput createAnalogOutputDevice(AnalogOutputController var1, int var2);
 
@@ -45,13 +47,15 @@ public abstract class DeviceManager {
 
    public abstract DigitalChannel createDigitalChannelDevice(DigitalChannelController var1, int var2);
 
+   public abstract TouchSensor createDigitalTouchSensor(DeviceInterfaceModule var1, int var2);
+
    public abstract I2cDevice createI2cDevice(I2cController var1, int var2);
 
-   public abstract IrSeekerSensor createIrSeekerSensorV3(DeviceInterfaceModule var1, int var2);
+   public abstract IrSeekerSensor createI2cIrSeekerSensorV3(DeviceInterfaceModule var1, int var2);
 
    public abstract LED createLED(DigitalChannelController var1, int var2);
 
-   public abstract ColorSensor createModernRoboticsColorSensor(DeviceInterfaceModule var1, int var2);
+   public abstract ColorSensor createModernRoboticsI2cColorSensor(DeviceInterfaceModule var1, int var2);
 
    public abstract AccelerationSensor createNxtAccelerationSensor(LegacyModule var1, int var2);
 
@@ -75,15 +79,11 @@ public abstract class DeviceManager {
 
    public abstract UltrasonicSensor createNxtUltrasonicSensor(LegacyModule var1, int var2);
 
-   public abstract OpticalDistanceSensor createOpticalDistanceSensor(DeviceInterfaceModule var1, int var2);
-
    public abstract PWMOutput createPwmOutputDevice(DeviceInterfaceModule var1, int var2);
 
    public Servo createServo(ServoController var1, int var2) {
       return new Servo(var1, var2, Servo.Direction.FORWARD);
    }
-
-   public abstract TouchSensor createTouchSensor(DeviceInterfaceModule var1, int var2);
 
    public abstract DcMotorController createUsbDcMotorController(SerialNumber var1) throws RobotCoreException, InterruptedException;
 

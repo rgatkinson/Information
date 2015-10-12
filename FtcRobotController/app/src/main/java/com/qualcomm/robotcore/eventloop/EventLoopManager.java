@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.robocol.PeerDiscovery;
 import com.qualcomm.robotcore.robocol.RobocolDatagram;
 import com.qualcomm.robotcore.robocol.RobocolDatagramSocket;
 import com.qualcomm.robotcore.robocol.Telemetry;
+import com.qualcomm.robotcore.robot.RobotState;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -40,10 +41,10 @@ public class EventLoopManager {
    private int m;
    private final Set<Command> n;
    private InetAddress o;
-   public EventLoopManager.State state;
+   public RobotState state;
 
    public EventLoopManager(RobocolDatagramSocket var1) {
-      this.state = EventLoopManager.State.NOT_STARTED;
+      this.state = RobotState.NOT_STARTED;
       this.b = new Thread();
       this.c = new Thread();
       this.e = false;
@@ -58,7 +59,7 @@ public class EventLoopManager {
       this.m = 0;
       this.n = new CopyOnWriteArraySet();
       this.d = var1;
-      this.a(EventLoopManager.State.NOT_STARTED);
+      this.a(RobotState.NOT_STARTED);
    }
 
    // $FF: synthetic method
@@ -77,17 +78,8 @@ public class EventLoopManager {
       // $FF: Couldn't be decompiled
    }
 
-   private void a(EventLoopManager.State var1) {
-      this.state = var1;
-      RobotLog.v("EventLoopManager state is " + var1.toString());
-      if(this.j != null) {
-         this.j.onStateChange(var1);
-      }
-
-   }
-
    // $FF: synthetic method
-   static void a(EventLoopManager var0, EventLoopManager.State var1) {
+   static void a(EventLoopManager var0, RobotState var1) {
       var0.a(var1);
    }
 
@@ -114,6 +106,15 @@ public class EventLoopManager {
 
    }
 
+   private void a(RobotState var1) {
+      this.state = var1;
+      RobotLog.v("EventLoopManager state is " + var1.toString());
+      if(this.j != null) {
+         this.j.onStateChange(var1);
+      }
+
+   }
+
    private void b() {
       this.b.interrupt();
 
@@ -123,38 +124,28 @@ public class EventLoopManager {
          ;
       }
 
-      this.a(EventLoopManager.State.STOPPED);
-      this.c();
+      this.a(RobotState.STOPPED);
       this.g = a;
       this.k.clear();
    }
 
    private void b(RobocolDatagram var1) throws RobotCoreException {
-      this.d.send(var1);
       Heartbeat var2 = new Heartbeat(Heartbeat.Token.EMPTY);
       var2.fromByteArray(var1.getData());
+      var2.setRobotState(this.state);
+      var1.setData(var2.toByteArray());
+      this.d.send(var1);
       this.f.reset();
       this.i = var2;
    }
 
    private void c() {
-      try {
-         this.g.teardown();
-      } catch (Exception var2) {
-         RobotLog.w("Caught exception during looper teardown: " + var2.toString());
-         RobotLog.logStacktrace(var2);
-         if(RobotLog.hasGlobalErrorMsg()) {
-            this.buildAndSendTelemetry("SYSTEM_TELEMETRY", RobotLog.getGlobalErrorMsg());
-            return;
-         }
-      }
-
    }
 
    private void c(RobocolDatagram var1) throws RobotCoreException {
       if(!var1.getAddress().equals(this.o)) {
-         if(this.state == EventLoopManager.State.DROPPED_CONNECTION) {
-            this.a(EventLoopManager.State.RUNNING);
+         if(this.state == RobotState.DROPPED_CONNECTION) {
+            this.a(RobotState.RUNNING);
          }
 
          if(this.g != a) {
@@ -179,9 +170,6 @@ public class EventLoopManager {
          }
       }
 
-   }
-
-   private void d() {
    }
 
    private void d(RobocolDatagram var1) throws RobotCoreException {
@@ -242,11 +230,6 @@ public class EventLoopManager {
       return var0.g;
    }
 
-   // $FF: synthetic method
-   static void h(EventLoopManager var0) {
-      var0.c();
-   }
-
    public void buildAndSendTelemetry(String var1, String var2) {
       Telemetry var3 = new Telemetry();
       var3.setTag(var1);
@@ -279,7 +262,7 @@ public class EventLoopManager {
       OpModeManager var1 = this.g.getOpModeManager();
       String var2 = "Lost connection while running op mode: " + var1.getActiveOpModeName();
       var1.initActiveOpMode("Stop Robot");
-      this.a(EventLoopManager.State.DROPPED_CONNECTION);
+      this.a(RobotState.DROPPED_CONNECTION);
       RobotLog.i(var2);
    }
 
@@ -326,7 +309,7 @@ public class EventLoopManager {
 
    public void start(EventLoop var1) throws RobotCoreException {
       this.e = false;
-      this.c = new Thread(new EventLoopManager.d(null));
+      this.c = new Thread(new EventLoopManager.d(null), "Scheduled Sends");
       this.c.start();
       (new Thread(new EventLoopManager.c(null))).start();
       this.setEventLoop(var1);
@@ -337,7 +320,7 @@ public class EventLoopManager {
    }
 
    public interface EventLoopMonitor {
-      void onStateChange(EventLoopManager.State var1);
+      void onStateChange(RobotState var1);
    }
 
    public static enum State {
@@ -435,7 +418,7 @@ public class EventLoopManager {
                      EventLoopManager.this.d(var1);
                      break;
                   case 5:
-                     EventLoopManager.this.d();
+                     EventLoopManager.this.c();
                      break;
                   default:
                      EventLoopManager.this.e(var1);

@@ -125,12 +125,12 @@ public class RobotLog {
       if(!b) {
          b = true;
          final String var2 = var0.getPackageName();
-         (new Thread() {
+         (new Thread("Logging Thread") {
             // $FF: synthetic field
             final String a;
 
             {
-               this.a = var1x;
+               this.a = var2x;
             }
 
             public void run() {

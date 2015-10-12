@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.robocol.Command;
 import com.qualcomm.robotcore.robocol.Telemetry;
+import com.qualcomm.robotcore.robot.RobotState;
 import com.qualcomm.robotcore.util.BatteryChecker;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import java.math.BigDecimal;
@@ -84,7 +85,7 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
    }
 
    public String getOpMode(String var1) {
-      if(this.a.state != EventLoopManager.State.RUNNING) {
+      if(this.a.state != RobotState.RUNNING) {
          var1 = "Stop Robot";
       }
 

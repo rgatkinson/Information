@@ -1,9 +1,12 @@
 package com.qualcomm.hardware;
 
 import android.content.Context;
+import com.qualcomm.hardware.MatrixDcMotorController;
+import com.qualcomm.hardware.MatrixMasterController;
+import com.qualcomm.hardware.MatrixServoController;
 import com.qualcomm.hardware.ModernRoboticsDeviceManager;
 import com.qualcomm.hardware.ModernRoboticsUsbDcMotorController;
-import com.qualcomm.modernrobotics.ModernRoboticsUsbUtil;
+import com.qualcomm.hardware.ModernRoboticsUsbLegacyModule;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.AccelerationSensor;
@@ -35,6 +38,7 @@ import com.qualcomm.robotcore.hardware.UltrasonicSensor;
 import com.qualcomm.robotcore.hardware.configuration.ControllerConfiguration;
 import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
 import com.qualcomm.robotcore.hardware.configuration.DeviceInterfaceModuleConfiguration;
+import com.qualcomm.robotcore.hardware.configuration.MatrixControllerConfiguration;
 import com.qualcomm.robotcore.hardware.configuration.MotorControllerConfiguration;
 import com.qualcomm.robotcore.hardware.configuration.ReadXMLFileHandler;
 import com.qualcomm.robotcore.hardware.configuration.ServoControllerConfiguration;
@@ -49,11 +53,10 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
 
    public ModernRoboticsHardwareFactory(Context var1) {
       this.a = var1;
-      ModernRoboticsUsbUtil.init(var1);
    }
 
    private void a(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
-      IrSeekerSensor var5 = var2.createIrSeekerSensorV3(var3, var4.getPort());
+      IrSeekerSensor var5 = var2.createI2cIrSeekerSensorV3(var3, var4.getPort());
       var1.irSeekerSensor.put(var4.getName(), var5);
    }
 
@@ -159,7 +162,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
    }
 
    private void c(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
-      TouchSensor var5 = var2.createTouchSensor(var3, var4.getPort());
+      TouchSensor var5 = var2.createDigitalTouchSensor(var3, var4.getPort());
       var1.touchSensor.put(var4.getName(), var5);
    }
 
@@ -245,6 +248,9 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
                break;
             case 23:
                this.c(var1, var2, var4, var6);
+               break;
+            case 24:
+               this.l(var1, var2, var4, var6);
             }
          }
       }
@@ -290,7 +296,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
    }
 
    private void h(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
-      OpticalDistanceSensor var5 = var2.createOpticalDistanceSensor(var3, var4.getPort());
+      OpticalDistanceSensor var5 = var2.createAnalogOpticalDistanceSensor(var3, var4.getPort());
       var1.opticalDistanceSensor.put(var4.getName(), var5);
    }
 
@@ -300,7 +306,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
    }
 
    private void i(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
-      ColorSensor var5 = var2.createAdafruitColorSensor(var3, var4.getPort());
+      ColorSensor var5 = var2.createAdafruitI2cColorSensor(var3, var4.getPort());
       var1.colorSensor.put(var4.getName(), var5);
    }
 
@@ -310,7 +316,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
    }
 
    private void j(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
-      ColorSensor var5 = var2.createModernRoboticsColorSensor(var3, var4.getPort());
+      ColorSensor var5 = var2.createModernRoboticsI2cColorSensor(var3, var4.getPort());
       var1.colorSensor.put(var4.getName(), var5);
    }
 
@@ -336,6 +342,30 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
          DeviceConfiguration var7 = (DeviceConfiguration)var6.next();
          Servo var8 = var2.createServo(var5, var7.getPort());
          var1.servo.put(var7.getName(), var8);
+      }
+
+   }
+
+   private void l(HardwareMap var1, DeviceManager var2, LegacyModule var3, DeviceConfiguration var4) {
+      MatrixMasterController var5 = new MatrixMasterController((ModernRoboticsUsbLegacyModule)var3, var4.getPort());
+      MatrixDcMotorController var6 = new MatrixDcMotorController(var5);
+      var1.dcMotorController.put(var4.getName() + "Motor", var6);
+      Iterator var7 = ((MatrixControllerConfiguration)var4).getMotors().iterator();
+
+      while(var7.hasNext()) {
+         DeviceConfiguration var12 = (DeviceConfiguration)var7.next();
+         DcMotor var13 = var2.createDcMotor(var6, var12.getPort());
+         var1.dcMotor.put(var12.getName(), var13);
+      }
+
+      MatrixServoController var8 = new MatrixServoController(var5);
+      var1.servoController.put(var4.getName() + "Servo", var8);
+      Iterator var9 = ((MatrixControllerConfiguration)var4).getServos().iterator();
+
+      while(var9.hasNext()) {
+         DeviceConfiguration var10 = (DeviceConfiguration)var9.next();
+         Servo var11 = var2.createServo(var8, var10.getPort());
+         var1.servo.put(var10.getName(), var11);
       }
 
    }

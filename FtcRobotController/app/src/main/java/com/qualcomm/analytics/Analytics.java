@@ -13,11 +13,20 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import com.qualcomm.robotcore.hardware.DcMotorController;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.util.RobotLog;
+import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -28,8 +37,10 @@ import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
@@ -43,6 +54,7 @@ public class Analytics extends BroadcastReceiver {
    public static final String DS_COMMAND_STRING = "update_ds";
    public static final String EXTERNAL_STORAGE_DIRECTORY_PATH = Environment.getExternalStorageDirectory() + "/";
    public static final String LAST_UPLOAD_DATE = "last_upload_date";
+   public static final String MAX_DEVICES = "max_usb_devices";
    public static int MAX_ENTRIES_SIZE = 100;
    public static final String RC_COMMAND_STRING = "update_rc";
    public static int TRIMMED_SIZE = 90;
@@ -52,19 +64,20 @@ public class Analytics extends BroadcastReceiver {
    static UUID c = null;
    static String d;
    static String f = "";
-   static final HostnameVerifier k = new HostnameVerifier() {
+   static final HostnameVerifier l = new HostnameVerifier() {
       public boolean verify(String var1, SSLSession var2) {
          return true;
       }
    };
-   private static final Charset l = Charset.forName("UTF-8");
+   private static final Charset m = Charset.forName("UTF-8");
    String e;
    Context g;
    SharedPreferences h;
    boolean i;
    long j;
+   int k;
 
-   public Analytics(Context param1, String param2) {
+   public Analytics(Context param1, String param2, HardwareMap param3) {
       // $FF: Couldn't be decompiled
    }
 
@@ -73,14 +86,9 @@ public class Analytics extends BroadcastReceiver {
       return var0.a(var1, var2, var3);
    }
 
-   // $FF: synthetic method
-   static String a(String var0, int var1) {
-      return b(var0, var1);
-   }
-
    private String a(String var1, String var2, String var3) {
       try {
-         String var5 = URLEncoder.encode(var1, l.name()) + var2 + URLEncoder.encode(var3, l.name());
+         String var5 = URLEncoder.encode(var1, m.name()) + var2 + URLEncoder.encode(var3, m.name());
          return var5;
       } catch (UnsupportedEncodingException var6) {
          RobotLog.i("Analytics caught an UnsupportedEncodingException");
@@ -89,25 +97,24 @@ public class Analytics extends BroadcastReceiver {
    }
 
    private void a() {
+      RobotLog.i("Analytics is starting with a clean slate.");
       Editor var1 = this.h.edit();
       var1.putLong("last_upload_date", this.j);
+      var1.apply();
+      var1.putInt("max_usb_devices", 0);
       var1.apply();
       (new File(EXTERNAL_STORAGE_DIRECTORY_PATH + ".ftcdc")).delete();
       (new File(EXTERNAL_STORAGE_DIRECTORY_PATH + ".analytics_id")).delete();
       this.i = false;
    }
 
+   // $FF: synthetic method
+   static void a(Analytics var0) {
+      var0.a();
+   }
+
    private String b() {
       // $FF: Couldn't be decompiled
-   }
-
-   private static String b(String var0, int var1) {
-      return var0.substring(1 + findNthIndex(var0, var1, ']'));
-   }
-
-   private static Analytics.DateCount c(String var0, int var1) {
-      String[] var2 = var0.substring(var1).replace("[", "").replace("]", "").split(" ");
-      return new Analytics.DateCount(var2[0].trim(), var2[1].trim());
    }
 
    private static void c() {
@@ -136,41 +143,12 @@ public class Analytics extends BroadcastReceiver {
       // $FF: Couldn't be decompiled
    }
 
-   public static int findNthIndex(String var0, int var1, char var2) {
-      int var3;
-      for(var3 = var0.indexOf(var2, 0); var1 > 0 && var3 != -1; --var1) {
-         var3 = var0.indexOf(var2, var3 + 1);
-      }
-
-      return var3;
-   }
-
    public static String getDateFromTime(long var0) {
       return (new SimpleDateFormat("yyyy-MM-dd", Locale.US)).format(new Date(var0));
    }
 
    protected static UUID getUuid() {
       return c;
-   }
-
-   protected static ArrayList<Analytics.DateCount> parseDateCountFile(String var0) {
-      ArrayList var1;
-      if(var0 != null && !var0.isEmpty()) {
-         var1 = new ArrayList();
-         String[] var2 = var0.split("]");
-         int var3 = var2.length;
-
-         for(int var4 = 0; var4 < var3; ++var4) {
-            String[] var5 = var2[var4].replace("[", "").trim().split(" ");
-            if(var5.length == 2) {
-               var1.add(new Analytics.DateCount(var5[0], var5[1]));
-            }
-         }
-      } else {
-         var1 = null;
-      }
-
-      return var1;
    }
 
    public static String ping(URL var0, String var1) {
@@ -181,13 +159,61 @@ public class Analytics extends BroadcastReceiver {
       d = var0;
    }
 
+   protected int calculateUsbDevices(HardwareMap var1) {
+      int var2 = 0 + var1.legacyModule.size() + var1.deviceInterfaceModule.size();
+      Iterator var3 = var1.servoController.iterator();
+
+      int var4;
+      int var8;
+      for(var4 = var2; var3.hasNext(); var4 = var8) {
+         String var7 = ((ServoController)var3.next()).getDeviceName();
+         if(Pattern.compile("(?i)usb").matcher(var7).matches()) {
+            var8 = var4 + 1;
+         } else {
+            var8 = var4;
+         }
+      }
+
+      Iterator var5 = var1.dcMotorController.iterator();
+
+      while(var5.hasNext()) {
+         String var6 = ((DcMotorController)var5.next()).getDeviceName();
+         if(Pattern.compile("(?i)usb").matcher(var6).matches()) {
+            ++var4;
+         }
+      }
+
+      return var4;
+   }
+
    public void communicateWithServer() {
       String[] var1 = new String[]{a};
       (new Analytics.a(null)).execute((Object[])var1);
    }
 
+   protected void createInitialFile(String var1) throws IOException {
+      Analytics.DataInfo var2 = new Analytics.DataInfo(getDateFromTime(b), 1);
+      ArrayList var3 = new ArrayList();
+      var3.add(var2);
+      this.writeObjectsToFile(var1, var3);
+   }
+
    protected void handleCreateNewFile(String param1, String param2) {
       // $FF: Couldn't be decompiled
+   }
+
+   protected void handleData() throws IOException, ClassNotFoundException {
+      String var1 = EXTERNAL_STORAGE_DIRECTORY_PATH + ".ftcdc";
+      if(!(new File(var1)).exists()) {
+         this.createInitialFile(var1);
+      } else {
+         ArrayList var2 = this.updateExistingFile(var1, getDateFromTime(b));
+         if(var2.size() >= MAX_ENTRIES_SIZE) {
+            this.trimEntries(var2);
+         }
+
+         this.writeObjectsToFile(var1, var2);
+      }
    }
 
    public void handleUUID(String var1) {
@@ -205,32 +231,6 @@ public class Analytics extends BroadcastReceiver {
          RobotLog.i("Analytics encountered an IllegalArgumentException");
          c = UUID.randomUUID();
          this.handleCreateNewFile(EXTERNAL_STORAGE_DIRECTORY_PATH + var1, c.toString());
-      }
-   }
-
-   public String incrementAndSetCount(String var1, String var2) {
-      File var3 = new File(var1);
-      if(!var3.exists()) {
-         return "[" + var2 + " 1] ";
-      } else {
-         String var4 = this.readFromFile(var3);
-         if(findNthIndex(var4, MAX_ENTRIES_SIZE, ']') > 0) {
-            var4 = b(var4, MAX_ENTRIES_SIZE - TRIMMED_SIZE);
-         }
-
-         int var5 = var4.lastIndexOf("[");
-         if(var5 < 0) {
-            return "[" + var2 + " 1] ";
-         } else {
-            Analytics.DateCount var6 = c(var4, var5);
-            if(getDateFromTime(b).equals(var6.date())) {
-               int var7 = 1 + Integer.parseInt(var6.count());
-               String var8 = var4.substring(0, var5);
-               return var8.trim() + " [" + var6.date() + " " + Integer.toString(var7) + "] ";
-            } else {
-               return var4 + " [" + var2 + " " + "1] ";
-            }
-         }
       }
    }
 
@@ -265,47 +265,92 @@ public class Analytics extends BroadcastReceiver {
       return "";
    }
 
+   protected ArrayList<Analytics.DataInfo> readObjectsFromFile(String var1) throws IOException, ClassNotFoundException {
+      ObjectInputStream var2 = new ObjectInputStream(new FileInputStream(new File(var1)));
+      ArrayList var3 = new ArrayList();
+      boolean var4 = true;
+
+      while(var4) {
+         try {
+            var3.add((Analytics.DataInfo)var2.readObject());
+         } catch (EOFException var6) {
+            var4 = false;
+         }
+      }
+
+      var2.close();
+      return var3;
+   }
+
    public void register() {
       this.g.registerReceiver(this, new IntentFilter("android.net.wifi.STATE_CHANGE"));
+   }
+
+   protected void trimEntries(ArrayList<Analytics.DataInfo> var1) {
+      var1.subList(TRIMMED_SIZE, var1.size()).clear();
    }
 
    public void unregister() {
       this.g.unregisterReceiver(this);
    }
 
-   public String updateStats(String var1, ArrayList<Analytics.DateCount> var2, String var3) {
-      String var4 = this.a("cmd", "=", var3) + "&" + this.a("uuid", "=", var1) + "&" + this.a("device_hw", "=", Build.MANUFACTURER) + "&" + this.a("device_ver", "=", Build.MODEL) + "&" + this.a("chip_type", "=", this.b()) + "&" + this.a("sw_ver", "=", f) + "&";
-      String var5 = "";
-
-      String var8;
-      for(int var6 = 0; var6 < var2.size(); var5 = var8) {
-         if(var6 > 0) {
-            var5 = var5 + ",";
-         }
-
-         var8 = var5 + this.a(((Analytics.DateCount)var2.get(var6)).date(), ",", ((Analytics.DateCount)var2.get(var6)).count());
-         ++var6;
+   protected ArrayList<Analytics.DataInfo> updateExistingFile(String var1, String var2) throws ClassNotFoundException, IOException {
+      ArrayList var3 = this.readObjectsFromFile(var1);
+      Analytics.DataInfo var4 = (Analytics.DataInfo)var3.get(-1 + var3.size());
+      if(var4.a.equalsIgnoreCase(var2)) {
+         ++var4.numUsages;
+         return var3;
+      } else {
+         var3.add(new Analytics.DataInfo(var2, 1));
+         return var3;
       }
-
-      String var7 = var4 + this.a("dc", "=", "");
-      return var7 + var5;
    }
 
-   public static class DateCount {
-      private final String a;
-      private final String b;
+   public String updateStats(String var1, ArrayList<Analytics.DataInfo> var2, String var3) {
+      int var4 = this.h.getInt("max_usb_devices", this.k);
+      String var5 = this.a("cmd", "=", var3) + "&" + this.a("uuid", "=", var1) + "&" + this.a("device_hw", "=", Build.MANUFACTURER) + "&" + this.a("device_ver", "=", Build.MODEL) + "&" + this.a("chip_type", "=", this.b()) + "&" + this.a("sw_ver", "=", f) + "&" + this.a("max_dev", "=", String.valueOf(var4)) + "&";
+      String var6 = "";
 
-      public DateCount(String var1, String var2) {
-         this.a = var1;
-         this.b = var2;
+      String var9;
+      for(int var7 = 0; var7 < var2.size(); var6 = var9) {
+         if(var7 > 0) {
+            var6 = var6 + ",";
+         }
+
+         var9 = var6 + this.a(((Analytics.DataInfo)var2.get(var7)).date(), ",", String.valueOf(((Analytics.DataInfo)var2.get(var7)).numUsages()));
+         ++var7;
       }
 
-      public String count() {
-         return this.b;
+      String var8 = var5 + this.a("dc", "=", "");
+      return var8 + var6;
+   }
+
+   protected void writeObjectsToFile(String var1, ArrayList<Analytics.DataInfo> var2) throws IOException {
+      ObjectOutputStream var3 = new ObjectOutputStream(new FileOutputStream(var1));
+      Iterator var4 = var2.iterator();
+
+      while(var4.hasNext()) {
+         var3.writeObject((Analytics.DataInfo)var4.next());
+      }
+
+      var3.close();
+   }
+
+   public static class DataInfo implements Serializable {
+      private final String a;
+      protected int numUsages;
+
+      public DataInfo(String var1, int var2) {
+         this.a = var1;
+         this.numUsages = var2;
       }
 
       public String date() {
          return this.a;
+      }
+
+      public int numUsages() {
+         return this.numUsages;
       }
    }
 

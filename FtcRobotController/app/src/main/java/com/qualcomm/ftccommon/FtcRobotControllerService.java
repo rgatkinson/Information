@@ -10,6 +10,7 @@ import com.qualcomm.ftccommon.UpdateUI;
 import com.qualcomm.robotcore.eventloop.EventLoop;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.robot.Robot;
+import com.qualcomm.robotcore.robot.RobotState;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 
@@ -189,7 +190,7 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
          this();
       }
 
-      public void onStateChange(EventLoopManager.State var1) {
+      public void onStateChange(RobotState var1) {
          if(FtcRobotControllerService.this.g != null) {
             switch(null.a[var1.ordinal()]) {
             case 1:

@@ -349,6 +349,21 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
       this.b[var2] = var1;
    }
 
+   public void setData(int var1, byte[] var2, int var3) {
+      this.a(var1);
+      this.b(var3);
+
+      try {
+         this.a[var1].getWriteLock().lock();
+         byte[] var5 = this.a[var1].getWriteBuffer();
+         System.arraycopy(var2, 0, var5, 4, var3);
+         var5[3] = (byte)var3;
+      } finally {
+         this.a[var1].getWriteLock().unlock();
+      }
+
+   }
+
    public void setDigitalLine(int param1, int param2, boolean param3) {
       // $FF: Couldn't be decompiled
    }
@@ -359,6 +374,37 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
       try {
          this.a[var1].getWriteLock().lock();
          this.a[var1].getWriteBuffer()[31] = -1;
+      } finally {
+         this.a[var1].getWriteLock().unlock();
+      }
+
+   }
+
+   public void setReadMode(int var1, int var2, int var3, int var4) {
+      this.a(var1);
+
+      try {
+         this.a[var1].getWriteLock().lock();
+         byte[] var6 = this.a[var1].getWriteBuffer();
+         var6[0] = -127;
+         var6[1] = (byte)var2;
+         var6[2] = (byte)var3;
+         var6[3] = (byte)var4;
+      } finally {
+         this.a[var1].getWriteLock().unlock();
+      }
+
+   }
+
+   public void setWriteMode(int var1, int var2, int var3) {
+      this.a(var1);
+
+      try {
+         this.a[var1].getWriteLock().lock();
+         byte[] var5 = this.a[var1].getWriteBuffer();
+         var5[0] = 1;
+         var5[1] = (byte)var2;
+         var5[2] = (byte)var3;
       } finally {
          this.a[var1].getWriteLock().unlock();
       }

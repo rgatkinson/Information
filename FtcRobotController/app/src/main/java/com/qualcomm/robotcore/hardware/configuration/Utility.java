@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 public class Utility {
    public static final String AUTOCONFIGURE_K9LEGACYBOT = "K9LegacyBot";
@@ -246,7 +247,10 @@ public class Utility {
          for(int var4 = 0; var4 < var3; ++var4) {
             File var5 = var1[var4];
             if(var5.isFile()) {
-               var2.add(var5.getName().replaceFirst("[.][^.]+$", ""));
+               String var6 = var5.getName();
+               if(Pattern.compile("(?i).xml").matcher(var6).find()) {
+                  var2.add(var6.replaceFirst("[.][^.]+$", ""));
+               }
             }
          }
       }

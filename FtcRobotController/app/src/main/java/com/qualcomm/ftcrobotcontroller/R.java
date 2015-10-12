@@ -254,7 +254,7 @@ public final class R {
    }
 
    public static final class layout {
-      public static final int about = 2130903040;
+      public static final int activity_about = 2130903040;
       public static final int activity_autoconfigure = 2130903041;
       public static final int activity_config_wifi_direct = 2130903042;
       public static final int activity_ftc_configuration = 2130903043;

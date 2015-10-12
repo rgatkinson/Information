@@ -12,7 +12,7 @@ public abstract class LinearOpMode extends OpMode {
 
    public final void init() {
       this.a = new LinearOpMode.a(this);
-      this.b = new Thread(this.a);
+      this.b = new Thread(this.a, "Linear OpMode Helper");
       this.b.start();
    }
 
@@ -103,9 +103,9 @@ public abstract class LinearOpMode extends OpMode {
             return;
          } catch (InterruptedException var7) {
             RobotLog.d("LinearOpMode received an Interrupted Exception; shutting down this linear op mode");
+            return;
          } catch (RuntimeException var8) {
             this.a = var8;
-            return;
          } finally {
             this.b = true;
          }

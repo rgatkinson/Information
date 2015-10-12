@@ -4,6 +4,7 @@ import android.content.Context;
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.ftccommon.FtcEventLoopHandler;
 import com.qualcomm.ftccommon.UpdateUI;
+import com.qualcomm.modernrobotics.ModernRoboticsUsbUtil;
 import com.qualcomm.robotcore.eventloop.EventLoop;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
@@ -68,6 +69,7 @@ public class FtcEventLoop implements EventLoop {
       this.b.registerOpModes(this.c);
       this.a.init(var1);
       HardwareMap var2 = this.a.getHardwareMap();
+      ModernRoboticsUsbUtil.init(var2.appContext, var2);
       this.b.setHardwareMap(var2);
       var2.logDevices();
       DbgLog.msg("======= INIT FINISH =======");
