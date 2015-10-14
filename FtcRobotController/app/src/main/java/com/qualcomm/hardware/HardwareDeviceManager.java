@@ -6,26 +6,7 @@
 package com.qualcomm.hardware;
 
 import android.content.Context;
-import com.qualcomm.hardware.AdafruitI2cColorSensor;
-import com.qualcomm.hardware.HiTechnicNxtAccelerationSensor;
-import com.qualcomm.hardware.HiTechnicNxtColorSensor;
-import com.qualcomm.hardware.HiTechnicNxtCompassSensor;
-import com.qualcomm.hardware.HiTechnicNxtDcMotorController;
-import com.qualcomm.hardware.HiTechnicNxtGyroSensor;
-import com.qualcomm.hardware.HiTechnicNxtIrSeekerSensor;
-import com.qualcomm.hardware.HiTechnicNxtLightSensor;
-import com.qualcomm.hardware.HiTechnicNxtServoController;
-import com.qualcomm.hardware.HiTechnicNxtTouchSensor;
-import com.qualcomm.hardware.HiTechnicNxtTouchSensorMultiplexer;
-import com.qualcomm.hardware.HiTechnicNxtUltrasonicSensor;
-import com.qualcomm.hardware.ModernRoboticsAnalogOpticalDistanceSensor;
-import com.qualcomm.hardware.ModernRoboticsDigitalTouchSensor;
-import com.qualcomm.hardware.ModernRoboticsI2cColorSensor;
-import com.qualcomm.hardware.ModernRoboticsI2cIrSeekerSensorV3;
-import com.qualcomm.hardware.ModernRoboticsUsbDcMotorController;
-import com.qualcomm.hardware.ModernRoboticsUsbDeviceInterfaceModule;
-import com.qualcomm.hardware.ModernRoboticsUsbLegacyModule;
-import com.qualcomm.hardware.ModernRoboticsUsbServoController;
+
 import com.qualcomm.modernrobotics.ModernRoboticsUsbUtil;
 import com.qualcomm.modernrobotics.RobotUsbManagerEmulator;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
@@ -55,7 +36,6 @@ import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.TouchSensorMultiplexer;
 import com.qualcomm.robotcore.hardware.UltrasonicSensor;
-import com.qualcomm.robotcore.hardware.DeviceManager.DeviceType;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbManager;
 import com.qualcomm.robotcore.hardware.usb.ftdi.RobotUsbManagerFtdi;
@@ -65,39 +45,40 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HardwareDeviceManager extends DeviceManager {
-    private static HardwareDeviceManager.a a;
-    private RobotUsbManager b;
-    private final EventLoopManager c;
+    private static EnumA enumA;
+    private RobotUsbManager robotUsbManager;
+    private final EventLoopManager eventLoopManager;
 
     public HardwareDeviceManager(Context context, EventLoopManager manager) throws RobotCoreException {
-        this.c = manager;
-        switch(HardwareDeviceManager.SyntheticClass_1.a[a.ordinal()]) {
+        this.eventLoopManager = manager;
+        switch(HardwareDeviceManager.SyntheticClass_1.a[enumA.ordinal()]) {
         case 1:
-            this.b = new RobotUsbManagerEmulator();
+            this.robotUsbManager = new RobotUsbManagerEmulator();
             break;
         default:
-            this.b = new RobotUsbManagerFtdi(context);
+            this.robotUsbManager = new RobotUsbManagerFtdi(context);
         }
 
     }
 
     public Map<SerialNumber, DeviceType> scanForUsbDevices() throws RobotCoreException {
-        HashMap var1 = new HashMap();
+        HashMap mapSerialNumberToDeviceType = new HashMap();
 
         try {
-            int var2 = this.b.scanForDevices();
+            int numberOfDevices = this.robotUsbManager.scanForDevices();
 
-            for(int var3 = 0; var3 < var2; ++var3) {
-                SerialNumber var4 = this.b.getDeviceSerialNumberByIndex(var3);
-                RobotUsbDevice var5 = ModernRoboticsUsbUtil.openUsbDevice(this.b, var4);
-                var1.put(var4, ModernRoboticsUsbUtil.getDeviceType(ModernRoboticsUsbUtil.getUsbDeviceHeader(var5)));
-                var5.close();
+            for(int iDevice = 0; iDevice < numberOfDevices; ++iDevice) {
+                SerialNumber serialNumber = this.robotUsbManager.getDeviceSerialNumberByIndex(iDevice);
+
+                RobotUsbDevice robotUsbDevice = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
+                mapSerialNumberToDeviceType.put(serialNumber, ModernRoboticsUsbUtil.getDeviceType(ModernRoboticsUsbUtil.getUsbDeviceHeader(robotUsbDevice)));
+                robotUsbDevice.close();
             }
         } catch (RobotCoreException var6) {
             RobotLog.setGlobalErrorMsgAndThrow("Error while scanning for USB devices", var6);
         }
 
-        return var1;
+        return mapSerialNumberToDeviceType;
     }
 
     public DcMotorController createUsbDcMotorController(SerialNumber serialNumber) throws RobotCoreException, InterruptedException {
@@ -105,14 +86,14 @@ public class HardwareDeviceManager extends DeviceManager {
         ModernRoboticsUsbDcMotorController var2 = null;
 
         try {
-            RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.b, serialNumber);
+            RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
             byte[] var4 = ModernRoboticsUsbUtil.getUsbDeviceHeader(var3);
             DeviceType var5 = ModernRoboticsUsbUtil.getDeviceType(var4);
             if(var5 != DeviceType.MODERN_ROBOTICS_USB_DC_MOTOR_CONTROLLER) {
                 this.a(serialNumber.toString() + " is not a Modern Robotics USB DC Motor Controller");
             }
 
-            var2 = new ModernRoboticsUsbDcMotorController(serialNumber, var3, this.c);
+            var2 = new ModernRoboticsUsbDcMotorController(serialNumber, var3, this.eventLoopManager);
         } catch (RobotCoreException var6) {
             RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB DC Motor Controller", var6);
         }
@@ -125,14 +106,14 @@ public class HardwareDeviceManager extends DeviceManager {
         ModernRoboticsUsbServoController var2 = null;
 
         try {
-            RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.b, serialNumber);
+            RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
             byte[] var4 = ModernRoboticsUsbUtil.getUsbDeviceHeader(var3);
             DeviceType var5 = ModernRoboticsUsbUtil.getDeviceType(var4);
             if(var5 != DeviceType.MODERN_ROBOTICS_USB_SERVO_CONTROLLER) {
                 this.a(serialNumber.toString() + " is not a Modern Robotics USB Servo Controller");
             }
 
-            var2 = new ModernRoboticsUsbServoController(serialNumber, var3, this.c);
+            var2 = new ModernRoboticsUsbServoController(serialNumber, var3, this.eventLoopManager);
         } catch (RobotCoreException var6) {
             RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB Servo Controller", var6);
         }
@@ -145,14 +126,14 @@ public class HardwareDeviceManager extends DeviceManager {
         ModernRoboticsUsbDeviceInterfaceModule var2 = null;
 
         try {
-            RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.b, serialNumber);
+            RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
             byte[] var4 = ModernRoboticsUsbUtil.getUsbDeviceHeader(var3);
             DeviceType var5 = ModernRoboticsUsbUtil.getDeviceType(var4);
             if(var5 != DeviceType.MODERN_ROBOTICS_USB_DEVICE_INTERFACE_MODULE) {
                 this.a(serialNumber.toString() + " is not a Modern Robotics USB Core Device Interface Module");
             }
 
-            var2 = new ModernRoboticsUsbDeviceInterfaceModule(serialNumber, var3, this.c);
+            var2 = new ModernRoboticsUsbDeviceInterfaceModule(serialNumber, var3, this.eventLoopManager);
         } catch (RobotCoreException var6) {
             RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB Core Device Interface Module", var6);
         }
@@ -165,14 +146,14 @@ public class HardwareDeviceManager extends DeviceManager {
         ModernRoboticsUsbLegacyModule var2 = null;
 
         try {
-            RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.b, serialNumber);
+            RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
             byte[] var4 = ModernRoboticsUsbUtil.getUsbDeviceHeader(var3);
             DeviceType var5 = ModernRoboticsUsbUtil.getDeviceType(var4);
             if(var5 != DeviceType.MODERN_ROBOTICS_USB_LEGACY_MODULE) {
                 this.a(serialNumber.toString() + " is not a Modern Robotics USB Legacy Module");
             }
 
-            var2 = new ModernRoboticsUsbLegacyModule(serialNumber, var3, this.c);
+            var2 = new ModernRoboticsUsbLegacyModule(serialNumber, var3, this.eventLoopManager);
         } catch (RobotCoreException var6) {
             RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB Legacy Module", var6);
         }
@@ -291,11 +272,11 @@ public class HardwareDeviceManager extends DeviceManager {
     }
 
     public static void enableDeviceEmulation() {
-        a = HardwareDeviceManager.a.b;
+        enumA = HardwareDeviceManager.enumA.b;
     }
 
     public static void disableDeviceEmulation() {
-        a = HardwareDeviceManager.a.a;
+        enumA = HardwareDeviceManager.enumA.a;
     }
 
     private ModernRoboticsUsbLegacyModule a(LegacyModule var1) {
@@ -320,14 +301,15 @@ public class HardwareDeviceManager extends DeviceManager {
     }
 
     static {
-        a = HardwareDeviceManager.a.a;
+        enumA = HardwareDeviceManager.enumA.a;
     }
 
-    private static enum a {
+    private static enum EnumA
+        {
         a,
         b;
 
-        private a() {
+        private EnumA() {
         }
     }
 }

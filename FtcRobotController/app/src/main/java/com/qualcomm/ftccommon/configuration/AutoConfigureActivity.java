@@ -36,7 +36,7 @@ public class AutoConfigureActivity extends Activity {
    private Context a;
    private Button b;
    private Button c;
-   private DeviceManager d;
+   private DeviceManager deviceManager;
    private Map<SerialNumber, ControllerConfiguration> e = new HashMap();
    protected Set<Entry<SerialNumber, DeviceManager.DeviceType>> entries = new HashSet();
    private Thread f;
@@ -260,7 +260,7 @@ public class AutoConfigureActivity extends Activity {
       this.c = (Button)this.findViewById(R.id.configureUSB);
 
       try {
-         this.d = new HardwareDeviceManager(this.a, (EventLoopManager)null);
+         this.deviceManager = new HardwareDeviceManager(this.a, (EventLoopManager)null);
       } catch (RobotCoreException var3) {
          this.g.complainToast("Failed to open the Device Manager", this.a);
          DbgLog.error("Failed to open deviceManager: " + var3.toString());
@@ -284,7 +284,7 @@ public class AutoConfigureActivity extends Activity {
                public void run() {
                   try {
                      DbgLog.msg("Scanning USB bus");
-                     AutoConfigureActivity.this.scannedDevices = AutoConfigureActivity.this.d.scanForUsbDevices();
+                     AutoConfigureActivity.this.scannedDevices = AutoConfigureActivity.this.deviceManager.scanForUsbDevices();
                   } catch (RobotCoreException var2) {
                      DbgLog.error("Device scan failed");
                   }
@@ -321,7 +321,7 @@ public class AutoConfigureActivity extends Activity {
                public void run() {
                   try {
                      DbgLog.msg("Scanning USB bus");
-                     AutoConfigureActivity.this.scannedDevices = AutoConfigureActivity.this.d.scanForUsbDevices();
+                     AutoConfigureActivity.this.scannedDevices = AutoConfigureActivity.this.deviceManager.scanForUsbDevices();
                   } catch (RobotCoreException var2) {
                      DbgLog.error("Device scan failed");
                   }
