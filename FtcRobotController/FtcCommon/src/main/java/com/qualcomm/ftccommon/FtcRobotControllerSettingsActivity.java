@@ -9,8 +9,6 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.widget.Toast;
 
-import com.qualcomm.ftccommon.R;
-
 public class FtcRobotControllerSettingsActivity extends Activity {
    protected void onCreate(Bundle var1) {
       super.onCreate(var1);
