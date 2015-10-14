@@ -29,13 +29,13 @@ public class WifiDirectAssistant {
    private final List<WifiP2pDevice> b = new ArrayList();
    private Context c = null;
    private boolean d = false;
-   private final IntentFilter e;
-   private final Channel f;
-   private final WifiP2pManager g;
-   private WifiDirectAssistant.d h;
-   private final WifiDirectAssistant.a i;
-   private final WifiDirectAssistant.c j;
-   private final WifiDirectAssistant.b k;
+   private final IntentFilter intentFilter;
+   private final Channel channel;
+   private final WifiP2pManager wifiP2pManager;
+   private MyBroadcastReceiver broadcastReceiver;
+   private final MyConnectionInfoListener connectionInfoListener;
+   private final MyPeerListListener peerListListener;
+   private final MyGroupInfoListener groupInfoListener;
    private int l = 0;
    private WifiDirectAssistant.ConnectStatus m;
    private WifiDirectAssistant.Event n;
@@ -62,17 +62,17 @@ public class WifiDirectAssistant {
       this.v = 0;
       this.w = null;
       this.c = var1;
-      this.e = new IntentFilter();
-      this.e.addAction("android.net.wifi.p2p.STATE_CHANGED");
-      this.e.addAction("android.net.wifi.p2p.PEERS_CHANGED");
-      this.e.addAction("android.net.wifi.p2p.CONNECTION_STATE_CHANGE");
-      this.e.addAction("android.net.wifi.p2p.THIS_DEVICE_CHANGED");
-      this.g = (WifiP2pManager)var1.getSystemService("wifip2p");
-      this.f = this.g.initialize(var1, Looper.getMainLooper(), (ChannelListener)null);
-      this.h = new WifiDirectAssistant.d(null);
-      this.i = new WifiDirectAssistant.a(null);
-      this.j = new WifiDirectAssistant.c(null);
-      this.k = new WifiDirectAssistant.b(null);
+      this.intentFilter = new IntentFilter();
+      this.intentFilter.addAction("android.net.wifi.p2p.STATE_CHANGED");
+      this.intentFilter.addAction("android.net.wifi.p2p.PEERS_CHANGED");
+      this.intentFilter.addAction("android.net.wifi.p2p.CONNECTION_STATE_CHANGE");
+      this.intentFilter.addAction("android.net.wifi.p2p.THIS_DEVICE_CHANGED");
+      this.wifiP2pManager = (WifiP2pManager)var1.getSystemService("wifip2p");
+      this.channel = this.wifiP2pManager.initialize(var1, Looper.getMainLooper(), (ChannelListener)null);
+      this.broadcastReceiver      = new MyBroadcastReceiver(null);
+      this.connectionInfoListener = new MyConnectionInfoListener(null);
+      this.peerListListener       = new MyPeerListListener(null);
+      this.groupInfoListener      = new MyGroupInfoListener(null);
    }
 
    private void a(WifiP2pDevice var1) {
@@ -89,7 +89,6 @@ public class WifiDirectAssistant {
             return;
          }
       }
-
    }
 
    public static String failureReasonToString(int var0) {
@@ -124,7 +123,7 @@ public class WifiDirectAssistant {
 
    public void cancelDiscoverPeers() {
       RobotLog.d("Wifi Direct stop discovering peers");
-      this.g.stopPeerDiscovery(this.f, (ActionListener)null);
+      this.wifiP2pManager.stopPeerDiscovery(this.channel, (ActionListener) null);
    }
 
    public void connect(WifiP2pDevice var1) {
@@ -135,17 +134,20 @@ public class WifiDirectAssistant {
          var2.deviceAddress = var1.deviceAddress;
          var2.wps.setup = 0;
          var2.groupOwnerIntent = 1;
-         this.g.connect(this.f, var2, new ActionListener() {
-            public void onFailure(int var1) {
-               String var2 = WifiDirectAssistant.failureReasonToString(var1);
-               WifiDirectAssistant.this.l = var1;
-               RobotLog.d("WifiDirect connect cannot start - reason: " + var2);
-               WifiDirectAssistant.this.a(WifiDirectAssistant.Event.ERROR);
+         this.wifiP2pManager.connect(this.channel, var2, new ActionListener()
+         {
+         public void onFailure(int var1)
+            {
+            String var2 = WifiDirectAssistant.failureReasonToString(var1);
+            WifiDirectAssistant.this.l = var1;
+            RobotLog.d("WifiDirect connect cannot start - reason: " + var2);
+            WifiDirectAssistant.this.a(WifiDirectAssistant.Event.ERROR);
             }
 
-            public void onSuccess() {
-               RobotLog.d("WifiDirect connect started");
-               WifiDirectAssistant.this.a(WifiDirectAssistant.Event.CONNECTING);
+         public void onSuccess()
+            {
+            RobotLog.d("WifiDirect connect started");
+            WifiDirectAssistant.this.a(WifiDirectAssistant.Event.CONNECTING);
             }
          });
       } else {
@@ -154,23 +156,29 @@ public class WifiDirectAssistant {
    }
 
    public void createGroup() {
-      this.g.createGroup(this.f, new ActionListener() {
-         public void onFailure(int var1) {
-            if(var1 == 2) {
-               RobotLog.d("Wifi Direct cannot create group, does group already exist?");
-            } else {
-               String var2 = WifiDirectAssistant.failureReasonToString(var1);
-               WifiDirectAssistant.this.l = var1;
-               RobotLog.w("Wifi Direct failure while trying to create group - reason: " + var2);
-               WifiDirectAssistant.this.m = WifiDirectAssistant.ConnectStatus.ERROR;
-               WifiDirectAssistant.this.a(WifiDirectAssistant.Event.ERROR);
+      this.wifiP2pManager.createGroup(this.channel, new ActionListener()
+      {
+      public void onFailure(int var1)
+         {
+         if (var1 == 2)
+            {
+            RobotLog.d("Wifi Direct cannot create group, does group already exist?");
+            }
+         else
+            {
+            String var2 = WifiDirectAssistant.failureReasonToString(var1);
+            WifiDirectAssistant.this.l = var1;
+            RobotLog.w("Wifi Direct failure while trying to create group - reason: " + var2);
+            WifiDirectAssistant.this.m = WifiDirectAssistant.ConnectStatus.ERROR;
+            WifiDirectAssistant.this.a(WifiDirectAssistant.Event.ERROR);
             }
          }
 
-         public void onSuccess() {
-            WifiDirectAssistant.this.m = WifiDirectAssistant.ConnectStatus.GROUP_OWNER;
-            WifiDirectAssistant.this.a(WifiDirectAssistant.Event.GROUP_CREATED);
-            RobotLog.d("Wifi Direct created group");
+      public void onSuccess()
+         {
+         WifiDirectAssistant.this.m = WifiDirectAssistant.ConnectStatus.GROUP_OWNER;
+         WifiDirectAssistant.this.a(WifiDirectAssistant.Event.GROUP_CREATED);
+         RobotLog.d("Wifi Direct created group");
          }
       });
    }
@@ -183,11 +191,11 @@ public class WifiDirectAssistant {
          RobotLog.v("There are " + this.v + " Wifi Direct Assistant Clients (-)");
          if(this.v == 0) {
             RobotLog.v("Disabling Wifi Direct Assistant");
-            this.g.stopPeerDiscovery(this.f, (ActionListener)null);
-            this.g.cancelConnect(this.f, (ActionListener)null);
+            this.wifiP2pManager.stopPeerDiscovery(this.channel, (ActionListener) null);
+            this.wifiP2pManager.cancelConnect(this.channel, (ActionListener) null);
 
             try {
-               this.c.unregisterReceiver(this.h);
+               this.c.unregisterReceiver(this.broadcastReceiver);
             } catch (IllegalArgumentException var5) {
                ;
             }
@@ -201,17 +209,20 @@ public class WifiDirectAssistant {
    }
 
    public void discoverPeers() {
-      this.g.discoverPeers(this.f, new ActionListener() {
-         public void onFailure(int var1) {
-            String var2 = WifiDirectAssistant.failureReasonToString(var1);
-            WifiDirectAssistant.this.l = var1;
-            RobotLog.w("Wifi Direct failure while trying to discover peers - reason: " + var2);
-            WifiDirectAssistant.this.a(WifiDirectAssistant.Event.ERROR);
+      this.wifiP2pManager.discoverPeers(this.channel, new ActionListener()
+      {
+      public void onFailure(int var1)
+         {
+         String var2 = WifiDirectAssistant.failureReasonToString(var1);
+         WifiDirectAssistant.this.l = var1;
+         RobotLog.w("Wifi Direct failure while trying to discover peers - reason: " + var2);
+         WifiDirectAssistant.this.a(WifiDirectAssistant.Event.ERROR);
          }
 
-         public void onSuccess() {
-            WifiDirectAssistant.this.a(WifiDirectAssistant.Event.DISCOVERING_PEERS);
-            RobotLog.d("Wifi Direct discovering peers");
+      public void onSuccess()
+         {
+         WifiDirectAssistant.this.a(WifiDirectAssistant.Event.DISCOVERING_PEERS);
+         RobotLog.d("Wifi Direct discovering peers");
          }
       });
    }
@@ -224,11 +235,11 @@ public class WifiDirectAssistant {
          RobotLog.v("There are " + this.v + " Wifi Direct Assistant Clients (+)");
          if(this.v == 1) {
             RobotLog.v("Enabling Wifi Direct Assistant");
-            if(this.h == null) {
-               this.h = new WifiDirectAssistant.d(null);
+            if(this.broadcastReceiver == null) {
+               this.broadcastReceiver = new MyBroadcastReceiver(null);
             }
 
-            this.c.registerReceiver(this.h, this.e);
+            this.c.registerReceiver(this.broadcastReceiver, this.intentFilter);
          }
       } finally {
          ;
@@ -314,7 +325,7 @@ public class WifiDirectAssistant {
    }
 
    public void removeGroup() {
-      this.g.removeGroup(this.f, (ActionListener)null);
+      this.wifiP2pManager.removeGroup(this.channel, (ActionListener) null);
    }
 
    public void setCallback(WifiDirectAssistant.WifiDirectAssistantCallback var1) {
@@ -345,7 +356,18 @@ public class WifiDirectAssistant {
       PEERS_AVAILABLE;
 
       static {
-         WifiDirectAssistant.Event[] var0 = new WifiDirectAssistant.Event[]{DISCOVERING_PEERS, PEERS_AVAILABLE, GROUP_CREATED, CONNECTING, CONNECTED_AS_PEER, CONNECTED_AS_GROUP_OWNER, DISCONNECTED, CONNECTION_INFO_AVAILABLE, ERROR};
+         WifiDirectAssistant.Event[] var0 = new WifiDirectAssistant.Event[]
+                 {
+                         DISCOVERING_PEERS,
+                         PEERS_AVAILABLE,
+                         GROUP_CREATED,
+                         CONNECTING,
+                         CONNECTED_AS_PEER,
+                         CONNECTED_AS_GROUP_OWNER,
+                         DISCONNECTED,
+                         CONNECTION_INFO_AVAILABLE,
+                         ERROR
+                 };
       }
    }
 
@@ -353,17 +375,17 @@ public class WifiDirectAssistant {
       void onWifiDirectEvent(WifiDirectAssistant.Event var1);
    }
 
-   private class a implements ConnectionInfoListener {
-      private a() {
+   private class MyConnectionInfoListener implements ConnectionInfoListener {
+      private MyConnectionInfoListener() {
       }
 
       // $FF: synthetic method
-      a(Object var2) {
+      MyConnectionInfoListener(Object var2) {
          this();
       }
 
       public void onConnectionInfoAvailable(WifiP2pInfo var1) {
-         WifiDirectAssistant.this.g.requestGroupInfo(WifiDirectAssistant.this.f, WifiDirectAssistant.this.k);
+         WifiDirectAssistant.this.wifiP2pManager.requestGroupInfo(WifiDirectAssistant.this.channel, WifiDirectAssistant.this.groupInfoListener);
          WifiDirectAssistant.this.q = var1.groupOwnerAddress;
          RobotLog.d("Group owners address: " + WifiDirectAssistant.this.q.toString());
          if(var1.groupFormed && var1.isGroupOwner) {
@@ -383,12 +405,12 @@ public class WifiDirectAssistant {
       }
    }
 
-   private class b implements GroupInfoListener {
-      private b() {
+   private class MyGroupInfoListener implements GroupInfoListener {
+      private MyGroupInfoListener() {
       }
 
       // $FF: synthetic method
-      b(Object var2) {
+      MyGroupInfoListener(Object var2) {
          this();
       }
 
@@ -419,12 +441,12 @@ public class WifiDirectAssistant {
       }
    }
 
-   private class c implements PeerListListener {
-      private c() {
+   private class MyPeerListListener implements PeerListListener {
+      private MyPeerListListener() {
       }
 
       // $FF: synthetic method
-      c(Object var2) {
+      MyPeerListListener(Object var2) {
          this();
       }
 
@@ -443,12 +465,12 @@ public class WifiDirectAssistant {
       }
    }
 
-   private class d extends BroadcastReceiver {
-      private d() {
+   private class MyBroadcastReceiver extends BroadcastReceiver {
+      private MyBroadcastReceiver() {
       }
 
       // $FF: synthetic method
-      d(Object var2) {
+      MyBroadcastReceiver(Object var2) {
          this();
       }
 
@@ -469,7 +491,7 @@ public class WifiDirectAssistant {
          } else {
             if("android.net.wifi.p2p.PEERS_CHANGED".equals(var3)) {
                RobotLog.d("Wifi Direct peers changed");
-               WifiDirectAssistant.this.g.requestPeers(WifiDirectAssistant.this.f, WifiDirectAssistant.this.j);
+               WifiDirectAssistant.this.wifiP2pManager.requestPeers(WifiDirectAssistant.this.channel, WifiDirectAssistant.this.peerListListener);
                return;
             }
 
@@ -478,8 +500,8 @@ public class WifiDirectAssistant {
                WifiP2pInfo var5 = (WifiP2pInfo)var2.getParcelableExtra("wifiP2pInfo");
                RobotLog.d("Wifi Direct connection changed - connected: " + var4.isConnected());
                if(var4.isConnected()) {
-                  WifiDirectAssistant.this.g.requestConnectionInfo(WifiDirectAssistant.this.f, WifiDirectAssistant.this.i);
-                  WifiDirectAssistant.this.g.stopPeerDiscovery(WifiDirectAssistant.this.f, (ActionListener)null);
+                  WifiDirectAssistant.this.wifiP2pManager.requestConnectionInfo(WifiDirectAssistant.this.channel, WifiDirectAssistant.this.connectionInfoListener);
+                  WifiDirectAssistant.this.wifiP2pManager.stopPeerDiscovery(WifiDirectAssistant.this.channel, (ActionListener) null);
                   return;
                }
 

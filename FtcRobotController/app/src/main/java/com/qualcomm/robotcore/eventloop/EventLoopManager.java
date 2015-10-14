@@ -231,6 +231,7 @@ public class EventLoopManager {
     }
 
     private void onPeerDiscoveryPacket(RobocolDatagram datagram) throws RobotCoreException {
+
         if (!datagram.getAddress().equals(this.inetAddress)) {
 
             if (this.state == RobotState.DROPPED_CONNECTION) {
@@ -247,9 +248,10 @@ public class EventLoopManager {
                     RobotLog.e("Unable to connect to peer:" + var4.toString());
                 }
 
-                PeerDiscovery var2 = new PeerDiscovery(PeerType.PEER);
+                PeerDiscovery peerDiscovery = new PeerDiscovery(PeerType.PEER);
                 RobotLog.v("Sending peer discovery packet");
-                RobocolDatagram outboundDatagram = new RobocolDatagram(var2);
+                RobocolDatagram outboundDatagram = new RobocolDatagram(peerDiscovery);
+
                 if(this.socket.getInetAddress() == null) {
                     outboundDatagram.setAddress(this.inetAddress);
                 }
