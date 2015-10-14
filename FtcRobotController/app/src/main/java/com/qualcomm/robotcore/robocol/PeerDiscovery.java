@@ -1,7 +1,6 @@
 package com.qualcomm.robotcore.robocol;
 
 import com.qualcomm.robotcore.exception.RobotCoreException;
-import com.qualcomm.robotcore.robocol.RobocolParsable;
 import com.qualcomm.robotcore.util.RobotLog;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -10,10 +9,10 @@ public class PeerDiscovery implements RobocolParsable {
    public static final short BUFFER_SIZE = 13;
    public static final short PAYLOAD_SIZE = 10;
    public static final byte ROBOCOL_VERSION = 1;
-   private PeerDiscovery.PeerType a;
+   private PeerDiscovery.PeerType peerType;
 
    public PeerDiscovery(PeerDiscovery.PeerType var1) {
-      this.a = var1;
+      this.peerType = var1;
    }
 
    public void fromByteArray(byte[] var1) throws RobotCoreException {
@@ -23,7 +22,7 @@ public class PeerDiscovery implements RobocolParsable {
          ByteBuffer var2 = ByteBuffer.wrap(var1, 3, 10);
          switch(var2.get()) {
          case 1:
-            this.a = PeerDiscovery.PeerType.fromByte(var2.get());
+            this.peerType = PeerDiscovery.PeerType.fromByte(var2.get());
             return;
          default:
          }
@@ -31,7 +30,7 @@ public class PeerDiscovery implements RobocolParsable {
    }
 
    public PeerDiscovery.PeerType getPeerType() {
-      return this.a;
+      return this.peerType;
    }
 
    public RobocolParsable.MsgType getRobocolMsgType() {
@@ -45,7 +44,7 @@ public class PeerDiscovery implements RobocolParsable {
          var1.put(this.getRobocolMsgType().asByte());
          var1.putShort((short)10);
          var1.put((byte)1);
-         var1.put(this.a.asByte());
+         var1.put(this.peerType.asByte());
       } catch (BufferOverflowException var3) {
          RobotLog.logStacktrace((Exception)var3);
       }
@@ -54,7 +53,7 @@ public class PeerDiscovery implements RobocolParsable {
    }
 
    public String toString() {
-      Object[] var1 = new Object[]{this.a.name()};
+      Object[] var1 = new Object[]{this.peerType.name()};
       return String.format("Peer Discovery - peer type: %s", var1);
    }
 

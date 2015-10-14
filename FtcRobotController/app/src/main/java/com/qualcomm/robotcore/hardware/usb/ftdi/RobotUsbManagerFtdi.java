@@ -27,8 +27,9 @@ public class RobotUsbManagerFtdi implements RobotUsbManager {
       return this.d2xxManager.getDeviceInfoListDetail(var1).description;
    }
 
-   public SerialNumber getDeviceSerialNumberByIndex(int var1) throws RobotCoreException {
-      return new SerialNumber(this.d2xxManager.getDeviceInfoListDetail(var1).serialNumber);
+   public SerialNumber getDeviceSerialNumberByIndex(int index) throws RobotCoreException {
+      // It would be a good idea here to assert that the returned serial number is non-null
+      return new SerialNumber(this.d2xxManager.getDeviceInfoListDetail(index).serialNumber);
    }
 
    public RobotUsbDevice openBySerialNumber(SerialNumber serialNumber) throws RobotCoreException {

@@ -312,13 +312,38 @@ public class FtcDriverStationActivity extends Activity implements WifiDirectAssi
 
    }
 
-   protected void handleGamepadEvent(KeyEvent param1) {
-      // $FF: Couldn't be decompiled
-   }
+   protected void handleGamepadEvent(final KeyEvent keyEvent) {
+        synchronized (this) {
+            if (!this.gamepads.containsKey(keyEvent.getDeviceId())) {
+                this.gamepads.put(keyEvent.getDeviceId(), new Gamepad());
+            }
+            final Gamepad gamepad = this.gamepads.get(keyEvent.getDeviceId());
+            gamepad.update(keyEvent);
+            this.indicateGamepad((InputEvent)keyEvent);
+            if (gamepad.start && (gamepad.a || gamepad.b)) {
+                int n = -1;
+                if (gamepad.a) {
+                    n = 1;
+                    this.setVisibility((View)this.userIcon_1_base, 0);
+                }
+                if (gamepad.b) {
+                    n = 2;
+                    this.setVisibility((View)this.userIcon_2_base, 0);
+                }
+                this.assignNewGamepad(n, keyEvent.getDeviceId());
+            }
+        }
+    }
 
-   protected void handleGamepadEvent(MotionEvent param1) {
-      // $FF: Couldn't be decompiled
-   }
+    protected void handleGamepadEvent(final MotionEvent motionEvent) {
+        synchronized (this) {
+            final Gamepad gamepad = this.gamepads.get(motionEvent.getDeviceId());
+            if (gamepad != null) {
+                gamepad.update(motionEvent);
+                this.indicateGamepad((InputEvent)motionEvent);
+            }
+        }
+    }
 
    protected void handleOpModeInit() {
       this.opModeCountDown.stop();

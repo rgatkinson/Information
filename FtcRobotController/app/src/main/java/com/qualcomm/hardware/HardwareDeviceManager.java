@@ -90,7 +90,7 @@ public class HardwareDeviceManager extends DeviceManager {
             byte[] var4 = ModernRoboticsUsbUtil.getUsbDeviceHeader(var3);
             DeviceType var5 = ModernRoboticsUsbUtil.getDeviceType(var4);
             if(var5 != DeviceType.MODERN_ROBOTICS_USB_DC_MOTOR_CONTROLLER) {
-                this.a(serialNumber.toString() + " is not a Modern Robotics USB DC Motor Controller");
+                this.printErrAndThrow(serialNumber.toString() + " is not a Modern Robotics USB DC Motor Controller");
             }
 
             var2 = new ModernRoboticsUsbDcMotorController(serialNumber, var3, this.eventLoopManager);
@@ -110,7 +110,7 @@ public class HardwareDeviceManager extends DeviceManager {
             byte[] var4 = ModernRoboticsUsbUtil.getUsbDeviceHeader(var3);
             DeviceType var5 = ModernRoboticsUsbUtil.getDeviceType(var4);
             if(var5 != DeviceType.MODERN_ROBOTICS_USB_SERVO_CONTROLLER) {
-                this.a(serialNumber.toString() + " is not a Modern Robotics USB Servo Controller");
+                this.printErrAndThrow(serialNumber.toString() + " is not a Modern Robotics USB Servo Controller");
             }
 
             var2 = new ModernRoboticsUsbServoController(serialNumber, var3, this.eventLoopManager);
@@ -126,14 +126,14 @@ public class HardwareDeviceManager extends DeviceManager {
         ModernRoboticsUsbDeviceInterfaceModule var2 = null;
 
         try {
-            RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
-            byte[] var4 = ModernRoboticsUsbUtil.getUsbDeviceHeader(var3);
+            RobotUsbDevice robotUsbDevice = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
+            byte[] var4 = ModernRoboticsUsbUtil.getUsbDeviceHeader(robotUsbDevice);
             DeviceType var5 = ModernRoboticsUsbUtil.getDeviceType(var4);
             if(var5 != DeviceType.MODERN_ROBOTICS_USB_DEVICE_INTERFACE_MODULE) {
-                this.a(serialNumber.toString() + " is not a Modern Robotics USB Core Device Interface Module");
+                this.printErrAndThrow(serialNumber.toString() + " is not a Modern Robotics USB Core Device Interface Module");
             }
 
-            var2 = new ModernRoboticsUsbDeviceInterfaceModule(serialNumber, var3, this.eventLoopManager);
+            var2 = new ModernRoboticsUsbDeviceInterfaceModule(serialNumber, robotUsbDevice, this.eventLoopManager);
         } catch (RobotCoreException var6) {
             RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB Core Device Interface Module", var6);
         }
@@ -143,22 +143,23 @@ public class HardwareDeviceManager extends DeviceManager {
 
     public LegacyModule createUsbLegacyModule(SerialNumber serialNumber) throws RobotCoreException, InterruptedException {
         RobotLog.v("Creating Modern Robotics USB Legacy Module - " + serialNumber.toString());
-        ModernRoboticsUsbLegacyModule var2 = null;
+        ModernRoboticsUsbLegacyModule legacyModule = null;
 
         try {
-            RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
-            byte[] var4 = ModernRoboticsUsbUtil.getUsbDeviceHeader(var3);
-            DeviceType var5 = ModernRoboticsUsbUtil.getDeviceType(var4);
-            if(var5 != DeviceType.MODERN_ROBOTICS_USB_LEGACY_MODULE) {
-                this.a(serialNumber.toString() + " is not a Modern Robotics USB Legacy Module");
+            RobotUsbDevice robotUsbDevice = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
+
+            byte[] usbDeviceHeader = ModernRoboticsUsbUtil.getUsbDeviceHeader(robotUsbDevice);
+            DeviceType deviceType = ModernRoboticsUsbUtil.getDeviceType(usbDeviceHeader);
+            if(deviceType != DeviceType.MODERN_ROBOTICS_USB_LEGACY_MODULE) {
+                this.printErrAndThrow(serialNumber.toString() + " is not a Modern Robotics USB Legacy Module");
             }
 
-            var2 = new ModernRoboticsUsbLegacyModule(serialNumber, var3, this.eventLoopManager);
+            legacyModule = new ModernRoboticsUsbLegacyModule(serialNumber, robotUsbDevice, this.eventLoopManager);
         } catch (RobotCoreException var6) {
             RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB Legacy Module", var6);
         }
 
-        return var2;
+        return legacyModule;
     }
 
     public DcMotorController createNxtDcMotorController(LegacyModule legacyModule, int physicalPort) {
@@ -295,9 +296,9 @@ public class HardwareDeviceManager extends DeviceManager {
         }
     }
 
-    private void a(String var1) throws RobotCoreException {
-        System.err.println(var1);
-        throw new RobotCoreException(var1);
+    private void printErrAndThrow(String message) throws RobotCoreException {
+        System.err.println(message);
+        throw new RobotCoreException(message);
     }
 
     static {

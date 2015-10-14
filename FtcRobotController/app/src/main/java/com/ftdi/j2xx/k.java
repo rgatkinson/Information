@@ -6,8 +6,7 @@
 package com.ftdi.j2xx;
 
 import android.util.Log;
-import com.ftdi.j2xx.FT_Device;
-import com.ftdi.j2xx.FT_EEPROM;
+
 import com.ftdi.j2xx.D2xxManager.D2xxException;
 
 class k {
@@ -26,7 +25,7 @@ class k {
         if(var1 >= 1024) {
             return var4;
         } else {
-            this.d.c().controlTransfer(-64, 144, 0, var1, var3, 2, 0);
+            this.d.getUsbDeviceConnection().controlTransfer(-64, 144, 0, var1, var3, 2, 0);
             int var5 = var3[1] & 255;
             var5 <<= 8;
             var5 |= var3[0] & 255;
@@ -42,7 +41,7 @@ class k {
         if(var1 >= 1024) {
             return var6;
         } else {
-            int var7 = this.d.c().controlTransfer(64, 145, var3, var4, (byte[])null, 0, 0);
+            int var7 = this.d.getUsbDeviceConnection().controlTransfer(64, 145, var3, var4, (byte[])null, 0, 0);
             if(var7 == 0) {
                 var6 = true;
             }
@@ -53,7 +52,7 @@ class k {
 
     int c() {
         boolean var1 = false;
-        int var2 = this.d.c().controlTransfer(64, 146, 0, 0, (byte[])null, 0, 0);
+        int var2 = this.d.getUsbDeviceConnection().controlTransfer(64, 146, 0, 0, (byte[])null, 0, 0);
         return var2;
     }
 

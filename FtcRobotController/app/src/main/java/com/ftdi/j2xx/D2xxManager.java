@@ -102,7 +102,7 @@ public class D2xxManager {
     private ArrayList<FT_Device> ftDevices;
     private static UsbManager theUsbManager;
 
-    private BroadcastReceiver onDeviceAttachDetach = new BroadcastReceiver() {
+    private BroadcastReceiver deviceAttachReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String intentAction = intent.getAction();
             UsbDevice usbDevice = null;
@@ -125,10 +125,10 @@ public class D2xxManager {
 
         }
     };
-    private static BroadcastReceiver i = new BroadcastReceiver() {
+    private static BroadcastReceiver usbPermissionReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String intentAction = intent.getAction();
-            if("com.ftdi.j2xx".equals(intentAction)) {
+            if(ACTION_USB_PERMISSION.equals(intentAction)) {
                 synchronized(this) {
                     UsbDevice usbDevice = (UsbDevice)intent.getParcelableExtra("device");
                     if(!intent.getBooleanExtra("permission", false)) {
@@ -181,9 +181,9 @@ public class D2xxManager {
         } else {
             if(D2xxManager.theContext != context) {
                 D2xxManager.theContext = context;
-                theJ2xxPendingIntent = PendingIntent.getBroadcast(D2xxManager.theContext.getApplicationContext(), 0, new Intent("com.ftdi.j2xx"), 134217728);
-                theJ2xxIntentFilter = new IntentFilter("com.ftdi.j2xx");
-                D2xxManager.theContext.getApplicationContext().registerReceiver(i, theJ2xxIntentFilter);
+                theJ2xxPendingIntent = PendingIntent.getBroadcast(D2xxManager.theContext.getApplicationContext(), 0, new Intent(ACTION_USB_PERMISSION), 134217728);
+                theJ2xxIntentFilter = new IntentFilter(ACTION_USB_PERMISSION);
+                D2xxManager.theContext.getApplicationContext().registerReceiver(usbPermissionReceiver, theJ2xxIntentFilter);
             }
 
             result = true;
@@ -215,7 +215,7 @@ public class D2xxManager {
                 IntentFilter var2 = new IntentFilter();
                 var2.addAction("android.hardware.usb.action.USB_DEVICE_ATTACHED");
                 var2.addAction("android.hardware.usb.action.USB_DEVICE_DETACHED");
-                parentContext.getApplicationContext().registerReceiver(this.onDeviceAttachDetach, var2);
+                parentContext.getApplicationContext().registerReceiver(this.deviceAttachReceiver, var2);
                 Log.v("D2xx::", "End constructor");
             }
         }
@@ -313,7 +313,7 @@ public class D2xxManager {
                         }
                     }
                     usbDevice = (UsbDevice)interator.next();
-                } while(!this.isFtDevice(usbDevice));
+                } while(!this.isFtDevice(usbDevice));       // prints, e.g., "Vendor: 0403, Product: 6001"
 
                 int interfaceCount = usbDevice.getInterfaceCount();
 
@@ -346,7 +346,9 @@ public class D2xxManager {
     }
 
     public synchronized D2xxManager.FtDeviceInfoListNode getDeviceInfoListDetail(int index) {
-        return index <= this.ftDevices.size() && index >= 0?((FT_Device)this.ftDevices.get(index)).ftDeviceInfoListNode :null;
+        return index <= this.ftDevices.size() && index >= 0
+                ? ((FT_Device)this.ftDevices.get(index)).ftDeviceInfoListNode
+                : null;
     }
 
     public static int getLibraryVersion() {
@@ -512,7 +514,7 @@ public class D2xxManager {
 
     public int addUsbDevice(UsbDevice dev) {
         int var3 = 0;
-        if(this.isFtDevice(dev)) {
+        if(this.isFtDevice(dev)) {  // prints, e.g., "Vendor: 0403, Product: 6001"
             boolean var4 = false;
             int var8 = dev.getInterfaceCount();
 

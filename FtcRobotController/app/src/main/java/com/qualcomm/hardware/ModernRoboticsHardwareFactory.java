@@ -65,20 +65,20 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
       var1.touchSensor.put(var4.getName(), var5);
    }
 
-   private void a(HardwareMap var1, DeviceManager var2, ControllerConfiguration var3) throws RobotCoreException, InterruptedException {
-      ModernRoboticsUsbDcMotorController var4 = (ModernRoboticsUsbDcMotorController)var2.createUsbDcMotorController(var3.getSerialNumber());
-      var1.dcMotorController.put(var3.getName(), var4);
-      Iterator var5 = var3.getDevices().iterator();
+   private void a(HardwareMap hardwareMap, DeviceManager deviceManager, ControllerConfiguration controllerConfiguration) throws RobotCoreException, InterruptedException {
+      ModernRoboticsUsbDcMotorController dcMotorController = (ModernRoboticsUsbDcMotorController)deviceManager.createUsbDcMotorController(controllerConfiguration.getSerialNumber());
+      hardwareMap.dcMotorController.put(controllerConfiguration.getName(), dcMotorController);
+      Iterator var5 = controllerConfiguration.getDevices().iterator();
 
       while(var5.hasNext()) {
          DeviceConfiguration var6 = (DeviceConfiguration)var5.next();
          if(var6.isEnabled()) {
-            DcMotor var7 = var2.createDcMotor(var4, var6.getPort());
-            var1.dcMotor.put(var6.getName(), var7);
+            DcMotor var7 = deviceManager.createDcMotor(dcMotorController, var6.getPort());
+            hardwareMap.dcMotor.put(var6.getName(), var7);
          }
       }
 
-      var1.voltageSensor.put(var3.getName(), var4);
+      hardwareMap.voltageSensor.put(controllerConfiguration.getName(), dcMotorController);
    }
 
    private void a(List<DeviceConfiguration> var1, HardwareMap var2, DeviceManager var3, DeviceInterfaceModule var4) {
