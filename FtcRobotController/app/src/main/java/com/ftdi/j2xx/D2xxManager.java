@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class D2xxManager {
-    private static D2xxManager a = null;
+    private static D2xxManager theInstance = null;
     protected static final String ACTION_USB_PERMISSION = "com.ftdi.j2xx";
     public static final byte FT_DATA_BITS_7 = 7;
     public static final byte FT_DATA_BITS_8 = 8;
@@ -76,41 +76,63 @@ public class D2xxManager {
     public static final byte FT_BITMODE_SYNC_FIFO = 64;
     public static final int FTDI_BREAK_OFF = 0;
     public static final int FTDI_BREAK_ON = 16384;
-    private static Context b = null;
-    private static PendingIntent c = null;
-    private static IntentFilter d = null;
-    private static List<m> e = new ArrayList(Arrays.asList(new m[]{new m(1027, 24597), new m(1027, 24596), new m(1027, 24593), new m(1027, 24592), new m(1027, 24577), new m(1027, 24582), new m(1027, 24604), new m(1027, '贈'), new m(1027, '輸'), new m(1027, '遲'), new m(1027, '醙'), new m(1027, '鉶'), new m(1027, '陼'), new m(1027, 24594), new m(2220, 4133), new m(5590, 1), new m(1027, 24599)}));
-    private ArrayList<FT_Device> f;
-    private static UsbManager g;
-    private BroadcastReceiver h = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            String var3 = intent.getAction();
-            UsbDevice var4 = null;
-            FT_Device var5 = null;
-            if("android.hardware.usb.action.USB_DEVICE_DETACHED".equals(var3)) {
-                var4 = (UsbDevice)intent.getParcelableExtra("device");
+    private static Context theContext = null;
+    private static PendingIntent theJ2xxPendingIntent = null;
+    private static IntentFilter theJ2xxIntentFilter = null;
+    private static final List<USBVendorAndProduct> ftVendorProductPairs = new ArrayList(Arrays.asList(new USBVendorAndProduct[]
+                {
+                        new USBVendorAndProduct(1027, 24597),
+                        new USBVendorAndProduct(1027, 24596),
+                        new USBVendorAndProduct(1027, 24593),
+                        new USBVendorAndProduct(1027, 24592),
+                        new USBVendorAndProduct(1027, 24577),
+                        new USBVendorAndProduct(1027, 24582),
+                        new USBVendorAndProduct(1027, 24604),
+                        new USBVendorAndProduct(1027, '贈'),
+                        new USBVendorAndProduct(1027, '輸'),
+                        new USBVendorAndProduct(1027, '遲'),
+                        new USBVendorAndProduct(1027, '醙'),
+                        new USBVendorAndProduct(1027, '鉶'),
+                        new USBVendorAndProduct(1027, '陼'),
+                        new USBVendorAndProduct(1027, 24594),
+                        new USBVendorAndProduct(2220, 4133),
+                        new USBVendorAndProduct(5590, 1),
+                        new USBVendorAndProduct(1027, 24599)
+                }));
+    private ArrayList<FT_Device> ftDevices;
+    private static UsbManager theUsbManager;
 
-                for(var5 = D2xxManager.this.a(var4); var5 != null; var5 = D2xxManager.this.a(var4)) {
-                    var5.close();
-                    synchronized(D2xxManager.this.f) {
-                        D2xxManager.this.f.remove(var5);
+    private BroadcastReceiver onDeviceAttachDetach = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String intentAction = intent.getAction();
+            UsbDevice usbDevice = null;
+            FT_Device ftDevice = null;
+
+            if("android.hardware.usb.action.USB_DEVICE_DETACHED".equals(intentAction)) {
+                usbDevice = (UsbDevice)intent.getParcelableExtra("device");
+
+                for(ftDevice = D2xxManager.this.ftDeviceFromUsbDevice(usbDevice); ftDevice != null; ftDevice = D2xxManager.this.ftDeviceFromUsbDevice(usbDevice)) {
+                    ftDevice.close();
+                    synchronized(D2xxManager.this.ftDevices) {
+                        D2xxManager.this.ftDevices.remove(ftDevice);
                     }
                 }
-            } else if("android.hardware.usb.action.USB_DEVICE_ATTACHED".equals(var3)) {
-                var4 = (UsbDevice)intent.getParcelableExtra("device");
-                D2xxManager.this.addUsbDevice(var4);
+
+            } else if("android.hardware.usb.action.USB_DEVICE_ATTACHED".equals(intentAction)) {
+                usbDevice = (UsbDevice)intent.getParcelableExtra("device");
+                D2xxManager.this.addUsbDevice(usbDevice);
             }
 
         }
     };
     private static BroadcastReceiver i = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
-            String var3 = intent.getAction();
-            if("com.ftdi.j2xx".equals(var3)) {
+            String intentAction = intent.getAction();
+            if("com.ftdi.j2xx".equals(intentAction)) {
                 synchronized(this) {
-                    UsbDevice var5 = (UsbDevice)intent.getParcelableExtra("device");
+                    UsbDevice usbDevice = (UsbDevice)intent.getParcelableExtra("device");
                     if(!intent.getBooleanExtra("permission", false)) {
-                        Log.d("D2xx::", "permission denied for device " + var5);
+                        Log.d("D2xx::", "permission denied for device " + usbDevice);
                     }
                 }
             }
@@ -118,50 +140,50 @@ public class D2xxManager {
         }
     };
 
-    private FT_Device a(UsbDevice var1) {
-        FT_Device var2 = null;
-        ArrayList var3 = this.f;
-        synchronized(this.f) {
-            int var4 = this.f.size();
+    private FT_Device ftDeviceFromUsbDevice(UsbDevice usbDeviceSeek) {
+        FT_Device result = null;
 
-            for(int var5 = 0; var5 < var4; ++var5) {
-                FT_Device var6 = (FT_Device)this.f.get(var5);
-                UsbDevice var7 = var6.getUsbDevice();
-                if(var7.equals(var1)) {
-                    var2 = var6;
+        synchronized(this.ftDevices) {
+            int numDevices = this.ftDevices.size();
+
+            for(int i = 0; i < numDevices; ++i) {
+                FT_Device ftDevice = (FT_Device)this.ftDevices.get(i);
+                UsbDevice usbDevice = ftDevice.getUsbDevice();
+                if(usbDevice.equals(usbDeviceSeek)) {
+                    result = ftDevice;
                     break;
                 }
             }
 
-            return var2;
+            return result;
         }
     }
 
     public boolean isFtDevice(UsbDevice dev) {
-        boolean var3 = false;
-        if(b == null) {
-            return var3;
+        boolean result = false;
+        if(theContext == null) {
+            return result;
         } else {
-            m var2 = new m(dev.getVendorId(), dev.getProductId());
-            if(e.contains(var2)) {
-                var3 = true;
+            USBVendorAndProduct var2 = new USBVendorAndProduct(dev.getVendorId(), dev.getProductId());
+            if(ftVendorProductPairs.contains(var2)) {
+                result = true;
             }
 
             Log.v("D2xx::", var2.toString());
-            return var3;
+            return result;
         }
     }
 
-    private static synchronized boolean a(Context context) {
+    private static synchronized boolean registerForJ2xxIntents(Context context) {
         boolean result = false;
         if(context == null) {
             return result;
         } else {
-            if(b != context) {
-                b = context;
-                c = PendingIntent.getBroadcast(b.getApplicationContext(), 0, new Intent("com.ftdi.j2xx"), 134217728);
-                d = new IntentFilter("com.ftdi.j2xx");
-                b.getApplicationContext().registerReceiver(i, d);
+            if(D2xxManager.theContext != context) {
+                D2xxManager.theContext = context;
+                theJ2xxPendingIntent = PendingIntent.getBroadcast(D2xxManager.theContext.getApplicationContext(), 0, new Intent("com.ftdi.j2xx"), 134217728);
+                theJ2xxIntentFilter = new IntentFilter("com.ftdi.j2xx");
+                D2xxManager.theContext.getApplicationContext().registerReceiver(i, theJ2xxIntentFilter);
             }
 
             result = true;
@@ -169,17 +191,15 @@ public class D2xxManager {
         }
     }
 
-    private boolean b(UsbDevice var1) {
-        boolean var2 = false;
-        if(!g.hasPermission(var1)) {
-            g.requestPermission(var1, c);
+    private boolean allowedToAccessDevice(UsbDevice usbDevice) {
+        boolean result = false;
+        if(!theUsbManager.hasPermission(usbDevice)) {
+            theUsbManager.requestPermission(usbDevice, theJ2xxPendingIntent);
         }
-
-        if(g.hasPermission(var1)) {
-            var2 = true;
+        if(theUsbManager.hasPermission(usbDevice)) {
+            result = true;
         }
-
-        return var2;
+        return result;
     }
 
     private D2xxManager(Context parentContext) throws D2xxManager.D2xxException {
@@ -187,50 +207,50 @@ public class D2xxManager {
         if(parentContext == null) {
             throw new D2xxManager.D2xxException("D2xx init failed: Can not find parentContext!");
         } else {
-            a(parentContext);
-            if(!a()) {
+            registerForJ2xxIntents(parentContext);
+            if(!usbServiceExists()) {
                 throw new D2xxManager.D2xxException("D2xx init failed: Can not find UsbManager!");
             } else {
-                this.f = new ArrayList();
+                this.ftDevices = new ArrayList();
                 IntentFilter var2 = new IntentFilter();
                 var2.addAction("android.hardware.usb.action.USB_DEVICE_ATTACHED");
                 var2.addAction("android.hardware.usb.action.USB_DEVICE_DETACHED");
-                parentContext.getApplicationContext().registerReceiver(this.h, var2);
+                parentContext.getApplicationContext().registerReceiver(this.onDeviceAttachDetach, var2);
                 Log.v("D2xx::", "End constructor");
             }
         }
     }
 
     public static synchronized D2xxManager getInstance(Context parentContext) throws D2xxManager.D2xxException {
-        if(a == null) {
-            a = new D2xxManager(parentContext);
+        if(theInstance == null) {
+            theInstance = new D2xxManager(parentContext);
         }
 
         if(parentContext != null) {
-            a(parentContext);
+            registerForJ2xxIntents(parentContext);
         }
 
-        return a;
+        return theInstance;
     }
 
-    private static boolean a() {
-        if(g == null && b != null) {
-            g = (UsbManager)b.getApplicationContext().getSystemService("usb");
+    private static boolean usbServiceExists() {
+        if(theUsbManager == null && theContext != null) {
+            theUsbManager = (UsbManager) theContext.getApplicationContext().getSystemService("usb");
         }
 
-        return g != null;
+        return theUsbManager != null;
     }
 
     public boolean setVIDPID(int vendorId, int productId) {
         boolean var3 = false;
         if(vendorId != 0 && productId != 0) {
-            m var4 = new m(vendorId, productId);
-            if(e.contains(var4)) {
+            USBVendorAndProduct var4 = new USBVendorAndProduct(vendorId, productId);
+            if(ftVendorProductPairs.contains(var4)) {
                 Log.i("D2xx::", "Existing vid:" + vendorId + "  pid:" + productId);
                 return true;
             }
 
-            if(!e.add(var4)) {
+            if(!ftVendorProductPairs.add(var4)) {
                 Log.d("D2xx::", "Failed to add VID/PID combination to list.");
             } else {
                 var3 = true;
@@ -243,73 +263,73 @@ public class D2xxManager {
     }
 
     public int[][] getVIDPID() {
-        int var1 = e.size();
+        int var1 = ftVendorProductPairs.size();
         int[][] var2 = new int[2][var1];
 
         for(int var3 = 0; var3 < var1; ++var3) {
-            m var4 = (m)e.get(var3);
-            var2[0][var3] = var4.a();
-            var2[1][var3] = var4.b();
+            USBVendorAndProduct var4 = (USBVendorAndProduct) ftVendorProductPairs.get(var3);
+            var2[0][var3] = var4.getVendor();
+            var2[1][var3] = var4.getProduct();
         }
 
         return var2;
     }
 
-    private void b() {
-        ArrayList var1 = this.f;
-        synchronized(this.f) {
-            int var2 = this.f.size();
+    private void removeAllDevices() {
+        synchronized(this.ftDevices) {
+            int numDevices = this.ftDevices.size();
 
-            for(int var3 = 0; var3 < var2; ++var3) {
-                this.f.remove(var3);
+            for(int i = 0; i < numDevices; ++i) {
+                this.ftDevices.remove(i);
             }
 
         }
     }
 
+    // This is the root 'scanForDevices' call
     public int createDeviceInfoList(Context parentContext) {
-        HashMap var2 = g.getDeviceList();
-        Iterator var3 = var2.values().iterator();
-        ArrayList var4 = new ArrayList();
-        FT_Device var5 = null;
-        byte var6 = 0;
-        if(parentContext == null) {
-            return var6;
+        HashMap attachedUSBDevices = theUsbManager.getDeviceList();
+        Iterator interator = attachedUSBDevices.values().iterator();
+        ArrayList newDevices = new ArrayList();
+        FT_Device ftDevice = null;
+        byte countDevices = 0;
+        if (parentContext == null) {
+            return countDevices;
         } else {
-            a(parentContext);
+            registerForJ2xxIntents(parentContext);
 
             while(true) {
-                UsbDevice var7;
+                UsbDevice usbDevice;
+
                 do {
-                    if(!var3.hasNext()) {
-                        ArrayList var14 = this.f;
-                        synchronized(this.f) {
-                            this.b();
-                            this.f = var4;
-                            int numberOfDevices = this.f.size();
+                    if(!interator.hasNext()) {
+
+                        // We're done. Substitute new devices for old and get out of here
+                        synchronized(this.ftDevices) {
+                            this.removeAllDevices();
+                            this.ftDevices = newDevices;
+                            int numberOfDevices = this.ftDevices.size();
                             return numberOfDevices;
                         }
                     }
+                    usbDevice = (UsbDevice)interator.next();
+                } while(!this.isFtDevice(usbDevice));
 
-                    var7 = (UsbDevice)var3.next();
-                } while(!this.isFtDevice(var7));
+                int interfaceCount = usbDevice.getInterfaceCount();
 
-                boolean var8 = false;
-                int var15 = var7.getInterfaceCount();
+                for(int iInterface = 0; iInterface < interfaceCount; ++iInterface) {
+                    if(this.allowedToAccessDevice(usbDevice)) {
 
-                for(int var9 = 0; var9 < var15; ++var9) {
-                    if(this.b(var7)) {
-                        ArrayList var10 = this.f;
-                        synchronized(this.f) {
-                            var5 = this.a(var7);
-                            if(var5 == null) {
-                                var5 = new FT_Device(parentContext, g, var7, var7.getInterface(var9));
+                        synchronized(this.ftDevices) {
+                            ftDevice = this.ftDeviceFromUsbDevice(usbDevice);
+                            if(ftDevice == null) {
+                                ftDevice = new FT_Device(parentContext, theUsbManager, usbDevice, usbDevice.getInterface(iInterface));
                             } else {
-                                this.f.remove(var5);
-                                var5.a(parentContext);
+                                this.ftDevices.remove(ftDevice);
+                                ftDevice.setParentContext(parentContext);
                             }
 
-                            var4.add(var5);
+                            newDevices.add(ftDevice);
                         }
                     }
                 }
@@ -319,14 +339,14 @@ public class D2xxManager {
 
     public synchronized int getDeviceInfoList(int numDevs, D2xxManager.FtDeviceInfoListNode[] deviceList) {
         for(int var3 = 0; var3 < numDevs; ++var3) {
-            deviceList[var3] = ((FT_Device)this.f.get(var3)).ftDeviceInfoListNode;
+            deviceList[var3] = ((FT_Device)this.ftDevices.get(var3)).ftDeviceInfoListNode;
         }
 
-        return this.f.size();
+        return this.ftDevices.size();
     }
 
     public synchronized D2xxManager.FtDeviceInfoListNode getDeviceInfoListDetail(int index) {
-        return index <= this.f.size() && index >= 0?((FT_Device)this.f.get(index)).ftDeviceInfoListNode :null;
+        return index <= this.ftDevices.size() && index >= 0?((FT_Device)this.ftDevices.get(index)).ftDeviceInfoListNode :null;
     }
 
     public static int getLibraryVersion() {
@@ -340,12 +360,12 @@ public class D2xxManager {
         } else if(var1 == null) {
             return var4;
         } else {
-            var2.a(var1);
+            var2.setParentContext(var1);
             if(var3 != null) {
                 var2.setDriverParameters(var3);
             }
 
-            if(var2.a(g) && var2.isOpen()) {
+            if(var2.a(theUsbManager) && var2.isOpen()) {
                 var4 = true;
             }
 
@@ -356,7 +376,7 @@ public class D2xxManager {
     public synchronized FT_Device openByUsbDevice(Context parentContext, UsbDevice dev, D2xxManager.DriverParameters params) {
         FT_Device var4 = null;
         if(this.isFtDevice(dev)) {
-            var4 = this.a(dev);
+            var4 = this.ftDeviceFromUsbDevice(dev);
             if(!this.a(parentContext, var4, params)) {
                 var4 = null;
             }
@@ -376,8 +396,8 @@ public class D2xxManager {
         } else if(parentContext == null) {
             return var4;
         } else {
-            a(parentContext);
-            var4 = (FT_Device)this.f.get(index);
+            registerForJ2xxIntents(parentContext);
+            var4 = (FT_Device)this.ftDevices.get(index);
             if(!this.a(parentContext, var4, params)) {
                 var4 = null;
             }
@@ -397,10 +417,10 @@ public class D2xxManager {
         if(parentContext == null) {
             return ftDevice;
         } else {
-            a(parentContext);
+            registerForJ2xxIntents(parentContext);
 
-            for(int i = 0; i < this.f.size(); ++i) {
-                FT_Device device = (FT_Device)this.f.get(i);
+            for(int i = 0; i < this.ftDevices.size(); ++i) {
+                FT_Device device = (FT_Device)this.ftDevices.get(i);
                 if(device != null) {
                     infoListNode = device.ftDeviceInfoListNode;
                     if(infoListNode == null) {
@@ -430,10 +450,10 @@ public class D2xxManager {
         if(parentContext == null) {
             return var5;
         } else {
-            a(parentContext);
+            registerForJ2xxIntents(parentContext);
 
-            for(int var7 = 0; var7 < this.f.size(); ++var7) {
-                FT_Device var6 = (FT_Device)this.f.get(var7);
+            for(int var7 = 0; var7 < this.ftDevices.size(); ++var7) {
+                FT_Device var6 = (FT_Device)this.ftDevices.get(var7);
                 if(var6 != null) {
                     var4 = var6.ftDeviceInfoListNode;
                     if(var4 == null) {
@@ -463,10 +483,10 @@ public class D2xxManager {
         if(parentContext == null) {
             return var5;
         } else {
-            a(parentContext);
+            registerForJ2xxIntents(parentContext);
 
-            for(int var7 = 0; var7 < this.f.size(); ++var7) {
-                FT_Device var6 = (FT_Device)this.f.get(var7);
+            for(int var7 = 0; var7 < this.ftDevices.size(); ++var7) {
+                FT_Device var6 = (FT_Device)this.ftDevices.get(var7);
                 if(var6 != null) {
                     var4 = var6.ftDeviceInfoListNode;
                     if(var4 == null) {
@@ -497,17 +517,17 @@ public class D2xxManager {
             int var8 = dev.getInterfaceCount();
 
             for(int var5 = 0; var5 < var8; ++var5) {
-                if(this.b(dev)) {
-                    ArrayList var6 = this.f;
-                    synchronized(this.f) {
-                        FT_Device var2 = this.a(dev);
+                if(this.allowedToAccessDevice(dev)) {
+                    ArrayList var6 = this.ftDevices;
+                    synchronized(this.ftDevices) {
+                        FT_Device var2 = this.ftDeviceFromUsbDevice(dev);
                         if(var2 == null) {
-                            var2 = new FT_Device(b, g, dev, dev.getInterface(var5));
+                            var2 = new FT_Device(theContext, theUsbManager, dev, dev.getInterface(var5));
                         } else {
-                            var2.a(b);
+                            var2.setParentContext(theContext);
                         }
 
-                        this.f.add(var2);
+                        this.ftDevices.add(var2);
                         ++var3;
                     }
                 }

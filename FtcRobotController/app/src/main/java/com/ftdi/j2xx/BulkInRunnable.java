@@ -8,45 +8,47 @@ package com.ftdi.j2xx;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.util.Log;
-
+import com.ftdi.j2xx.FT_Device;
+import com.ftdi.j2xx.n;
+import com.ftdi.j2xx.o;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
 
 class BulkInRunnable implements Runnable {
-    UsbDeviceConnection usbDeviceConnection;
-    UsbEndpoint usbEndpoint;
-    o oDevice;
-    FT_Device ftDevice;
-    int bufferCount;
-    int maxTransferSize;
-    int readTimeout;
-    Semaphore semaphore;
-    boolean semaphoreAcquired;
+    UsbDeviceConnection a;
+    UsbEndpoint b;
+    o c;
+    FT_Device d;
+    int e;
+    int f;
+    int g;
+    Semaphore h;
+    boolean i;
 
     BulkInRunnable(FT_Device var1, o var2, UsbDeviceConnection var3, UsbEndpoint var4) {
-        this.ftDevice = var1;
-        this.usbEndpoint = var4;
-        this.usbDeviceConnection = var3;
-        this.oDevice = var2;
-        this.bufferCount = this.oDevice.getDriverParameters().getBufferNumber();
-        this.maxTransferSize = this.oDevice.getDriverParameters().getMaxTransferSize();
-        this.readTimeout = this.ftDevice.d().getReadTimeout();
-        this.semaphore = new Semaphore(1);
-        this.semaphoreAcquired = false;
+        this.d = var1;
+        this.b = var4;
+        this.a = var3;
+        this.c = var2;
+        this.e = this.c.b().getBufferNumber();
+        this.f = this.c.b().getMaxTransferSize();
+        this.g = this.d.d().getReadTimeout();
+        this.h = new Semaphore(1);
+        this.i = false;
     }
 
-    void acquireSemaphore() throws InterruptedException {
-        this.semaphore.acquire();
-        this.semaphoreAcquired = true;
+    void a() throws InterruptedException {
+        this.h.acquire();
+        this.i = true;
     }
 
-    void releaseSemaphore() {
-        this.semaphoreAcquired = false;
-        this.semaphore.release();
+    void b() {
+        this.i = false;
+        this.h.release();
     }
 
-    boolean isSemaphoreAcquired() {
-        return this.semaphoreAcquired;
+    boolean c() {
+        return this.i;
     }
 
     public void run() {
@@ -58,35 +60,35 @@ class BulkInRunnable implements Runnable {
 
         try {
             do {
-                if (this.semaphoreAcquired) {
-                    this.semaphore.acquire();
-                    this.semaphore.release();
+                if(this.i) {
+                    this.h.acquire();
+                    this.h.release();
                 }
 
-                var2 = this.oDevice.b(var3);
+                var2 = this.c.b(var3);
                 if(var2.b() == 0) {
                     var1 = var2.a();
                     var1.clear();
                     var2.a(var3);
                     byte[] var12 = var1.array();
-                    int var11 = this.usbDeviceConnection.bulkTransfer(this.usbEndpoint, var12, this.maxTransferSize, this.readTimeout);
+                    int var11 = this.a.bulkTransfer(this.b, var12, this.f, this.g);
                     if(var11 > 0) {
                         var1.position(var11);
                         var1.flip();
                         var2.b(var11);
-                        this.oDevice.e(var3);
+                        this.c.e(var3);
                     }
                 }
 
                 ++var3;
-                var3 %= this.bufferCount;
+                var3 %= this.e;
             } while(!Thread.interrupted());
 
             throw new InterruptedException();
         } catch (InterruptedException var9) {
             try {
-                this.oDevice.f();
-                this.oDevice.e();
+                this.c.f();
+                this.c.e();
             } catch (Exception var8) {
                 Log.d("BulkIn::", "Stop BulkIn thread");
                 var8.printStackTrace();

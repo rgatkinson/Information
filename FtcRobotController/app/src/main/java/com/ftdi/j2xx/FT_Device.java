@@ -30,9 +30,9 @@ public class FT_Device {
     UsbEndpoint f;
     private UsbRequest usbRequest;
     private UsbDeviceConnection usbDeviceConnection;
-    private a m;
-    private Thread n;
-    private Thread o;
+    private BulkInRunnable bulkInRunnable;
+    private Thread threadProcessRequest;
+    private Thread threadBulkIn;
     FtDeviceInfoListNode ftDeviceInfoListNode;
     private o p;
     private k q;
@@ -80,6 +80,7 @@ public class FT_Device {
                 this.ftDeviceInfoListNode.breakOnParam = 8;
                 this.c().controlTransfer(-128, 6, 768 | var5[15], 0, var6, 255, 0);
                 this.ftDeviceInfoListNode.description = this.a(var6);
+
                 switch(this.ftDeviceInfoListNode.bcdDevice & 65280) {
                 case 512:
                     if(this.ftDeviceInfoListNode.iSerialNumber == 0) {
@@ -260,14 +261,14 @@ public class FT_Device {
         this.usbDeviceConnection = var1;
     }
 
-    synchronized boolean a(Context var1) {
-        boolean var2 = false;
-        if(var1 != null) {
-            this.parentContext = var1;
-            var2 = true;
+    synchronized boolean setParentContext(Context parentContext) {
+        boolean result = false;
+        if(parentContext != null) {
+            this.parentContext = parentContext;
+            result = true;
         }
 
-        return var2;
+        return result;
     }
 
     protected void setDriverParameters(DriverParameters params) {
@@ -329,14 +330,14 @@ public class FT_Device {
                     this.usbRequest.initialize(this.usbDeviceConnection, this.e);
                     Log.d("D2XX::", "**********************Device Opened**********************");
                     this.p = new o(this);
-                    this.m = new a(this, this.p, this.c(), this.f);
-                    this.o = new Thread(this.m);
-                    this.o.setName("bulkInThread");
-                    this.n = new Thread(new p(this.p));
-                    this.n.setName("processRequestThread");
+                    this.bulkInRunnable = new BulkInRunnable(this, this.p, this.c(), this.f);
+                    this.threadBulkIn = new Thread(this.bulkInRunnable);
+                    this.threadBulkIn.setName("bulkInThread");
+                    this.threadProcessRequest = new Thread(new ProcessRequestRunnable(this.p));
+                    this.threadProcessRequest.setName("processRequestThread");
                     this.a(true, true);
-                    this.o.start();
-                    this.n.start();
+                    this.threadBulkIn.start();
+                    this.threadProcessRequest.start();
                     this.o();
                     var2 = true;
                     return var2;
@@ -360,12 +361,12 @@ public class FT_Device {
     }
 
     public synchronized void close() {
-        if(this.n != null) {
-            this.n.interrupt();
+        if(this.threadProcessRequest != null) {
+            this.threadProcessRequest.interrupt();
         }
 
-        if(this.o != null) {
-            this.o.interrupt();
+        if(this.threadBulkIn != null) {
+            this.threadBulkIn.interrupt();
         }
 
         if(this.usbDeviceConnection != null) {
@@ -378,9 +379,9 @@ public class FT_Device {
             this.p.g();
         }
 
-        this.n = null;
-        this.o = null;
-        this.m = null;
+        this.threadProcessRequest = null;
+        this.threadBulkIn = null;
+        this.bulkInRunnable = null;
         this.p = null;
         this.p();
     }
@@ -402,7 +403,7 @@ public class FT_Device {
         } else if(this.p == null) {
             return -3;
         } else {
-            int var6 = this.p.a(data, length, wait_ms);
+            int var6 = this.p.readBulkInData(data, length, wait_ms);
             return var6;
         }
     }
@@ -874,8 +875,8 @@ public class FT_Device {
 
     public void stopInTask() {
         try {
-            if(!this.m.c()) {
-                this.m.a();
+            if(!this.bulkInRunnable.c()) {
+                this.bulkInRunnable.a();
             }
         } catch (InterruptedException var2) {
             Log.d("FTDI_Device::", "stopInTask called!");
@@ -885,11 +886,11 @@ public class FT_Device {
     }
 
     public void restartInTask() {
-        this.m.b();
+        this.bulkInRunnable.b();
     }
 
     public boolean stoppedInTask() {
-        return this.m.c();
+        return this.bulkInRunnable.c();
     }
 
     public boolean purge(byte flags) {

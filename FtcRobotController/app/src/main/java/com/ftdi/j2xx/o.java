@@ -139,7 +139,7 @@ class o {
         this.b[var1].release();
     }
 
-    public void a(n var1) throws D2xxException {
+    public void processBulkIn(n var1) throws D2xxException {
         boolean var2 = false;
         byte var3 = 0;
         byte var4 = 0;
@@ -171,20 +171,20 @@ class o {
                 this.n.unlock();
             }
 
-            this.b(var1);
-        } catch (InterruptedException var10) {
+            this.extractReadData(var1);
+        } catch (InterruptedException interrupt) {
             this.n.unlock();
             Log.e("ProcessInCtrl", "Exception in Full await!");
-            var10.printStackTrace();
-        } catch (Exception var11) {
+            interrupt.printStackTrace();
+        } catch (Exception e) {
             Log.e("ProcessInCtrl", "Exception in ProcessBulkIN");
-            var11.printStackTrace();
+            e.printStackTrace();
             throw new D2xxException("Fatal error in BulkIn.");
         }
 
     }
 
-    private void b(n var1) throws InterruptedException {
+    private void extractReadData(n var1) throws InterruptedException {
         boolean var2 = false;
         boolean var3 = false;
         int var4 = 0;
@@ -255,7 +255,7 @@ class o {
 
     }
 
-    public int a(byte[] var1, int var2, long var3) {
+    public int readBulkInData(byte[] var1, int var2, long var3) {
         boolean var5 = false;
         int var6 = 0;
         int var7 = this.m.getMaxBufferSize();

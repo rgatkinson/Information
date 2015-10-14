@@ -36,7 +36,8 @@ public class ModernRoboticsUsbUtil {
       }
    }
 
-   private static RobotUsbDevice a(RobotUsbManager robotUsbManager, SerialNumber serialNumber) throws RobotCoreException {
+   private static RobotUsbDevice findAndOpenDeviceBySerialNumber(RobotUsbManager robotUsbManager, SerialNumber serialNumber) throws RobotCoreException {
+
       int numberOfDevices = robotUsbManager.scanForDevices();
       int index = 0;
 
@@ -123,7 +124,7 @@ public class ModernRoboticsUsbUtil {
 
    }
 
-   public static RobotUsbDevice openUsbDevice(RobotUsbManager var0, SerialNumber var1) throws RobotCoreException {
-      return a(var0, var1);
+   public static RobotUsbDevice openUsbDevice(RobotUsbManager robotUsbManager, SerialNumber serialNumber) throws RobotCoreException {
+      return findAndOpenDeviceBySerialNumber(robotUsbManager, serialNumber);
    }
 }
