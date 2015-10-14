@@ -1,17 +1,16 @@
 package com.qualcomm.hardware;
 
-import com.qualcomm.hardware.MatrixI2cTransaction;
-import com.qualcomm.hardware.MatrixMasterController;
 import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.TypeConversion;
+
 import java.util.Arrays;
 
 public class MatrixServoController implements ServoController {
    public static final int SERVO_POSITION_MAX = 240;
-   private MatrixMasterController a;
    protected ServoController.PwmStatus pwmStatus;
    protected double[] servoCache = new double[4];
+   private MatrixMasterController a;
 
    public MatrixServoController(MatrixMasterController var1) {
       this.a = var1;
@@ -44,7 +43,7 @@ public class MatrixServoController implements ServoController {
    }
 
    public double getServoPosition(int var1) {
-      MatrixI2cTransaction var2 = new MatrixI2cTransaction((byte)var1, MatrixI2cTransaction.a.g);
+      MatrixI2cTransaction var2 = new MatrixI2cTransaction((byte) var1, MatrixI2cTransaction.Type1.g);
       if(this.a.queueTransaction(var2)) {
          this.a.waitOnRead();
       }
@@ -61,13 +60,13 @@ public class MatrixServoController implements ServoController {
    }
 
    public void pwmDisable() {
-      MatrixI2cTransaction var1 = new MatrixI2cTransaction((byte)0, MatrixI2cTransaction.a.h, 0);
+      MatrixI2cTransaction var1 = new MatrixI2cTransaction((byte) 0, MatrixI2cTransaction.Type1.h, 0);
       this.a.queueTransaction(var1);
       this.pwmStatus = ServoController.PwmStatus.DISABLED;
    }
 
    public void pwmEnable() {
-      MatrixI2cTransaction var1 = new MatrixI2cTransaction((byte)0, MatrixI2cTransaction.a.h, 15);
+      MatrixI2cTransaction var1 = new MatrixI2cTransaction((byte) 0, MatrixI2cTransaction.Type1.h, 15);
       this.a.queueTransaction(var1);
       this.pwmStatus = ServoController.PwmStatus.ENABLED;
    }

@@ -9,17 +9,14 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemSelectedListener;
+
 import com.qualcomm.ftccommon.R;
-import com.qualcomm.ftccommon.configuration.EditMatrixControllerActivity;
-import com.qualcomm.ftccommon.configuration.EditMotorControllerActivity;
-import com.qualcomm.ftccommon.configuration.EditServoControllerActivity;
 import com.qualcomm.robotcore.hardware.configuration.ControllerConfiguration;
 import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
 import com.qualcomm.robotcore.hardware.configuration.LegacyModuleControllerConfiguration;
@@ -31,6 +28,7 @@ import com.qualcomm.robotcore.hardware.configuration.ServoControllerConfiguratio
 import com.qualcomm.robotcore.hardware.configuration.Utility;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.SerialNumber;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -95,11 +93,11 @@ public class EditLegacyModuleControllerActivity extends Activity {
    }
 
    private void a(int var1, int var2) {
-      ((Button)this.a(var1).findViewById(R.id.edit_controller_btn)).setVisibility(var2);
+      this.a(var1).findViewById(R.id.edit_controller_btn).setVisibility(var2);
    }
 
    private void a(int var1, String var2) {
-      DeviceConfiguration var3 = (DeviceConfiguration)this.g.get(var1);
+      DeviceConfiguration var3 = this.g.get(var1);
       String var4 = var3.getName();
       ArrayList var5 = new ArrayList();
       SerialNumber var6 = ControllerConfiguration.NO_SERIAL_NUMBER;
@@ -180,7 +178,7 @@ public class EditLegacyModuleControllerActivity extends Activity {
    private void a(LinearLayout var1, String var2) {
       int var3 = Integer.parseInt(((TextView)var1.findViewById(R.id.portNumber)).getText().toString());
       EditText var4 = (EditText)var1.findViewById(R.id.editTextResult_name);
-      DeviceConfiguration var5 = (DeviceConfiguration)this.g.get(var3);
+      DeviceConfiguration var5 = this.g.get(var3);
       var4.setEnabled(true);
       this.a(var4, var5);
       DeviceConfiguration.ConfigurationType var6 = var5.typeFromString(var2);
@@ -199,14 +197,14 @@ public class EditLegacyModuleControllerActivity extends Activity {
       }
 
       if(a) {
-         DeviceConfiguration var7 = (DeviceConfiguration)this.g.get(var3);
+         DeviceConfiguration var7 = this.g.get(var3);
          RobotLog.e("[changeDevice] modules.get(port) name: " + var7.getName() + ", port: " + var7.getPort() + ", type: " + var7.getType());
       }
 
    }
 
    private void a(DeviceConfiguration var1) {
-      var1.setName(((EditText)((LinearLayout)this.a(var1.getPort())).findViewById(R.id.editTextResult_name)).getText().toString());
+      var1.setName(((EditText) this.a(var1.getPort()).findViewById(R.id.editTextResult_name)).getText().toString());
       if(var1.getType() == DeviceConfiguration.ConfigurationType.MOTOR_CONTROLLER) {
          Intent var2 = new Intent(this.d, EditMotorControllerActivity.class);
          var2.putExtra("EDIT_MOTOR_CONTROLLER_CONFIG", var1);
@@ -250,7 +248,7 @@ public class EditLegacyModuleControllerActivity extends Activity {
    public void editController_portALL(View var1) {
       LinearLayout var2 = (LinearLayout)var1.getParent().getParent();
       int var3 = Integer.parseInt(((TextView)var2.findViewById(R.id.portNumber)).getText().toString());
-      DeviceConfiguration var4 = (DeviceConfiguration)this.g.get(var3);
+      DeviceConfiguration var4 = this.g.get(var3);
       if(!this.c(var4)) {
          this.a(var3, ((Spinner)var2.findViewById(R.id.choiceSpinner_legacyModule)).getSelectedItem().toString());
       }
@@ -275,7 +273,7 @@ public class EditLegacyModuleControllerActivity extends Activity {
          if(var4 != null) {
             ControllerConfiguration var5 = (ControllerConfiguration)var4;
             this.b(var5);
-            this.a(this.a(var5.getPort()), (DeviceConfiguration)this.g.get(var5.getPort()));
+            this.a(this.a(var5.getPort()), this.g.get(var5.getPort()));
             if(!this.c.toLowerCase().contains("Unsaved".toLowerCase())) {
                String var6 = "Unsaved " + this.c;
                this.b.saveToPreferences(var6, R.string.pref_hardware_config_filename);
@@ -329,7 +327,7 @@ public class EditLegacyModuleControllerActivity extends Activity {
          ((TextView)this.findViewById(R.id.legacy_serialNumber)).setText(this.e.getSerialNumber().toString());
 
          for(int var2 = 0; var2 < this.g.size(); ++var2) {
-            DeviceConfiguration var3 = (DeviceConfiguration)this.g.get(var2);
+            DeviceConfiguration var3 = this.g.get(var2);
             if(a) {
                RobotLog.e("[onStart] module name: " + var3.getName() + ", port: " + var3.getPort() + ", type: " + var3.getType());
             }
@@ -353,7 +351,7 @@ public class EditLegacyModuleControllerActivity extends Activity {
 
       // $FF: synthetic method
       a(DeviceConfiguration var2, Object var3) {
-         this();
+         this(var2);
       }
 
       public void afterTextChanged(Editable var1) {

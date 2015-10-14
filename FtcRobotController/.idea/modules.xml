@@ -3,7 +3,10 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/FtcRobotController.iml" filepath="$PROJECT_DIR$/FtcRobotController.iml" />
+      <module fileurl="file://$PROJECT_DIR$/WirelessP2p/WirelessP2p.iml" filepath="$PROJECT_DIR$/WirelessP2p/WirelessP2p.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ftcrobotcontroller/ftcrobotcontroller.iml" filepath="$PROJECT_DIR$/ftcrobotcontroller/ftcrobotcontroller.iml" />
+      <module fileurl="file://$PROJECT_DIR$/robotcore/robotcore.iml" filepath="$PROJECT_DIR$/robotcore/robotcore.iml" />
     </modules>
   </component>
 </project>

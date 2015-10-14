@@ -1,11 +1,11 @@
 package com.qualcomm.hardware;
 
-import com.qualcomm.hardware.ModernRoboticsUsbLegacyModule;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.I2cController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.TypeConversion;
+
 import java.util.concurrent.locks.Lock;
 
 public class HiTechnicNxtDcMotorController implements DcMotorController, I2cController.I2cPortReadyCallback {
@@ -75,6 +75,35 @@ public class HiTechnicNxtDcMotorController implements DcMotorController, I2cCont
       var1.registerForI2cPortReadyCallback(this, var2);
    }
 
+   public static DcMotorController.RunMode flagToRunModeNXT(byte var0) {
+      switch (var0 & 3) {
+         case 0:
+            return DcMotorController.RunMode.RUN_WITHOUT_ENCODERS;
+         case 1:
+            return DcMotorController.RunMode.RUN_USING_ENCODERS;
+         case 2:
+            return DcMotorController.RunMode.RUN_TO_POSITION;
+         case 3:
+            return DcMotorController.RunMode.RESET_ENCODERS;
+         default:
+            return DcMotorController.RunMode.RUN_WITHOUT_ENCODERS;
+      }
+   }
+
+   public static byte runModeToFlagNXT(DcMotorController.RunMode var0) {
+      switch (var0.ordinal()) {
+         case 1:
+         default:
+            return (byte) 1;
+         case 2:
+            return (byte) 0;
+         case 3:
+            return (byte) 2;
+         case 4:
+            return (byte) 3;
+      }
+   }
+
    private void a() {
       if(this.h != DcMotorController.DeviceMode.SWITCHING_TO_WRITE_MODE && (this.h == DcMotorController.DeviceMode.READ_ONLY || this.h == DcMotorController.DeviceMode.SWITCHING_TO_READ_MODE)) {
          String var1 = "Cannot write while in this mode: " + this.h;
@@ -103,35 +132,6 @@ public class HiTechnicNxtDcMotorController implements DcMotorController, I2cCont
          }
 
          throw new IllegalArgumentException(var1);
-      }
-   }
-
-   public static DcMotorController.RunMode flagToRunModeNXT(byte var0) {
-      switch(var0 & 3) {
-      case 0:
-         return DcMotorController.RunMode.RUN_WITHOUT_ENCODERS;
-      case 1:
-         return DcMotorController.RunMode.RUN_USING_ENCODERS;
-      case 2:
-         return DcMotorController.RunMode.RUN_TO_POSITION;
-      case 3:
-         return DcMotorController.RunMode.RESET_ENCODERS;
-      default:
-         return DcMotorController.RunMode.RUN_WITHOUT_ENCODERS;
-      }
-   }
-
-   public static byte runModeToFlagNXT(DcMotorController.RunMode var0) {
-      switch(null.b[var0.ordinal()]) {
-      case 1:
-      default:
-         return (byte)1;
-      case 2:
-         return (byte)0;
-      case 3:
-         return (byte)2;
-      case 4:
-         return (byte)3;
       }
    }
 
@@ -168,6 +168,22 @@ public class HiTechnicNxtDcMotorController implements DcMotorController, I2cCont
 
    public DcMotorController.DeviceMode getMotorControllerDeviceMode() {
       return this.h;
+   }
+
+   public void setMotorControllerDeviceMode(DcMotorController.DeviceMode var1) {
+      if (this.h != var1) {
+         switch (var1.ordinal()) {
+            case 1:
+               this.h = DcMotorController.DeviceMode.SWITCHING_TO_READ_MODE;
+               this.a.enableI2cReadMode(this.f, 2, 64, 20);
+               break;
+            case 2:
+               this.h = DcMotorController.DeviceMode.SWITCHING_TO_WRITE_MODE;
+               this.a.enableI2cWriteMode(this.f, 2, 64, 20);
+         }
+
+         this.i = true;
+      }
    }
 
    public int getMotorCurrentPosition(int var1) {
@@ -218,11 +234,7 @@ public class HiTechnicNxtDcMotorController implements DcMotorController, I2cCont
       }
 
       boolean var4;
-      if(var3 == -128) {
-         var4 = true;
-      } else {
-         var4 = false;
-      }
+      var4 = var3 == -128;
 
       this.c.unlock();
       return var4;
@@ -265,18 +277,14 @@ public class HiTechnicNxtDcMotorController implements DcMotorController, I2cCont
       }
 
       boolean var4;
-      if((var3 & 128) == 128) {
-         var4 = true;
-      } else {
-         var4 = false;
-      }
+      var4 = (var3 & 128) == 128;
 
       this.c.unlock();
       return var4;
    }
 
    public void portIsReady(int var1) {
-      switch(null.a[this.h.ordinal()]) {
+      switch (this.h.ordinal()) {
       case 3:
          if(this.a.isI2cPortInReadMode(var1)) {
             this.h = DcMotorController.DeviceMode.READ_ONLY;
@@ -319,22 +327,6 @@ public class HiTechnicNxtDcMotorController implements DcMotorController, I2cCont
          this.e.unlock();
       }
 
-   }
-
-   public void setMotorControllerDeviceMode(DcMotorController.DeviceMode var1) {
-      if(this.h != var1) {
-         switch(null.a[var1.ordinal()]) {
-         case 1:
-            this.h = DcMotorController.DeviceMode.SWITCHING_TO_READ_MODE;
-            this.a.enableI2cReadMode(this.f, 2, 64, 20);
-            break;
-         case 2:
-            this.h = DcMotorController.DeviceMode.SWITCHING_TO_WRITE_MODE;
-            this.a.enableI2cWriteMode(this.f, 2, 64, 20);
-         }
-
-         this.i = true;
-      }
    }
 
    public void setMotorPower(int var1, double var2) {

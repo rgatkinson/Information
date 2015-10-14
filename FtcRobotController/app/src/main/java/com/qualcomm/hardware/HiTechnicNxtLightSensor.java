@@ -1,12 +1,11 @@
 package com.qualcomm.hardware;
 
-import com.qualcomm.hardware.ModernRoboticsUsbLegacyModule;
 import com.qualcomm.robotcore.hardware.LightSensor;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.TypeConversion;
 
 public class HiTechnicNxtLightSensor extends LightSensor {
-   public static final byte LED_DIGITAL_LINE_NUMBER;
+   public static final byte LED_DIGITAL_LINE_NUMBER = 0;
    private final ModernRoboticsUsbLegacyModule a;
    private final int b;
 

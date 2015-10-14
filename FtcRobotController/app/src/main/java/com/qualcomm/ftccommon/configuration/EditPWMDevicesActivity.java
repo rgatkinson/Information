@@ -12,11 +12,12 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import com.qualcomm.ftccommon.R;
 import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
 import com.qualcomm.robotcore.hardware.configuration.Utility;
 import com.qualcomm.robotcore.util.RobotLog;
-import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -31,7 +32,7 @@ public class EditPWMDevicesActivity extends Activity {
       Bundle var1 = new Bundle();
 
       for(int var2 = 0; var2 < this.d.size(); ++var2) {
-         var1.putSerializable(String.valueOf(var2), (Serializable)this.d.get(var2));
+         var1.putSerializable(String.valueOf(var2), this.d.get(var2));
       }
 
       Intent var3 = new Intent();
@@ -44,7 +45,7 @@ public class EditPWMDevicesActivity extends Activity {
    private void a(int var1) {
       View var2 = this.d(var1);
       CheckBox var3 = (CheckBox)var2.findViewById(R.id.checkbox_port_pwm);
-      DeviceConfiguration var4 = (DeviceConfiguration)this.d.get(var1);
+      DeviceConfiguration var4 = this.d.get(var1);
       if(var4.isEnabled()) {
          var3.setChecked(true);
          ((EditText)var2.findViewById(R.id.editTextResult_pwm)).setText(var4.getName());
@@ -62,10 +63,10 @@ public class EditPWMDevicesActivity extends Activity {
    private void c(int var1) {
       View var2 = this.d(var1);
       final EditText var3 = (EditText)var2.findViewById(R.id.editTextResult_pwm);
-      final DeviceConfiguration var4 = (DeviceConfiguration)this.d.get(var1);
-      ((CheckBox)var2.findViewById(R.id.checkbox_port_pwm)).setOnClickListener(new OnClickListener() {
+      final DeviceConfiguration var4 = this.d.get(var1);
+      var2.findViewById(R.id.checkbox_port_pwm).setOnClickListener(new OnClickListener() {
          public void onClick(View var1) {
-            if(((CheckBox)var1).isChecked()) {
+            if (((CheckBox) var1).isChecked()) {
                var3.setEnabled(true);
                var3.setText("");
                var4.setEnabled(true);
@@ -144,11 +145,11 @@ public class EditPWMDevicesActivity extends Activity {
 
       // $FF: synthetic method
       a(View var2, Object var3) {
-         this();
+         this(var2);
       }
 
       public void afterTextChanged(Editable var1) {
-         ((DeviceConfiguration)EditPWMDevicesActivity.this.d.get(this.b)).setName(var1.toString());
+         EditPWMDevicesActivity.this.d.get(this.b).setName(var1.toString());
       }
 
       public void beforeTextChanged(CharSequence var1, int var2, int var3, int var4) {

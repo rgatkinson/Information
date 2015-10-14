@@ -1,14 +1,13 @@
 package com.qualcomm.ftccommon;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import com.qualcomm.ftccommon.R;
+
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.Version;
 import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
@@ -18,18 +17,18 @@ public class AboutActivity extends Activity {
 
    protected void onStart() {
       super.onStart();
-      this.setContentView(R.layout.activity_about);
+       this.setContentView(R.layout.about);
       ListView var1 = (ListView)this.findViewById(R.id.aboutList);
 
       try {
-         this.a = WifiDirectAssistant.getWifiDirectAssistant((Context)null);
+          this.a = WifiDirectAssistant.getWifiDirectAssistant(null);
          this.a.enable();
       } catch (NullPointerException var3) {
          RobotLog.i("Cannot start Wifi Direct Assistant");
          this.a = null;
       }
 
-      var1.setAdapter(new ArrayAdapter(this, 17367044, 16908308) {
+       var1.setAdapter(new ArrayAdapter(this, R.layout.about, R.id.aboutList) {
          private AboutActivity.Item a() {
             AboutActivity.Item var1 = new AboutActivity.Item();
             var1.title = "App Version";
@@ -98,8 +97,9 @@ public class AboutActivity extends Activity {
 
          public View getView(int var1, View var2, ViewGroup var3) {
             View var4 = super.getView(var1, var2, var3);
-            TextView var5 = (TextView)var4.findViewById(16908308);
-            TextView var6 = (TextView)var4.findViewById(16908309);
+             // todo: figure out what this actually is
+             TextView var5 = (TextView) var4.findViewById(R.id.textView);
+             TextView var6 = (TextView) var4.findViewById(R.id.textView1);
             AboutActivity.Item var7 = this.a(var1);
             var5.setText(var7.title);
             var6.setText(var7.info);

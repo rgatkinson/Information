@@ -10,7 +10,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import com.qualcomm.ftccommon.DbgLog;
+
 import com.qualcomm.ftccommon.UpdateUI.Callback;
 import com.qualcomm.robotcore.eventloop.EventLoop;
 import com.qualcomm.robotcore.eventloop.EventLoopManager.EventLoopMonitor;
@@ -23,26 +23,27 @@ import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 import com.qualcomm.robotcore.wifi.WifiDirectAssistant.Event;
 import com.qualcomm.robotcore.wifi.WifiDirectAssistant.WifiDirectAssistantCallback;
+
 import java.lang.Thread.State;
 import java.net.InetAddress;
 
 public class FtcRobotControllerService extends Service implements WifiDirectAssistantCallback {
     private final IBinder a = new FtcRobotControllerService.FtcRobotControllerBinder();
+    private final FtcRobotControllerService.a h;
+    private final ElapsedTime i;
     private WifiDirectAssistant b;
     private Robot c;
     private EventLoop d;
     private Event e;
     private String f;
     private Callback g;
-    private final FtcRobotControllerService.a h;
-    private final ElapsedTime i;
     private Thread j;
 
     public FtcRobotControllerService() {
         this.e = Event.DISCONNECTED;
         this.f = "Robot Status: null";
         this.g = null;
-        this.h = new FtcRobotControllerService.a((FtcRobotControllerService.SyntheticClass_1)null);
+        this.h = new FtcRobotControllerService.a();
         this.i = new ElapsedTime();
         this.j = null;
     }
@@ -100,7 +101,7 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
         RobotLog.clearGlobalErrorMsg();
         DbgLog.msg("Processing robot setup");
         this.d = eventLoop;
-        this.j = new Thread(new FtcRobotControllerService.b((FtcRobotControllerService.SyntheticClass_1)null), "Robot Setup");
+        this.j = new Thread(new FtcRobotControllerService.b(), "Robot Setup");
         this.j.start();
 
         while(this.j.getState() == State.NEW) {
@@ -123,7 +124,7 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
     }
 
     public void onWifiDirectEvent(Event event) {
-        switch(FtcRobotControllerService.SyntheticClass_1.b[event.ordinal()]) {
+        switch (event.ordinal()) {
         case 1:
             DbgLog.msg("Wifi Direct - Group Owner");
             this.b.cancelDiscoverPeers();
@@ -218,7 +219,7 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
 
         public void onStateChange(RobotState state) {
             if(FtcRobotControllerService.this.g != null) {
-                switch(FtcRobotControllerService.SyntheticClass_1.a[state.ordinal()]) {
+                switch (state.ordinal()) {
                 case 1:
                     FtcRobotControllerService.this.g.robotUpdate("Robot Status: init");
                     break;

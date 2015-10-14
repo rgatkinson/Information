@@ -38,6 +38,7 @@ import com.qualcomm.robotcore.hardware.configuration.MotorControllerConfiguratio
 import com.qualcomm.robotcore.hardware.configuration.ReadXMLFileHandler;
 import com.qualcomm.robotcore.hardware.configuration.ServoControllerConfiguration;
 import com.qualcomm.robotcore.util.RobotLog;
+
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
@@ -48,6 +49,14 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
 
    public ModernRoboticsHardwareFactory(Context var1) {
       this.context = var1;
+   }
+
+   public static void disableDeviceEmulation() {
+      ModernRoboticsDeviceManager.disableDeviceEmulation();
+   }
+
+   public static void enableDeviceEmulation() {
+      ModernRoboticsDeviceManager.enableDeviceEmulation();
    }
 
    private void a(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
@@ -88,7 +97,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
          DeviceConfiguration var6 = (DeviceConfiguration)var5.next();
          if(var6.isEnabled()) {
             DeviceConfiguration.ConfigurationType var7 = var6.getType();
-            switch(null.a[var7.ordinal()]) {
+            switch (var7.ordinal()) {
             case 5:
                this.h(var2, var3, var4, var6);
                break;
@@ -117,7 +126,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
                this.i(var2, var3, var4, var6);
                break;
             case 14:
-               this.a((HardwareMap)var2, (DeviceManager)var3, (DigitalChannelController)var4, (DeviceConfiguration)var6);
+               this.a(var2, var3, (DigitalChannelController) var4, var6);
                break;
             case 15:
                this.j(var2, var3, var4, var6);
@@ -173,7 +182,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
       this.a(((DeviceInterfaceModuleConfiguration)var3).getI2cDevices(), var1, var2, var4);
       this.a(((DeviceInterfaceModuleConfiguration)var3).getAnalogInputDevices(), var1, var2, var4);
       this.a(((DeviceInterfaceModuleConfiguration)var3).getDigitalDevices(), var1, var2, var4);
-      this.a(((DeviceInterfaceModuleConfiguration)var3).getAnalogOutputDevices(), var1, var2, var4);
+      this.a(((DeviceInterfaceModuleConfiguration) var3).getAnalogOutputDevices(), var1, var2, var4);
    }
 
    private void d(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
@@ -195,7 +204,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
          DeviceConfiguration var6 = (DeviceConfiguration)var5.next();
          if(var6.isEnabled()) {
             DeviceConfiguration.ConfigurationType var7 = var6.getType();
-            switch(null.a[var7.ordinal()]) {
+            switch (var7.ordinal()) {
             case 1:
                this.j(var1, var2, var4, var6);
                break;
@@ -252,10 +261,6 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
 
    }
 
-   public static void disableDeviceEmulation() {
-      ModernRoboticsDeviceManager.disableDeviceEmulation();
-   }
-
    private void e(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
       PWMOutput var5 = var2.createPwmOutputDevice(var3, var4.getPort());
       var1.pwmOutput.put(var4.getName(), var5);
@@ -264,10 +269,6 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
    private void e(HardwareMap var1, DeviceManager var2, LegacyModule var3, DeviceConfiguration var4) {
       GyroSensor var5 = var2.createNxtGyroSensor(var3, var4.getPort());
       var1.gyroSensor.put(var4.getName(), var5);
-   }
-
-   public static void enableDeviceEmulation() {
-      ModernRoboticsDeviceManager.enableDeviceEmulation();
    }
 
    private void f(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
@@ -367,7 +368,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
 
    public HardwareMap createHardwareMap(EventLoopManager var1) throws RobotCoreException, InterruptedException {
       if(this.inputStream == null) {
-         throw new RobotCoreException("XML input stream is null, ModernRoboticsHardwareFactory cannot create a hardware map");
+         throw new RobotCoreException("XML input stream is null, ModernRoboticsHardwareFactory cannot create Type1 hardware map");
       } else {
          HardwareMap var2 = new HardwareMap();
          RobotLog.v("Starting Modern Robotics device manager");
@@ -377,7 +378,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
          while(var4.hasNext()) {
             ControllerConfiguration var5 = (ControllerConfiguration)var4.next();
             DeviceConfiguration.ConfigurationType var6 = var5.getType();
-            switch(null.a[var6.ordinal()]) {
+            switch (var6.ordinal()) {
             case 1:
                this.a(var2, var3, var5);
                break;

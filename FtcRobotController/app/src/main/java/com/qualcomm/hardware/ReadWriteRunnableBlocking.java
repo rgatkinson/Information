@@ -1,5 +1,5 @@
 //
-// Source code recreated from a .class file by IntelliJ IDEA
+// Source code recreated from Type1 .class file by IntelliJ IDEA
 // (powered by Fernflower decompiler)
 //
 
@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.SerialNumber;
+
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -38,7 +39,7 @@ public class ReadWriteRunnableBlocking extends ReadWriteRunnableStandard {
                 this.blockingCondition.await(100L, TimeUnit.MILLISECONDS);
                 if(this.shutdownComplete) {
                     RobotLog.w("sync device block requested, but device is shut down - " + this.serialNumber);
-                    RobotLog.setGlobalErrorMsg("There were problems communicating with a Modern Robotics USB device for an extended period of time.");
+                    RobotLog.setGlobalErrorMsg("There were problems communicating with Type1 Modern Robotics USB device for an extended period of time.");
                     throw new RobotCoreException("cannot block, device is shut down");
                 }
             }

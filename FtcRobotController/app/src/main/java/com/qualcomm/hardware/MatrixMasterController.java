@@ -1,20 +1,15 @@
 //
-// Source code recreated from a .class file by IntelliJ IDEA
+// Source code recreated from Type1 .class file by IntelliJ IDEA
 // (powered by Fernflower decompiler)
 //
 
 package com.qualcomm.hardware;
 
-import com.qualcomm.hardware.MatrixDcMotorController;
-import com.qualcomm.hardware.MatrixI2cTransaction;
-import com.qualcomm.hardware.MatrixServoController;
-import com.qualcomm.hardware.ModernRoboticsUsbLegacyModule;
-import com.qualcomm.hardware.MatrixI2cTransaction.a;
-import com.qualcomm.hardware.MatrixI2cTransaction.b;
 import com.qualcomm.robotcore.hardware.I2cController.I2cPortReadyCallback;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.TypeConversion;
+
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -25,13 +20,13 @@ public class MatrixMasterController implements I2cPortReadyCallback {
     private static final byte[] c = new byte[]{(byte)0, (byte)82, (byte)92, (byte)102, (byte)112};
     private static final byte[] d = new byte[]{(byte)0, (byte)86, (byte)96, (byte)106, (byte)116};
     private static final byte[] e = new byte[]{(byte)0, (byte)87, (byte)97, (byte)107, (byte)117};
+    private final ElapsedTime g = new ElapsedTime(0L);
     protected ConcurrentLinkedQueue<MatrixI2cTransaction> transactionQueue;
     protected ModernRoboticsUsbLegacyModule legacyModule;
     protected MatrixDcMotorController motorController;
     protected MatrixServoController servoController;
     protected int physicalPort;
     private volatile boolean f = false;
-    private final ElapsedTime g = new ElapsedTime(0L);
 
     public MatrixMasterController(ModernRoboticsUsbLegacyModule legacyModule, int physicalPort) {
         this.legacyModule = legacyModule;
@@ -95,7 +90,7 @@ public class MatrixMasterController implements I2cPortReadyCallback {
 
     protected void handleReadDone(MatrixI2cTransaction transaction) {
         byte[] var2 = this.legacyModule.getI2cReadCache(this.physicalPort);
-        switch(MatrixMasterController.SyntheticClass_1.a[transaction.property.ordinal()]) {
+        switch (transaction.property.ordinal()) {
         case 1:
             this.motorController.handleReadBattery(var2);
             break;
@@ -112,7 +107,7 @@ public class MatrixMasterController implements I2cPortReadyCallback {
             this.servoController.handleReadServo(transaction, var2);
             break;
         default:
-            RobotLog.e("Transaction not a read " + transaction.property);
+            RobotLog.e("Transaction not Type1 read " + transaction.property);
         }
 
         synchronized(this) {
@@ -125,7 +120,7 @@ public class MatrixMasterController implements I2cPortReadyCallback {
     }
 
     protected void sendHeartbeat() {
-        MatrixI2cTransaction var1 = new MatrixI2cTransaction((byte)0, a.j, 3);
+        MatrixI2cTransaction var1 = new MatrixI2cTransaction((byte) 0, MatrixI2cTransaction.Type1.a, 3);
         this.queueTransaction(var1);
     }
 
@@ -137,32 +132,32 @@ public class MatrixMasterController implements I2cPortReadyCallback {
             }
 
         } else {
-            MatrixI2cTransaction var5 = (MatrixI2cTransaction)this.transactionQueue.peek();
-            if(var5.state == b.b) {
+            MatrixI2cTransaction var5 = this.transactionQueue.peek();
+            if (var5.state == MatrixI2cTransaction.Type2.b) {
                 this.legacyModule.readI2cCacheFromModule(this.physicalPort);
-                var5.state = b.d;
+                var5.state = MatrixI2cTransaction.Type2.d;
             } else {
-                if(var5.state == b.c) {
-                    var5 = (MatrixI2cTransaction)this.transactionQueue.poll();
+                if (var5.state == MatrixI2cTransaction.Type2.d) {
+                    var5 = this.transactionQueue.poll();
                     if(this.transactionQueue.isEmpty()) {
                         return;
                     }
 
-                    var5 = (MatrixI2cTransaction)this.transactionQueue.peek();
-                } else if(var5.state == b.d) {
+                    var5 = this.transactionQueue.peek();
+                } else if (var5.state == MatrixI2cTransaction.Type2.d) {
                     this.handleReadDone(var5);
-                    var5 = (MatrixI2cTransaction)this.transactionQueue.poll();
+                    var5 = this.transactionQueue.poll();
                     if(this.transactionQueue.isEmpty()) {
                         return;
                     }
 
-                    var5 = (MatrixI2cTransaction)this.transactionQueue.peek();
+                    var5 = this.transactionQueue.peek();
                 }
 
                 byte[] var2;
                 byte var3;
                 byte var4;
-                switch(MatrixMasterController.SyntheticClass_1.a[var5.property.ordinal()]) {
+                switch (var5.property.ordinal()) {
                 case 1:
                     var3 = 67;
                     var2 = new byte[]{(byte)0};
@@ -228,10 +223,10 @@ public class MatrixMasterController implements I2cPortReadyCallback {
                     if(var5.write) {
                         this.legacyModule.setWriteMode(this.physicalPort, 16, var3);
                         this.legacyModule.setData(this.physicalPort, var2, var4);
-                        var5.state = b.c;
+                        var5.state = MatrixI2cTransaction.Type2.c;
                     } else {
                         this.legacyModule.setReadMode(this.physicalPort, 16, var3, var4);
-                        var5.state = b.b;
+                        var5.state = MatrixI2cTransaction.Type2.b;
                     }
 
                     this.legacyModule.setI2cPortActionFlag(this.physicalPort);

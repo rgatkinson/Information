@@ -5,10 +5,10 @@ import com.qualcomm.robotcore.util.RobotLog;
 public class MatrixI2cTransaction {
    public byte mode;
    public byte motor;
-   public MatrixI2cTransaction.a property;
+   public Type1 property;
    public byte servo;
    public byte speed;
-   public MatrixI2cTransaction.b state;
+   public Type2 state;
    public int target;
    public int value;
    public boolean write;
@@ -17,8 +17,8 @@ public class MatrixI2cTransaction {
       this.servo = var1;
       this.speed = var3;
       this.target = var2;
-      this.property = MatrixI2cTransaction.a.g;
-      this.state = MatrixI2cTransaction.b.a;
+      this.property = Type1.g;
+      this.state = Type2.a;
       this.write = true;
    }
 
@@ -27,23 +27,23 @@ public class MatrixI2cTransaction {
       this.speed = var2;
       this.target = var3;
       this.mode = var4;
-      this.property = MatrixI2cTransaction.a.f;
-      this.state = MatrixI2cTransaction.b.a;
+      this.property = Type1.f;
+      this.state = Type2.a;
       this.write = true;
    }
 
-   MatrixI2cTransaction(byte var1, MatrixI2cTransaction.a var2) {
+   MatrixI2cTransaction(byte var1, Type1 var2) {
       this.motor = var1;
       this.property = var2;
-      this.state = MatrixI2cTransaction.b.a;
+      this.state = Type2.a;
       this.write = false;
    }
 
-   MatrixI2cTransaction(byte var1, MatrixI2cTransaction.a var2, int var3) {
+   MatrixI2cTransaction(byte var1, Type1 var2, int var3) {
       this.motor = var1;
       this.value = var3;
       this.property = var2;
-      this.state = MatrixI2cTransaction.b.a;
+      this.state = Type2.a;
       this.write = true;
    }
 
@@ -52,7 +52,7 @@ public class MatrixI2cTransaction {
       if(this.property != var1.property) {
          var2 = false;
       } else {
-         switch(null.a[this.property.ordinal()]) {
+         switch (this.property.ordinal()) {
          case 1:
          case 2:
          case 3:
@@ -93,10 +93,10 @@ public class MatrixI2cTransaction {
    }
 
    public String toString() {
-      return this.property == MatrixI2cTransaction.a.f?"Matrix motor transaction: " + this.property + " motor " + this.motor + " write " + this.write + " speed " + this.speed + " target " + this.target + " mode " + this.mode:(this.property == MatrixI2cTransaction.a.g?"Matrix servo transaction: " + this.property + " servo " + this.servo + " write " + this.write + " change rate " + this.speed + " target " + this.target:(this.property == MatrixI2cTransaction.a.h?"Matrix servo transaction: " + this.property + " servo " + this.servo + " write " + this.write + " value " + this.value:"Matrix motor transaction: " + this.property + " motor " + this.motor + " write " + this.write + " value " + this.value));
+      return this.property == Type1.f ? "Matrix motor transaction: " + this.property + " motor " + this.motor + " write " + this.write + " speed " + this.speed + " target " + this.target + " mode " + this.mode : (this.property == Type1.g ? "Matrix servo transaction: " + this.property + " servo " + this.servo + " write " + this.write + " change rate " + this.speed + " target " + this.target : (this.property == Type1.h ? "Matrix servo transaction: " + this.property + " servo " + this.servo + " write " + this.write + " value " + this.value : "Matrix motor transaction: " + this.property + " motor " + this.motor + " write " + this.write + " value " + this.value));
    }
 
-   static enum a {
+   enum Type1 {
       a,
       b,
       c,
@@ -109,11 +109,11 @@ public class MatrixI2cTransaction {
       j;
 
       static {
-         MatrixI2cTransaction.a[] var0 = new MatrixI2cTransaction.a[]{a, b, c, d, e, f, g, h, i, j};
+         Type1[] var0 = new Type1[]{a, b, c, d, e, f, g, h, i, j};
       }
    }
 
-   static enum b {
+   enum Type2 {
       a,
       b,
       c,
@@ -121,7 +121,7 @@ public class MatrixI2cTransaction {
       e;
 
       static {
-         MatrixI2cTransaction.b[] var0 = new MatrixI2cTransaction.b[]{a, b, c, d, e};
+         Type2[] var0 = new Type2[]{a, b, c, d, e};
       }
    }
 }

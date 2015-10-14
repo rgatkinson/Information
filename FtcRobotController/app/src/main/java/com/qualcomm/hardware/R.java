@@ -1,5 +1,6 @@
 package com.qualcomm.hardware;
 
+/*
 public final class R {
    public static final class color {
       public static final int black = 2131230720;
@@ -22,3 +23,4 @@ public final class R {
       public static final int AppTheme = 2131099649;
    }
 }
+*/

@@ -3,25 +3,23 @@ package com.qualcomm.ftccommon;
 import android.app.Activity;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.qualcomm.ftccommon.DbgLog;
-import com.qualcomm.ftccommon.FtcRobotControllerService;
-import com.qualcomm.ftccommon.Restarter;
+
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.Dimmer;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 
 public class UpdateUI {
-   Restarter a;
-   FtcRobotControllerService b;
-   Activity c;
-   Dimmer d;
    protected TextView textDeviceName;
    protected TextView textErrorMessage;
    protected TextView[] textGamepad = new TextView[2];
    protected TextView textOpMode;
    protected TextView textRobotStatus;
    protected TextView textWifiDirectStatus;
+   Restarter a;
+   FtcRobotControllerService b;
+   Activity c;
+   Dimmer d;
 
    public UpdateUI(Activity var1, Dimmer var2) {
       this.c = var1;
@@ -78,7 +76,6 @@ public class UpdateUI {
                try {
                   Thread.sleep(1500L);
                } catch (InterruptedException var2) {
-                  ;
                }
 
                UpdateUI.this.c.runOnUiThread(new Runnable() {
@@ -122,7 +119,7 @@ public class UpdateUI {
       }
 
       public void wifiDirectUpdate(WifiDirectAssistant.Event var1) {
-         switch(null.a[var1.ordinal()]) {
+         switch (var1.ordinal()) {
          case 1:
             UpdateUI.this.a("Wifi Direct - disconnected");
             return;

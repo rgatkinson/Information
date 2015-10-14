@@ -1,4 +1,5 @@
 package com.qualcomm.ftccommon;
+/*
 
 public final class R {
    public static final class array {
@@ -376,3 +377,4 @@ public final class R {
       public static final int preferences = 2131034112;
    }
 }
+*/

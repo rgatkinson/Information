@@ -19,11 +19,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.Version;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.EOFException;
@@ -55,9 +57,9 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.regex.Pattern;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
@@ -66,51 +68,30 @@ import javax.net.ssl.X509TrustManager;
 public class Analytics extends BroadcastReceiver {
     public static final String UUID_PATH = ".analytics_id";
     public static final String DATA_COLLECTION_PATH = ".ftcdc";
-    static String a = "https://ftcdc.qualcomm.com/DataApi";
     public static final String RC_COMMAND_STRING = "update_rc";
     public static final String DS_COMMAND_STRING = "update_ds";
     public static final String EXTERNAL_STORAGE_DIRECTORY_PATH = Environment.getExternalStorageDirectory() + "/";
     public static final String LAST_UPLOAD_DATE = "last_upload_date";
     public static final String MAX_DEVICES = "max_usb_devices";
-    public static int MAX_ENTRIES_SIZE = 100;
-    public static int TRIMMED_SIZE = 90;
-    private static final Charset m = Charset.forName("UTF-8");
-    static long b;
-    static UUID c = null;
-    static String d;
-    String e;
-    static String f = "";
-    Context g;
-    SharedPreferences h;
-    boolean i = false;
-    long j = 0L;
-    int k = 0;
     static final HostnameVerifier l = new HostnameVerifier() {
         public boolean verify(String hostname, SSLSession session) {
             return true;
         }
     };
-
-    public void onReceive(Context context, Intent intent) {
-        Bundle var3 = intent.getExtras();
-        if(var3 != null && var3.containsKey("networkInfo")) {
-            NetworkInfo var4 = (NetworkInfo)var3.get("networkInfo");
-            State var5 = var4.getState();
-            if(var5.equals(State.CONNECTED)) {
-                RobotLog.i("Analytics detected NetworkInfo.State.CONNECTED");
-                this.communicateWithServer();
-            }
-        }
-
-    }
-
-    public void unregister() {
-        this.g.unregisterReceiver(this);
-    }
-
-    public void register() {
-        this.g.registerReceiver(this, new IntentFilter("android.net.wifi.STATE_CHANGE"));
-    }
+    private static final Charset m = Charset.forName("UTF-8");
+    public static int MAX_ENTRIES_SIZE = 100;
+    public static int TRIMMED_SIZE = 90;
+    static String a = "https://ftcdc.qualcomm.com/DataApi";
+    static long b;
+    static UUID c = null;
+    static String d;
+    static String f = "";
+    String e;
+    Context g;
+    SharedPreferences h;
+    boolean i = false;
+    long j = 0L;
+    int k = 0;
 
     public Analytics(Context context, String commandString, HardwareMap map) {
         this.g = context;
@@ -147,6 +128,105 @@ public class Analytics extends BroadcastReceiver {
             RobotLog.logStacktrace(var8);
         }
 
+    }
+
+    public static void setApplicationName(String name) {
+        d = name;
+    }
+
+    public static String getDateFromTime(long time) {
+        SimpleDateFormat var2 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        String var3 = var2.format(new Date(time));
+        return var3;
+    }
+
+    protected static UUID getUuid() {
+        return c;
+    }
+
+    public static String ping(URL baseUrl, String data) {
+        String var2 = call(baseUrl, data);
+        return var2;
+    }
+
+    public static String call(URL url, String data) {
+        String var4 = null;
+        if (url != null && data != null) {
+            try {
+                long var2 = System.currentTimeMillis();
+                Object var5 = null;
+                if (url.getProtocol().toLowerCase().equals("https")) {
+                    c();
+                    HttpsURLConnection var6 = (HttpsURLConnection) url.openConnection();
+                    var6.setHostnameVerifier(l);
+                    var5 = var6;
+                } else {
+                    var5 = url.openConnection();
+                }
+
+                ((HttpURLConnection) var5).setDoOutput(true);
+                OutputStreamWriter var7 = new OutputStreamWriter(((HttpURLConnection) var5).getOutputStream());
+                var7.write(data);
+                var7.flush();
+                var7.close();
+                BufferedReader var10 = new BufferedReader(new InputStreamReader(((HttpURLConnection) var5).getInputStream()));
+
+                String var8;
+                for (var4 = new String(); (var8 = var10.readLine()) != null; var4 = var4 + var8) {
+                }
+
+                var10.close();
+                RobotLog.i("Analytics took: " + (System.currentTimeMillis() - var2) + "ms");
+            } catch (IOException var9) {
+                RobotLog.i("Analytics Failed to process command.");
+            }
+        }
+
+        return var4;
+    }
+
+    private static void c() {
+        TrustManager[] var0 = new TrustManager[]{new X509TrustManager() {
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+
+            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            }
+
+            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            }
+        }};
+
+        try {
+            SSLContext var1 = SSLContext.getInstance("TLS");
+            var1.init(null, var0, new SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(var1.getSocketFactory());
+        } catch (Exception var2) {
+            var2.printStackTrace();
+        }
+
+    }
+
+    public void onReceive(Context context, Intent intent) {
+        Bundle var3 = intent.getExtras();
+        if (var3 != null && var3.containsKey("networkInfo")) {
+            NetworkInfo var4 = (NetworkInfo) var3.get("networkInfo");
+            State var5 = var4.getState();
+            if (var5.equals(State.CONNECTED)) {
+                RobotLog.i("Analytics detected NetworkInfo.State.CONNECTED");
+                this.communicateWithServer();
+            }
+        }
+
+    }
+
+    public void unregister() {
+        this.g.unregisterReceiver(this);
+    }
+
+    public void register() {
+        this.g.registerReceiver(this, new IntentFilter("android.net.wifi.STATE_CHANGE"));
     }
 
     protected int calculateUsbDevices(HardwareMap map) {
@@ -255,11 +335,7 @@ public class Analytics extends BroadcastReceiver {
 
     public void communicateWithServer() {
         String[] var1 = new String[]{a};
-        (new Analytics.a(null)).execute((Object[])var1);
-    }
-
-    public static void setApplicationName(String name) {
-        d = name;
+        (new Analytics.a()).execute((Object[]) var1);
     }
 
     public void handleUUID(String filename) {
@@ -325,22 +401,11 @@ public class Analytics extends BroadcastReceiver {
                 try {
                     var3.close();
                 } catch (IOException var13) {
-                    ;
                 }
             }
 
         }
 
-    }
-
-    public static String getDateFromTime(long time) {
-        SimpleDateFormat var2 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-        String var3 = var2.format(new Date(time));
-        return var3;
-    }
-
-    protected static UUID getUuid() {
-        return c;
     }
 
     public String updateStats(String user, ArrayList<Analytics.DataInfo> dateInfo, String commandString) {
@@ -353,7 +418,7 @@ public class Analytics extends BroadcastReceiver {
                 var6 = var6 + ",";
             }
 
-            var6 = var6 + this.a(((Analytics.DataInfo)dateInfo.get(var7)).date(), ",", String.valueOf(((Analytics.DataInfo)dateInfo.get(var7)).numUsages()));
+            var6 = var6 + this.a(dateInfo.get(var7).date(), ",", String.valueOf(dateInfo.get(var7).numUsages()));
         }
 
         var5 = var5 + this.a("dc", "=", "");
@@ -397,7 +462,7 @@ public class Analytics extends BroadcastReceiver {
 
             for(int var10 = 0; var10 < var9; ++var10) {
                 String var11 = var8[var10];
-                var14 = var14 + (String)var4.get(var11.toLowerCase()) + " ";
+                var14 = var14 + var4.get(var11.toLowerCase()) + " ";
             }
 
             var14 = var14.trim();
@@ -421,69 +486,22 @@ public class Analytics extends BroadcastReceiver {
         return var2 != null && var2.isConnected();
     }
 
-    public static String ping(URL baseUrl, String data) {
-        String var2 = call(baseUrl, data);
-        return var2;
-    }
+    public static class DataInfo implements Serializable {
+        private final String a;
+        protected int numUsages;
 
-    public static String call(URL url, String data) {
-        String var4 = null;
-        if(url != null && data != null) {
-            try {
-                long var2 = System.currentTimeMillis();
-                Object var5 = null;
-                if(url.getProtocol().toLowerCase().equals("https")) {
-                    c();
-                    HttpsURLConnection var6 = (HttpsURLConnection)url.openConnection();
-                    var6.setHostnameVerifier(l);
-                    var5 = var6;
-                } else {
-                    var5 = (HttpURLConnection)url.openConnection();
-                }
-
-                ((HttpURLConnection)var5).setDoOutput(true);
-                OutputStreamWriter var7 = new OutputStreamWriter(((HttpURLConnection)var5).getOutputStream());
-                var7.write(data);
-                var7.flush();
-                var7.close();
-                BufferedReader var10 = new BufferedReader(new InputStreamReader(((HttpURLConnection)var5).getInputStream()));
-
-                String var8;
-                for(var4 = new String(); (var8 = var10.readLine()) != null; var4 = var4 + var8) {
-                    ;
-                }
-
-                var10.close();
-                RobotLog.i("Analytics took: " + (System.currentTimeMillis() - var2) + "ms");
-            } catch (IOException var9) {
-                RobotLog.i("Analytics Failed to process command.");
-            }
+        public DataInfo(String adate, int numUsages) {
+            this.a = adate;
+            this.numUsages = numUsages;
         }
 
-        return var4;
-    }
-
-    private static void c() {
-        TrustManager[] var0 = new TrustManager[]{new X509TrustManager() {
-            public X509Certificate[] getAcceptedIssuers() {
-                return new X509Certificate[0];
-            }
-
-            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-            }
-
-            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-            }
-        }};
-
-        try {
-            SSLContext var1 = SSLContext.getInstance("TLS");
-            var1.init((KeyManager[])null, var0, new SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(var1.getSocketFactory());
-        } catch (Exception var2) {
-            var2.printStackTrace();
+        public String date() {
+            return this.a;
         }
 
+        public int numUsages() {
+            return this.numUsages;
+        }
     }
 
     private class a extends AsyncTask {
@@ -545,24 +563,6 @@ public class Analytics extends BroadcastReceiver {
             }
 
             return null;
-        }
-    }
-
-    public static class DataInfo implements Serializable {
-        private final String a;
-        protected int numUsages;
-
-        public DataInfo(String adate, int numUsages) {
-            this.a = adate;
-            this.numUsages = numUsages;
-        }
-
-        public String date() {
-            return this.a;
-        }
-
-        public int numUsages() {
-            return this.numUsages;
         }
     }
 }

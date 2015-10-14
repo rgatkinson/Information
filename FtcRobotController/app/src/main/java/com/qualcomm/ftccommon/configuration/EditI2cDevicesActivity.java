@@ -8,16 +8,18 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemSelectedListener;
+
 import com.qualcomm.ftccommon.R;
 import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
 import com.qualcomm.robotcore.hardware.configuration.Utility;
 import com.qualcomm.robotcore.util.RobotLog;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -68,7 +70,7 @@ public class EditI2cDevicesActivity extends Activity {
       Bundle var1 = new Bundle();
 
       for(int var2 = 0; var2 < this.h.size(); ++var2) {
-         DeviceConfiguration var6 = (DeviceConfiguration)this.h.get(var2);
+         DeviceConfiguration var6 = this.h.get(var2);
          var1.putSerializable(String.valueOf(var2), var6);
       }
 
@@ -109,14 +111,14 @@ public class EditI2cDevicesActivity extends Activity {
       EditText var3 = (EditText)var1.findViewById(R.id.editTextResult_i2c);
       var3.setEnabled(false);
       var3.setText("NO DEVICE ATTACHED");
-      ((DeviceConfiguration)this.h.get(var2)).setEnabled(false);
+      this.h.get(var2).setEnabled(false);
    }
 
    private void a(LinearLayout var1, String var2) {
       int var3 = Integer.parseInt(((TextView)var1.findViewById(R.id.port_number_i2c)).getText().toString());
       EditText var4 = (EditText)var1.findViewById(R.id.editTextResult_i2c);
       var4.setEnabled(true);
-      DeviceConfiguration var5 = (DeviceConfiguration)this.h.get(var3);
+      DeviceConfiguration var5 = this.h.get(var3);
       var5.setType(var5.typeFromString(var2));
       var5.setEnabled(true);
       this.a(var4, var5);
@@ -179,7 +181,7 @@ public class EditI2cDevicesActivity extends Activity {
 
          for(int var3 = 0; var3 < this.h.size(); ++var3) {
             View var4 = this.a(var3);
-            DeviceConfiguration var5 = (DeviceConfiguration)this.h.get(var3);
+            DeviceConfiguration var5 = this.h.get(var3);
             this.a(var4);
             this.b(var4, var5);
             this.a(var4, var5);
@@ -201,11 +203,11 @@ public class EditI2cDevicesActivity extends Activity {
 
       // $FF: synthetic method
       a(View var2, Object var3) {
-         this();
+         this(var2);
       }
 
       public void afterTextChanged(Editable var1) {
-         ((DeviceConfiguration)EditI2cDevicesActivity.this.h.get(this.b)).setName(var1.toString());
+         EditI2cDevicesActivity.this.h.get(this.b).setName(var1.toString());
       }
 
       public void beforeTextChanged(CharSequence var1, int var2, int var3, int var4) {

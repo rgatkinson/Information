@@ -5,27 +5,23 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
+
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.ftccommon.R;
-import com.qualcomm.ftccommon.configuration.EditDeviceInterfaceModuleActivity;
-import com.qualcomm.ftccommon.configuration.EditLegacyModuleControllerActivity;
-import com.qualcomm.ftccommon.configuration.EditMotorControllerActivity;
-import com.qualcomm.ftccommon.configuration.EditServoControllerActivity;
 import com.qualcomm.hardware.ModernRoboticsDeviceManager;
-import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DeviceManager;
 import com.qualcomm.robotcore.hardware.configuration.ControllerConfiguration;
@@ -35,6 +31,7 @@ import com.qualcomm.robotcore.hardware.configuration.ReadXMLFileHandler;
 import com.qualcomm.robotcore.hardware.configuration.Utility;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.SerialNumber;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -44,18 +41,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class FtcConfigurationActivity extends Activity {
+   protected SharedPreferences preferences;
+   protected Map<SerialNumber, DeviceManager.DeviceType> scannedDevices = new HashMap();
+   protected Set<Entry<SerialNumber, DeviceManager.DeviceType>> scannedEntries = new HashSet();
    OnClickListener a = new OnClickListener() {
       public void onClick(DialogInterface var1, int var2) {
-      }
-   };
-   OnClickListener b = new OnClickListener() {
-      public void onClick(DialogInterface var1, int var2) {
-         FtcConfigurationActivity.this.j.saveToPreferences(FtcConfigurationActivity.this.i.substring(7).trim(), R.string.pref_hardware_config_filename);
-         FtcConfigurationActivity.this.finish();
       }
    };
    OnClickListener c = new OnClickListener() {
@@ -69,27 +63,30 @@ public class FtcConfigurationActivity extends Activity {
    private Button h;
    private String i = "No current file!";
    private Utility j;
-   protected SharedPreferences preferences;
-   protected Map<SerialNumber, DeviceManager.DeviceType> scannedDevices = new HashMap();
-   protected Set<Entry<SerialNumber, DeviceManager.DeviceType>> scannedEntries = new HashSet();
+   OnClickListener b = new OnClickListener() {
+      public void onClick(DialogInterface var1, int var2) {
+         FtcConfigurationActivity.this.j.saveToPreferences(FtcConfigurationActivity.this.i.substring(7).trim(), R.string.pref_hardware_config_filename);
+         FtcConfigurationActivity.this.finish();
+      }
+   };
 
    private void a() {
-      ((Button)this.findViewById(R.id.devices_holder).findViewById(R.id.info_btn)).setOnClickListener(new android.view.View.OnClickListener() {
+      this.findViewById(R.id.devices_holder).findViewById(R.id.info_btn).setOnClickListener(new android.view.View.OnClickListener() {
          public void onClick(View var1) {
             Builder var2 = FtcConfigurationActivity.this.j.buildBuilder("Devices", "These are the devices discovered by the Hardware Wizard. You can click on the name of each device to edit the information relating to that device. Make sure each device has a unique name. The names should match what is in the Op mode code. Scroll down to see more devices if there are any.");
             var2.setPositiveButton("Ok", FtcConfigurationActivity.this.a);
             AlertDialog var4 = var2.create();
             var4.show();
-            ((TextView)var4.findViewById(16908299)).setTextSize(14.0F);
+            ((TextView) var4.findViewById(R.id.writeXML_text)).setTextSize(14.0F);
          }
       });
-      ((Button)this.findViewById(R.id.save_holder).findViewById(R.id.info_btn)).setOnClickListener(new android.view.View.OnClickListener() {
+      this.findViewById(R.id.save_holder).findViewById(R.id.info_btn).setOnClickListener(new android.view.View.OnClickListener() {
          public void onClick(View var1) {
             Builder var2 = FtcConfigurationActivity.this.j.buildBuilder("Save Configuration", "Clicking the save button will create an xml file in: \n      /sdcard/FIRST/  \nThis file will be used to initialize the robot.");
             var2.setPositiveButton("Ok", FtcConfigurationActivity.this.a);
             AlertDialog var4 = var2.create();
             var4.show();
-            ((TextView)var4.findViewById(16908299)).setTextSize(14.0F);
+            ((TextView) var4.findViewById(R.id.writeXML_text)).setTextSize(14.0F);
          }
       });
    }
@@ -112,15 +109,15 @@ public class FtcConfigurationActivity extends Activity {
 
    private HashMap<SerialNumber, ControllerConfiguration> b() {
       HashMap var1 = new HashMap();
-      Iterator var2 = this.scannedEntries.iterator();
+      Iterator<Entry<SerialNumber, DeviceManager.DeviceType>> var2 = this.scannedEntries.iterator();
 
       while(var2.hasNext()) {
-         Entry var3 = (Entry)var2.next();
+         Entry var3 = var2.next();
          SerialNumber var4 = (SerialNumber)var3.getKey();
          if(this.e.containsKey(var4)) {
             var1.put(var4, this.e.get(var4));
          } else {
-            switch(null.a[((DeviceManager.DeviceType)var3.getValue()).ordinal()]) {
+            switch (((DeviceManager.DeviceType) var3.getValue()).ordinal()) {
             case 1:
                var1.put(var4, this.j.buildMotorController(var4));
                break;
@@ -184,7 +181,7 @@ public class FtcConfigurationActivity extends Activity {
       } else {
          LinearLayout var1 = (LinearLayout)this.findViewById(R.id.empty_devicelist);
          var1.removeAllViews();
-         var1.setVisibility(8);
+         var1.setVisibility(View.GONE);
       }
    }
 
@@ -195,14 +192,14 @@ public class FtcConfigurationActivity extends Activity {
       } else {
          LinearLayout var1 = (LinearLayout)this.findViewById(R.id.empty_devicelist);
          var1.removeAllViews();
-         var1.setVisibility(8);
+         var1.setVisibility(View.GONE);
       }
    }
 
    private void g() {
       LinearLayout var1 = (LinearLayout)this.findViewById(R.id.warning_layout);
       var1.removeAllViews();
-      var1.setVisibility(8);
+      var1.setVisibility(View.GONE);
    }
 
    private void h() {
@@ -337,7 +334,7 @@ public class FtcConfigurationActivity extends Activity {
       this.a();
 
       try {
-         this.g = new ModernRoboticsDeviceManager(this.f, (EventLoopManager)null);
+         this.g = new ModernRoboticsDeviceManager(this.f, null);
       } catch (RobotCoreException var3) {
          this.j.complainToast("Failed to open the Device Manager", this.f);
          DbgLog.error("Failed to open deviceManager: " + var3.toString());

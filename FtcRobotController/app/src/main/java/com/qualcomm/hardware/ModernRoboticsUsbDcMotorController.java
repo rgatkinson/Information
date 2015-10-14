@@ -86,25 +86,6 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
       this.initializePID();
    }
 
-   private void floatMotors() {
-      this.setMotorPowerFloat(1);
-      this.setMotorPowerFloat(2);
-   }
-
-   private void validateMotor(int motor) {
-      if(motor < 1 || motor > 2) {
-         Object[] var2 = new Object[]{Integer.valueOf(motor), Integer.valueOf(2)};
-         throw new IllegalArgumentException(String.format("Motor %d is invalid; valid motors are 1..%d", var2));
-      }
-   }
-
-   private void initializePID() {
-      for(int motor = 1; motor <= 2; ++motor) {
-         this.write(ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP[motor], new byte[]{(byte)-128, (byte)64, (byte)-72});
-      }
-
-   }
-
    public static DcMotorController.RunMode flagToRunMode(byte grf) {
       switch(grf & 3) {
       case 0:
@@ -132,6 +113,25 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
       case 4:
          return (byte)3;
       }
+   }
+
+   private void floatMotors() {
+      this.setMotorPowerFloat(1);
+      this.setMotorPowerFloat(2);
+   }
+
+   private void validateMotor(int motor) {
+      if (motor < 1 || motor > 2) {
+         Object[] var2 = new Object[]{Integer.valueOf(motor), Integer.valueOf(2)};
+         throw new IllegalArgumentException(String.format("Motor %d is invalid; valid motors are 1..%d", var2));
+      }
+   }
+
+   private void initializePID() {
+      for (int motor = 1; motor <= 2; ++motor) {
+         this.write(ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP[motor], new byte[]{(byte) -128, (byte) 64, (byte) -72});
+      }
+
    }
 
    public void close() {
@@ -171,6 +171,9 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
       return DcMotorController.DeviceMode.READ_WRITE;
    }
 
+   public void setMotorControllerDeviceMode(DcMotorController.DeviceMode var1) {
+   }
+
    public int getMotorCurrentPosition(int motor) {
       this.validateMotor(motor);
       return TypeConversion.byteArrayToInt(this.read(ADDRESS_MOTOR_CURRENT_ENCODER_VALUE_MAP[motor], 4));
@@ -198,7 +201,7 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
 
    public boolean isBusy(int motor) {
       this.validateMotor(motor);
-      return this.isBusyHelpers[motor].isBusyHelper();
+      return this.isBusyHelpers[motor].a();
    }
 
    public void readComplete() throws InterruptedException {
@@ -239,9 +242,6 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
       this.validateMotor(motor);
       byte var3 = runModeToFlag(mode);
       this.write(ADDRESS_MOTOR_MODE_MAP[motor], var3);
-   }
-
-   public void setMotorControllerDeviceMode(DcMotorController.DeviceMode var1) {
    }
 
    public void setMotorPower(int var1, double var2) {

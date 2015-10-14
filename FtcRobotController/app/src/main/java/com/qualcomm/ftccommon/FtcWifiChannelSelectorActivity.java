@@ -9,14 +9,14 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemSelectedListener;
-import com.qualcomm.ftccommon.DbgLog;
-import com.qualcomm.ftccommon.R;
-import com.qualcomm.wirelessp2p.WifiDirectChannelSelection;
+
+import com.qualcomm.wirelessP2p.WifiDirectChannelSelection;
+
 import java.io.IOException;
 
 public class FtcWifiChannelSelectorActivity extends Activity implements OnClickListener, OnItemSelectedListener {
@@ -42,7 +42,6 @@ public class FtcWifiChannelSelectorActivity extends Activity implements OnClickL
                try {
                   Thread.sleep(5000L);
                } catch (InterruptedException var2) {
-                  ;
                }
 
                FtcWifiChannelSelectorActivity.this.runOnUiThread(new Runnable() {
@@ -85,15 +84,15 @@ public class FtcWifiChannelSelectorActivity extends Activity implements OnClickL
       this.setContentView(R.layout.activity_ftc_wifi_channel_selector);
       this.i = this;
       this.d = (Spinner)this.findViewById(R.id.spinnerChannelSelect);
-      ArrayAdapter var2 = ArrayAdapter.createFromResource(this, R.array.wifi_direct_channels, 17367048);
-      var2.setDropDownViewResource(17367049);
+      ArrayAdapter var2 = ArrayAdapter.createFromResource(this, R.array.wifi_direct_channels, R.layout.activity_ftc_wifi_channel_selector);
+      var2.setDropDownViewResource(/* 17367049 */ R.layout.activity_ftc_wifi_channel_selector);
       this.d.setAdapter(var2);
       this.d.setOnItemSelectedListener(this);
       this.b = (Button)this.findViewById(R.id.buttonConfigure);
       this.b.setOnClickListener(this);
       this.c = (Button)this.findViewById(R.id.buttonWifiSettings);
       this.c.setOnClickListener(this);
-      this.f = new WifiDirectChannelSelection(this, (WifiManager)this.getSystemService("wifi"));
+      this.f = new WifiDirectChannelSelection(this, (WifiManager) this.getSystemService(WIFI_SERVICE));
    }
 
    public void onItemSelected(AdapterView<?> var1, View var2, int var3, long var4) {

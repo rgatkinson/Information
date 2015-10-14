@@ -1,9 +1,9 @@
 package com.qualcomm.hardware;
 
-import com.qualcomm.hardware.ModernRoboticsUsbLegacyModule;
 import com.qualcomm.robotcore.hardware.I2cController;
 import com.qualcomm.robotcore.hardware.IrSeekerSensor;
 import com.qualcomm.robotcore.util.TypeConversion;
+
 import java.util.concurrent.locks.Lock;
 
 public class HiTechnicNxtIrSeekerSensor extends IrSeekerSensor implements I2cController.I2cPortReadyCallback {
@@ -73,7 +73,24 @@ public class HiTechnicNxtIrSeekerSensor extends IrSeekerSensor implements I2cCon
    }
 
    public double getAngle() {
-      // $FF: Couldn't be decompiled
+      if (this.i) {
+         return 0.0D;
+      } else {
+         double var1 = 0.0D;
+
+         try {
+            this.c.lock();
+            if (this.b[4] >= 1 && this.b[4] <= 9) {
+               var1 = DIRECTION_TO_ANGLE[this.b[4]];
+            } else {
+               var1 = 0.0D;
+            }
+         } finally {
+            this.c.unlock();
+         }
+
+         return var1;
+      }
    }
 
    public String getConnectionInfo() {
@@ -88,20 +105,68 @@ public class HiTechnicNxtIrSeekerSensor extends IrSeekerSensor implements I2cCon
       return 16;
    }
 
-   public IrSeekerSensor.IrSeekerIndividualSensor[] getIndividualSensors() {
-      // $FF: Couldn't be decompiled
+   public void setI2cAddress(int var1) {
+      throw new UnsupportedOperationException("This method is not supported.");
+   }
+
+   public IrSeekerIndividualSensor[] getIndividualSensors() {
+      IrSeekerIndividualSensor[] var1 = new IrSeekerIndividualSensor[9];
+      if (this.i) {
+         return var1;
+      } else {
+         try {
+            this.c.lock();
+
+            for (int var2 = 0; var2 < 9; ++var2) {
+               double var3 = DIRECTION_TO_ANGLE[var2 * 2 + 1];
+               double var5 = this.a(this.b, var2);
+               var1[var2] = new IrSeekerIndividualSensor(var3, var5);
+            }
+         } finally {
+            this.c.unlock();
+         }
+
+         return var1;
+      }
    }
 
    public IrSeekerSensor.Mode getMode() {
       return this.g;
    }
 
+   public void setMode(IrSeekerSensor.Mode var1) {
+      if (this.g != var1) {
+         this.g = var1;
+         this.a();
+      }
+   }
+
    public double getSignalDetectedThreshold() {
       return this.h;
    }
 
+   public void setSignalDetectedThreshold(double var1) {
+      this.h = var1;
+   }
+
    public double getStrength() {
-      // $FF: Couldn't be decompiled
+      if (this.i) {
+         return 0.0D;
+      } else {
+         double var1 = 0.0D;
+
+         try {
+            this.c.lock();
+
+            for (int var3 = 0; var3 < 9; ++var3) {
+               var1 = Math.max(var1, this.a(this.b, var3));
+            }
+         } finally {
+            this.c.unlock();
+         }
+
+         return var1;
+      }
    }
 
    public int getVersion() {
@@ -123,21 +188,6 @@ public class HiTechnicNxtIrSeekerSensor extends IrSeekerSensor implements I2cCon
       } else {
          this.a.writeI2cPortFlagOnlyToController(this.f);
       }
-   }
-
-   public void setI2cAddress(int var1) {
-      throw new UnsupportedOperationException("This method is not supported.");
-   }
-
-   public void setMode(IrSeekerSensor.Mode var1) {
-      if(this.g != var1) {
-         this.g = var1;
-         this.a();
-      }
-   }
-
-   public void setSignalDetectedThreshold(double var1) {
-      this.h = var1;
    }
 
    public boolean signalDetected() {

@@ -1,14 +1,12 @@
 package com.qualcomm.hardware;
 
-import com.qualcomm.hardware.ModernRoboticsUsbDevice;
-import com.qualcomm.hardware.ReadWriteRunnableSegment;
-import com.qualcomm.hardware.ReadWriteRunnableStandard;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.I2cController;
 import com.qualcomm.robotcore.hardware.LegacyModule;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
 import com.qualcomm.robotcore.util.SerialNumber;
+
 import java.util.concurrent.locks.Lock;
 
 public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice implements LegacyModule {
@@ -64,8 +62,9 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
    private final I2cController.I2cPortReadyCallback[] b;
 
    protected ModernRoboticsUsbLegacyModule(SerialNumber var1, RobotUsbDevice var2, EventLoopManager var3) throws RobotCoreException, InterruptedException {
-      int var4 = 0;
       super(var1, var3, new ReadWriteRunnableStandard(var1, var2, 13, 3, false));
+
+      int var4 = 0;
       this.a = new ReadWriteRunnableSegment[12];
       this.b = new I2cController.I2cPortReadyCallback[6];
       this.readWriteRunnable.setCallback(this);
@@ -253,11 +252,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
       }
 
       boolean var4;
-      if(var3 == -1) {
-         var4 = true;
-      } else {
-         var4 = false;
-      }
+      var4 = var3 == -1;
 
       this.a[var1].getReadLock().unlock();
       return var4;
@@ -310,7 +305,7 @@ public class ModernRoboticsUsbLegacyModule extends ModernRoboticsUsbDevice imple
       }
 
       this.a[var1].getReadLock().unlock();
-      return (boolean)var2;
+      return var2 != 0;
    }
 
    public boolean isI2cPortReady(int var1) {

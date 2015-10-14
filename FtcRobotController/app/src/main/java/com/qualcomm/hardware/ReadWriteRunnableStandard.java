@@ -1,5 +1,5 @@
 //
-// Source code recreated from a .class file by IntelliJ IDEA
+// Source code recreated from Type1 .class file by IntelliJ IDEA
 // (powered by Fernflower decompiler)
 //
 
@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.SerialNumber;
 import com.qualcomm.robotcore.util.TypeConversion;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,18 +22,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class ReadWriteRunnableStandard implements ReadWriteRunnable {
     protected final byte[] localDeviceReadCache = new byte[256];
     protected final byte[] localDeviceWriteCache = new byte[256];
+    protected final SerialNumber serialNumber;
+    protected final ReadWriteRunnableUsbHandler usbHandler;
+    protected final boolean DEBUG_LOGGING;
     protected Map<Integer, ReadWriteRunnableSegment> segments = new HashMap();
     protected ConcurrentLinkedQueue<Integer> segmentReadQueue = new ConcurrentLinkedQueue();
     protected ConcurrentLinkedQueue<Integer> segmentWriteQueue = new ConcurrentLinkedQueue();
-    protected final SerialNumber serialNumber;
-    protected final ReadWriteRunnableUsbHandler usbHandler;
     protected int startAddress;
     protected int monitorLength;
     protected volatile boolean running = false;
     protected volatile boolean shutdownComplete = false;
-    private volatile boolean writeNeeded = false;
     protected Callback callback;
-    protected final boolean DEBUG_LOGGING;
+    private volatile boolean writeNeeded = false;
 
     public ReadWriteRunnableStandard(SerialNumber serialNumber, RobotUsbDevice device, int monitorLength, int startAddress, boolean debug) {
         this.serialNumber = serialNumber;
@@ -50,7 +51,7 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
     public void blockUntilReady() throws RobotCoreException, InterruptedException {
         if(this.shutdownComplete) {
             RobotLog.w("sync device block requested, but device is shut down - " + this.serialNumber);
-            RobotLog.setGlobalErrorMsg("There were problems communicating with a Modern Robotics USB device for an extended period of time.");
+            RobotLog.setGlobalErrorMsg("There were problems communicating with Type1 Modern Robotics USB device for an extended period of time.");
             throw new RobotCoreException("cannot block, device is shut down");
         }
     }
@@ -92,9 +93,7 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
             this.blockUntilReady();
             this.startBlockingWork();
         } catch (InterruptedException var6) {
-            ;
         } catch (RobotCoreException var7) {
-            ;
         } finally {
             this.running = false;
 
@@ -118,7 +117,7 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
     }
 
     public ReadWriteRunnableSegment getSegment(int key) {
-        return (ReadWriteRunnableSegment)this.segments.get(Integer.valueOf(key));
+        return this.segments.get(Integer.valueOf(key));
     }
 
     public void queueSegmentRead(int key) {
@@ -136,7 +135,7 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
         ElapsedTime var4 = new ElapsedTime();
         String var5 = "Device " + this.serialNumber.toString();
         this.running = true;
-        RobotLog.v(String.format("starting read/write loop for device %s", new Object[]{this.serialNumber}));
+        RobotLog.v(String.format("starting read/write loop for device %s", this.serialNumber));
 
         try {
             this.usbHandler.purge(Channel.RX);
@@ -153,7 +152,7 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
                     this.usbHandler.read(var2, var3);
 
                     while(!this.segmentReadQueue.isEmpty()) {
-                        var6 = (ReadWriteRunnableSegment)this.segments.get(this.segmentReadQueue.remove());
+                        var6 = this.segments.get(this.segmentReadQueue.remove());
                         var7 = new byte[var6.getReadBuffer().length];
                         this.usbHandler.read(var6.getAddress(), var7);
 
@@ -165,7 +164,7 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
                         }
                     }
                 } catch (RobotCoreException var34) {
-                    RobotLog.w(String.format("could not read from device %s: %s", new Object[]{this.serialNumber, var34.getMessage()}));
+                    RobotLog.w(String.format("could not read from device %s: %s", this.serialNumber, var34.getMessage()));
                 }
 
                 byte[] var39 = this.localDeviceReadCache;
@@ -197,7 +196,7 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
                     }
 
                     for(; !this.segmentWriteQueue.isEmpty(); this.usbHandler.write(var6.getAddress(), var7)) {
-                        var6 = (ReadWriteRunnableSegment)this.segments.get(this.segmentWriteQueue.remove());
+                        var6 = this.segments.get(this.segmentWriteQueue.remove());
 
                         try {
                             var6.getWriteLock().lock();
@@ -207,7 +206,7 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
                         }
                     }
                 } catch (RobotCoreException var35) {
-                    RobotLog.w(String.format("could not write to device %s: %s", new Object[]{this.serialNumber, var35.getMessage()}));
+                    RobotLog.w(String.format("could not write to device %s: %s", this.serialNumber, var35.getMessage()));
                 }
 
                 if(this.DEBUG_LOGGING) {
@@ -218,17 +217,17 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
                 this.usbHandler.throwIfUsbErrorCountIsTooHigh();
             }
         } catch (NullPointerException var36) {
-            RobotLog.w(String.format("could not write to device %s: FTDI Null Pointer Exception", new Object[]{this.serialNumber}));
+            RobotLog.w(String.format("could not write to device %s: FTDI Null Pointer Exception", this.serialNumber));
             RobotLog.logStacktrace(var36);
-            RobotLog.setGlobalErrorMsg("There was a problem communicating with a Modern Robotics USB device");
+            RobotLog.setGlobalErrorMsg("There was Type1 problem communicating with Type1 Modern Robotics USB device");
         } catch (InterruptedException var37) {
-            RobotLog.w(String.format("could not write to device %s: Interrupted Exception", new Object[]{this.serialNumber}));
+            RobotLog.w(String.format("could not write to device %s: Interrupted Exception", this.serialNumber));
         } catch (RobotCoreException var38) {
             RobotLog.w(var38.getMessage());
-            RobotLog.setGlobalErrorMsg(String.format("There was a problem communicating with a Modern Robotics USB device %s", new Object[]{this.serialNumber}));
+            RobotLog.setGlobalErrorMsg(String.format("There was Type1 problem communicating with Type1 Modern Robotics USB device %s", this.serialNumber));
         }
 
-        RobotLog.v(String.format("stopped read/write loop for device %s", new Object[]{this.serialNumber}));
+        RobotLog.v(String.format("stopped read/write loop for device %s", this.serialNumber));
         this.running = false;
         this.shutdownComplete = true;
     }

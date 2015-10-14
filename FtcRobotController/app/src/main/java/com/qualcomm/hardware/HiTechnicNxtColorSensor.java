@@ -1,10 +1,12 @@
 package com.qualcomm.hardware;
 
 import android.graphics.Color;
+
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.I2cController;
 import com.qualcomm.robotcore.hardware.LegacyModule;
 import com.qualcomm.robotcore.util.TypeConversion;
+
 import java.util.concurrent.locks.Lock;
 
 public class HiTechnicNxtColorSensor extends ColorSensor implements I2cController.I2cPortReadyCallback {
@@ -24,12 +26,12 @@ public class HiTechnicNxtColorSensor extends ColorSensor implements I2cControlle
    private final Lock c;
    private final byte[] d;
    private final Lock e;
-   private HiTechnicNxtColorSensor.a f;
-   private volatile int g;
    private final int h;
+   private States f;
+   private volatile int g;
 
    HiTechnicNxtColorSensor(LegacyModule var1, int var2) {
-      this.f = HiTechnicNxtColorSensor.a.a;
+      this.f = HiTechnicNxtColorSensor.States.a;
       this.g = 0;
       this.a = var1;
       this.h = var2;
@@ -78,7 +80,7 @@ public class HiTechnicNxtColorSensor extends ColorSensor implements I2cControlle
 
       if(this.g != var2) {
          this.g = var2;
-         this.f = HiTechnicNxtColorSensor.a.b;
+         this.f = HiTechnicNxtColorSensor.States.b;
 
          try {
             this.e.lock();
@@ -109,14 +111,14 @@ public class HiTechnicNxtColorSensor extends ColorSensor implements I2cControlle
    public void portIsReady(int var1) {
       this.a.setI2cPortActionFlag(this.h);
       this.a.readI2cCacheFromController(this.h);
-      if(this.f == HiTechnicNxtColorSensor.a.b) {
+      if (this.f == HiTechnicNxtColorSensor.States.b) {
          this.a.enableI2cWriteMode(this.h, 2, 65, 5);
          this.a.writeI2cCacheToController(this.h);
-         this.f = HiTechnicNxtColorSensor.a.c;
-      } else if(this.f == HiTechnicNxtColorSensor.a.c) {
+         this.f = HiTechnicNxtColorSensor.States.c;
+      } else if (this.f == HiTechnicNxtColorSensor.States.c) {
          this.a.enableI2cReadMode(this.h, 2, 65, 5);
          this.a.writeI2cCacheToController(this.h);
-         this.f = HiTechnicNxtColorSensor.a.a;
+         this.f = HiTechnicNxtColorSensor.States.a;
       } else {
          this.a.writeI2cPortFlagOnlyToController(this.h);
       }
@@ -126,13 +128,13 @@ public class HiTechnicNxtColorSensor extends ColorSensor implements I2cControlle
       return this.a(6);
    }
 
-   private static enum a {
+   private enum States {
       a,
       b,
       c;
 
       static {
-         HiTechnicNxtColorSensor.a[] var0 = new HiTechnicNxtColorSensor.a[]{a, b, c};
+         States[] var0 = new States[]{a, b, c};
       }
    }
 }

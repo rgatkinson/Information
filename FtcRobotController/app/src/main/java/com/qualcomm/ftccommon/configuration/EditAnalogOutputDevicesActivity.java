@@ -8,16 +8,18 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemSelectedListener;
+
 import com.qualcomm.ftccommon.R;
 import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
 import com.qualcomm.robotcore.hardware.configuration.Utility;
 import com.qualcomm.robotcore.util.RobotLog;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -56,7 +58,7 @@ public class EditAnalogOutputDevicesActivity extends Activity {
       Bundle var1 = new Bundle();
 
       for(int var2 = 0; var2 < this.d.size(); ++var2) {
-         DeviceConfiguration var6 = (DeviceConfiguration)this.d.get(var2);
+         DeviceConfiguration var6 = this.d.get(var2);
          var1.putSerializable(String.valueOf(var2), var6);
       }
 
@@ -97,14 +99,14 @@ public class EditAnalogOutputDevicesActivity extends Activity {
       EditText var3 = (EditText)var1.findViewById(R.id.editTextResult_analogOutput);
       var3.setEnabled(false);
       var3.setText("NO DEVICE ATTACHED");
-      ((DeviceConfiguration)this.d.get(var2)).setEnabled(false);
+      this.d.get(var2).setEnabled(false);
    }
 
    private void a(LinearLayout var1, String var2) {
       int var3 = Integer.parseInt(((TextView)var1.findViewById(R.id.port_number_analogOutput)).getText().toString());
       EditText var4 = (EditText)var1.findViewById(R.id.editTextResult_analogOutput);
       var4.setEnabled(true);
-      DeviceConfiguration var5 = (DeviceConfiguration)this.d.get(var3);
+      DeviceConfiguration var5 = this.d.get(var3);
       var5.setType(var5.typeFromString(var2));
       var5.setEnabled(true);
       this.a(var4, var5);
@@ -155,7 +157,7 @@ public class EditAnalogOutputDevicesActivity extends Activity {
 
          for(int var3 = 0; var3 < this.d.size(); ++var3) {
             View var4 = this.a(var3);
-            DeviceConfiguration var5 = (DeviceConfiguration)this.d.get(var3);
+            DeviceConfiguration var5 = this.d.get(var3);
             this.a(var4);
             this.b(var4, var5);
             this.a(var4, var5);
@@ -177,11 +179,11 @@ public class EditAnalogOutputDevicesActivity extends Activity {
 
       // $FF: synthetic method
       a(View var2, Object var3) {
-         this();
+         this(var2);
       }
 
       public void afterTextChanged(Editable var1) {
-         ((DeviceConfiguration)EditAnalogOutputDevicesActivity.this.d.get(this.b)).setName(var1.toString());
+         EditAnalogOutputDevicesActivity.this.d.get(this.b).setName(var1.toString());
       }
 
       public void beforeTextChanged(CharSequence var1, int var2, int var3, int var4) {

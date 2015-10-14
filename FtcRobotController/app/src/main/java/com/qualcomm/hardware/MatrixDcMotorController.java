@@ -1,12 +1,11 @@
 package com.qualcomm.hardware;
 
-import com.qualcomm.hardware.MatrixI2cTransaction;
-import com.qualcomm.hardware.MatrixMasterController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.TypeConversion;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
@@ -14,10 +13,10 @@ import java.util.Set;
 public class MatrixDcMotorController implements DcMotorController {
    public static final byte POWER_MAX = 100;
    public static final byte POWER_MIN = -100;
-   private MatrixDcMotorController.a[] a;
-   private int b;
    protected DcMotorController.DeviceMode deviceMode;
    protected MatrixMasterController master;
+   private MatrixDcMotorController.a[] a;
+   private int b;
 
    public MatrixDcMotorController(MatrixMasterController var1) {
       MatrixDcMotorController.a[] var2 = new MatrixDcMotorController.a[]{new MatrixDcMotorController.a(), new MatrixDcMotorController.a(), new MatrixDcMotorController.a(), new MatrixDcMotorController.a(), new MatrixDcMotorController.a()};
@@ -66,7 +65,7 @@ public class MatrixDcMotorController implements DcMotorController {
    }
 
    public int getBattery() {
-      MatrixI2cTransaction var1 = new MatrixI2cTransaction((byte)0, MatrixI2cTransaction.a.d);
+      MatrixI2cTransaction var1 = new MatrixI2cTransaction((byte) 0, MatrixI2cTransaction.Type1.d);
       if(this.master.queueTransaction(var1)) {
          this.master.waitOnRead();
       }
@@ -91,9 +90,13 @@ public class MatrixDcMotorController implements DcMotorController {
       return this.deviceMode;
    }
 
+   public void setMotorControllerDeviceMode(DcMotorController.DeviceMode var1) {
+      this.deviceMode = var1;
+   }
+
    public int getMotorCurrentPosition(int var1) {
       this.a(var1);
-      MatrixI2cTransaction var2 = new MatrixI2cTransaction((byte)var1, MatrixI2cTransaction.a.e);
+      MatrixI2cTransaction var2 = new MatrixI2cTransaction((byte) var1, MatrixI2cTransaction.Type1.e);
       if(this.master.queueTransaction(var2)) {
          this.master.waitOnRead();
       }
@@ -113,7 +116,7 @@ public class MatrixDcMotorController implements DcMotorController {
 
    public int getMotorTargetPosition(int var1) {
       this.a(var1);
-      MatrixI2cTransaction var2 = new MatrixI2cTransaction((byte)var1, MatrixI2cTransaction.a.b);
+      MatrixI2cTransaction var2 = new MatrixI2cTransaction((byte) var1, MatrixI2cTransaction.Type1.b);
       if(this.master.queueTransaction(var2)) {
          this.master.waitOnRead();
       }
@@ -146,14 +149,14 @@ public class MatrixDcMotorController implements DcMotorController {
    }
 
    public boolean isBusy(int var1) {
-      MatrixI2cTransaction var2 = new MatrixI2cTransaction((byte)var1, MatrixI2cTransaction.a.a);
+      MatrixI2cTransaction var2 = new MatrixI2cTransaction((byte) var1, MatrixI2cTransaction.Type1.a);
       this.master.queueTransaction(var2);
       this.master.waitOnRead();
       return (128 & this.a[var2.motor].c) != 0;
    }
 
    protected byte runModeToFlagMatrix(DcMotorController.RunMode var1) {
-      switch(null.a[var1.ordinal()]) {
+      switch (var1.ordinal()) {
       case 1:
          return (byte)2;
       case 2:
@@ -170,19 +173,11 @@ public class MatrixDcMotorController implements DcMotorController {
       this.a(var1);
       if(this.a[var1].d || this.a[var1].f != var2) {
          byte var3 = this.runModeToFlagMatrix(var2);
-         MatrixI2cTransaction var4 = new MatrixI2cTransaction((byte)var1, MatrixI2cTransaction.a.a, var3);
+         MatrixI2cTransaction var4 = new MatrixI2cTransaction((byte) var1, MatrixI2cTransaction.Type1.a, var3);
          this.master.queueTransaction(var4);
          this.a[var1].f = var2;
-         if(var2 == DcMotorController.RunMode.RESET_ENCODERS) {
-            this.a[var1].d = true;
-         } else {
-            this.a[var1].d = false;
-         }
+         this.a[var1].d = var2 == RunMode.RESET_ENCODERS;
       }
-   }
-
-   public void setMotorControllerDeviceMode(DcMotorController.DeviceMode var1) {
-      this.deviceMode = var1;
    }
 
    public void setMotorPower(int var1, double var2) {
@@ -210,14 +205,14 @@ public class MatrixDcMotorController implements DcMotorController {
          this.master.queueTransaction(var10);
       }
 
-      MatrixI2cTransaction var5 = new MatrixI2cTransaction((byte)0, MatrixI2cTransaction.a.i, 1);
+      MatrixI2cTransaction var5 = new MatrixI2cTransaction((byte) 0, MatrixI2cTransaction.Type1.i, 1);
       this.master.queueTransaction(var5);
    }
 
    public void setMotorPowerFloat(int var1) {
       this.a(var1);
       if(!this.a[var1].d) {
-         MatrixI2cTransaction var2 = new MatrixI2cTransaction((byte)var1, MatrixI2cTransaction.a.a, 4);
+         MatrixI2cTransaction var2 = new MatrixI2cTransaction((byte) var1, MatrixI2cTransaction.Type1.a, 4);
          this.master.queueTransaction(var2);
       }
 
@@ -226,7 +221,7 @@ public class MatrixDcMotorController implements DcMotorController {
 
    public void setMotorTargetPosition(int var1, int var2) {
       this.a(var1);
-      MatrixI2cTransaction var3 = new MatrixI2cTransaction((byte)var1, MatrixI2cTransaction.a.b, var2);
+      MatrixI2cTransaction var3 = new MatrixI2cTransaction((byte) var1, MatrixI2cTransaction.Type1.b, var2);
       this.master.queueTransaction(var3);
       this.a[var1].a = var2;
    }

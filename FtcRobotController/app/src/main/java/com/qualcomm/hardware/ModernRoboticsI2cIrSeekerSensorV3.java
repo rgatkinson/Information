@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.I2cController;
 import com.qualcomm.robotcore.hardware.IrSeekerSensor;
 import com.qualcomm.robotcore.util.TypeConversion;
+
+import java.nio.ByteOrder;
 import java.util.concurrent.locks.Lock;
 
 public class ModernRoboticsI2cIrSeekerSensorV3 extends IrSeekerSensor implements I2cController.I2cPortReadyCallback {
@@ -21,12 +23,12 @@ public class ModernRoboticsI2cIrSeekerSensorV3 extends IrSeekerSensor implements
    public static final int OFFSET_600HZ_RIGHT_SIDE_RAW_DATA = 14;
    public static final int OFFSET_600HZ_SIGNAL_STRENGTH = 7;
    public static final byte SENSOR_COUNT = 2;
-   public volatile int I2C_ADDRESS = 56;
    private final DeviceInterfaceModule a;
    private final int b;
-   private IrSeekerSensor.Mode c;
    private final byte[] d;
    private final Lock e;
+   public volatile int I2C_ADDRESS = 56;
+   private IrSeekerSensor.Mode c;
    private double f = 0.00390625D;
 
    public ModernRoboticsI2cIrSeekerSensorV3(DeviceInterfaceModule var1, int var2) {
@@ -83,16 +85,47 @@ public class ModernRoboticsI2cIrSeekerSensorV3 extends IrSeekerSensor implements
       return this.I2C_ADDRESS;
    }
 
-   public IrSeekerSensor.IrSeekerIndividualSensor[] getIndividualSensors() {
-      // $FF: Couldn't be decompiled
+   public void setI2cAddress(int var1) {
+      IrSeekerSensor.throwIfModernRoboticsI2cAddressIsInvalid(var1);
+      this.I2C_ADDRESS = var1;
+   }
+
+   public IrSeekerIndividualSensor[] getIndividualSensors() {
+      IrSeekerIndividualSensor[] var1 = new IrSeekerIndividualSensor[2];
+
+      try {
+         this.e.lock();
+         int var2 = this.c == Mode.MODE_1200HZ ? 8 : 12;
+         byte[] var3 = new byte[2];
+         System.arraycopy(this.d, var2, var3, 0, var3.length);
+         double var4 = (double) TypeConversion.byteArrayToShort(var3, ByteOrder.LITTLE_ENDIAN) / 256.0D;
+         var1[0] = new IrSeekerIndividualSensor(-1.0D, var4);
+         int var6 = this.c == Mode.MODE_1200HZ ? 10 : 14;
+         byte[] var7 = new byte[2];
+         System.arraycopy(this.d, var6, var7, 0, var7.length);
+         double var8 = (double) TypeConversion.byteArrayToShort(var7, ByteOrder.LITTLE_ENDIAN) / 256.0D;
+         var1[1] = new IrSeekerIndividualSensor(1.0D, var8);
+      } finally {
+         this.e.unlock();
+      }
+
+      return var1;
    }
 
    public IrSeekerSensor.Mode getMode() {
       return this.c;
    }
 
+   public void setMode(IrSeekerSensor.Mode var1) {
+      this.c = var1;
+   }
+
    public double getSignalDetectedThreshold() {
       return this.f;
+   }
+
+   public void setSignalDetectedThreshold(double var1) {
+      this.f = var1;
    }
 
    public double getStrength() {
@@ -130,19 +163,6 @@ public class ModernRoboticsI2cIrSeekerSensorV3 extends IrSeekerSensor implements
       this.a.setI2cPortActionFlag(var1);
       this.a.readI2cCacheFromController(var1);
       this.a.writeI2cPortFlagOnlyToController(var1);
-   }
-
-   public void setI2cAddress(int var1) {
-      IrSeekerSensor.throwIfModernRoboticsI2cAddressIsInvalid(var1);
-      this.I2C_ADDRESS = var1;
-   }
-
-   public void setMode(IrSeekerSensor.Mode var1) {
-      this.c = var1;
-   }
-
-   public void setSignalDetectedThreshold(double var1) {
-      this.f = var1;
    }
 
    public boolean signalDetected() {
