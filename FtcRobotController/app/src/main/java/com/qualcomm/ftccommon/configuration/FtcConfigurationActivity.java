@@ -20,11 +20,7 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.ftccommon.R;
-import com.qualcomm.ftccommon.configuration.EditDeviceInterfaceModuleActivity;
-import com.qualcomm.ftccommon.configuration.EditLegacyModuleControllerActivity;
-import com.qualcomm.ftccommon.configuration.EditMotorControllerActivity;
-import com.qualcomm.ftccommon.configuration.EditServoControllerActivity;
-import com.qualcomm.hardware.ModernRoboticsDeviceManager;
+import com.qualcomm.hardware.HardwareDeviceManager;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DeviceManager;
@@ -337,7 +333,7 @@ public class FtcConfigurationActivity extends Activity {
       this.a();
 
       try {
-         this.g = new ModernRoboticsDeviceManager(this.f, (EventLoopManager)null);
+         this.g = new HardwareDeviceManager(this.f, (EventLoopManager)null);
       } catch (RobotCoreException var3) {
          this.j.complainToast("Failed to open the Device Manager", this.f);
          DbgLog.error("Failed to open deviceManager: " + var3.toString());

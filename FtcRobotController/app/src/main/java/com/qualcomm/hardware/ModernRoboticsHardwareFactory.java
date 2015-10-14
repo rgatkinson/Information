@@ -253,7 +253,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
    }
 
    public static void disableDeviceEmulation() {
-      ModernRoboticsDeviceManager.disableDeviceEmulation();
+      HardwareDeviceManager.disableDeviceEmulation();
    }
 
    private void e(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
@@ -267,7 +267,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
    }
 
    public static void enableDeviceEmulation() {
-      ModernRoboticsDeviceManager.enableDeviceEmulation();
+      HardwareDeviceManager.enableDeviceEmulation();
    }
 
    private void f(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
@@ -371,7 +371,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
       } else {
          HardwareMap var2 = new HardwareMap();
          RobotLog.v("Starting Modern Robotics device manager");
-         ModernRoboticsDeviceManager var3 = new ModernRoboticsDeviceManager(this.context, var1);
+         HardwareDeviceManager var3 = new HardwareDeviceManager(this.context, var1);
          Iterator var4 = (new ReadXMLFileHandler(this.context)).parse(this.inputStream).iterator();
 
          while(var4.hasNext()) {
