@@ -10,6 +10,10 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/Analytics" />
+            <option value="$PROJECT_DIR$/FtcCommon" />
+            <option value="$PROJECT_DIR$/Hardware" />
+            <option value="$PROJECT_DIR$/ModernRobotics" />
             <option value="$PROJECT_DIR$/WirelessP2p" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/ftcrobotcontroller" />

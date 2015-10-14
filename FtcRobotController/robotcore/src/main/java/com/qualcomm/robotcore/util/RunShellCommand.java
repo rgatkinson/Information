@@ -82,41 +82,6 @@ public class RunShellCommand {
         return var5;
     }
 
-    private String a(String var1, boolean var2) {
-        byte[] var3 = new byte[524288];
-        boolean var4 = false;
-        String var5 = "";
-        ProcessBuilder var6 = new ProcessBuilder();
-        Process var7 = null;
-
-        try {
-            if (var2) {
-                var6.command("su", "-c", var1).redirectErrorStream(true);
-            } else {
-                var6.command("sh", "-c", var1).redirectErrorStream(true);
-            }
-
-            var7 = var6.start();
-            var7.waitFor();
-            InputStream var8 = var7.getInputStream();
-            int var16 = var8.read(var3);
-            if (var16 > 0) {
-                var5 = new String(var3, 0, var16);
-            }
-        } catch (IOException var13) {
-            RobotLog.logStacktrace(var13);
-        } catch (InterruptedException var14) {
-            var14.printStackTrace();
-        } finally {
-            if (var7 != null) {
-                var7.destroy();
-            }
-
-        }
-
-        return var5;
-    }
-
     public void enableLogging(boolean var1) {
         this.a = var1;
     }

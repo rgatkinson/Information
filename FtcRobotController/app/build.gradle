@@ -59,4 +59,5 @@ repositories {
 dependencies {
     compile project(':WirelessP2p')
     compile project(':robotcore')
+    compile project(':FtcCommon')
 }

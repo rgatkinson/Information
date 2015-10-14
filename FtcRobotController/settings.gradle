@@ -1,1 +1,1 @@
-include ':app', ':ftcrobotcontroller', ':WirelessP2p', ':robotcore'
+include ':app', ':ftcrobotcontroller', ':WirelessP2p', ':robotcore', ':FtcCommon', ':Hardware', ':ModernRobotics', ':Analytics'
