@@ -5,10 +5,6 @@
 
 package com.qualcomm.hardware;
 
-import com.qualcomm.hardware.ReadWriteRunnable;
-import com.qualcomm.hardware.ReadWriteRunnableSegment;
-import com.qualcomm.hardware.ReadWriteRunnable.Callback;
-import com.qualcomm.hardware.ReadWriteRunnable.EmptyCallback;
 import com.qualcomm.modernrobotics.ReadWriteRunnableUsbHandler;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
@@ -34,7 +30,7 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
     protected int monitorLength;
     protected volatile boolean running = false;
     protected volatile boolean shutdownComplete = false;
-    private volatile boolean a = false;
+    private volatile boolean writeNeeded = false;
     protected Callback callback;
     protected final boolean DEBUG_LOGGING;
 
@@ -63,18 +59,17 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
     }
 
     public boolean writeNeeded() {
-        return this.a;
+        return this.writeNeeded;
     }
 
     public void setWriteNeeded(boolean set) {
-        this.a = set;
+        this.writeNeeded = set;
     }
 
     public void write(int address, byte[] data) {
-        byte[] var3 = this.localDeviceWriteCache;
         synchronized(this.localDeviceWriteCache) {
             System.arraycopy(data, 0, this.localDeviceWriteCache, address, data.length);
-            this.a = true;
+            this.writeNeeded = true;
         }
     }
 

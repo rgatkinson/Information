@@ -1,12 +1,7 @@
 package com.qualcomm.hardware;
 
 import android.content.Context;
-import com.qualcomm.hardware.MatrixDcMotorController;
-import com.qualcomm.hardware.MatrixMasterController;
-import com.qualcomm.hardware.MatrixServoController;
-import com.qualcomm.hardware.ModernRoboticsDeviceManager;
-import com.qualcomm.hardware.ModernRoboticsUsbDcMotorController;
-import com.qualcomm.hardware.ModernRoboticsUsbLegacyModule;
+
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.AccelerationSensor;
@@ -48,11 +43,11 @@ import java.util.Iterator;
 import java.util.List;
 
 public class ModernRoboticsHardwareFactory implements HardwareFactory {
-   private Context a;
-   private InputStream b = null;
+   private Context context;
+   private InputStream inputStream = null;
 
    public ModernRoboticsHardwareFactory(Context var1) {
-      this.a = var1;
+      this.context = var1;
    }
 
    private void a(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
@@ -371,13 +366,13 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
    }
 
    public HardwareMap createHardwareMap(EventLoopManager var1) throws RobotCoreException, InterruptedException {
-      if(this.b == null) {
+      if(this.inputStream == null) {
          throw new RobotCoreException("XML input stream is null, ModernRoboticsHardwareFactory cannot create a hardware map");
       } else {
          HardwareMap var2 = new HardwareMap();
          RobotLog.v("Starting Modern Robotics device manager");
-         ModernRoboticsDeviceManager var3 = new ModernRoboticsDeviceManager(this.a, var1);
-         Iterator var4 = (new ReadXMLFileHandler(this.a)).parse(this.b).iterator();
+         ModernRoboticsDeviceManager var3 = new ModernRoboticsDeviceManager(this.context, var1);
+         Iterator var4 = (new ReadXMLFileHandler(this.context)).parse(this.inputStream).iterator();
 
          while(var4.hasNext()) {
             ControllerConfiguration var5 = (ControllerConfiguration)var4.next();
@@ -400,16 +395,16 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
             }
          }
 
-         var2.appContext = this.a;
+         var2.appContext = this.context;
          return var2;
       }
    }
 
    public InputStream getXmlInputStream() {
-      return this.b;
+      return this.inputStream;
    }
 
    public void setXmlInputStream(InputStream var1) {
-      this.b = var1;
+      this.inputStream = var1;
    }
 }

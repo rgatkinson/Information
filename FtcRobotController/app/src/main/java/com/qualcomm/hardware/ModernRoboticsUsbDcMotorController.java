@@ -1,7 +1,5 @@
 package com.qualcomm.hardware;
 
-import com.qualcomm.hardware.ModernRoboticsUsbDevice;
-import com.qualcomm.hardware.ReadWriteRunnableBlocking;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DcMotorController;
@@ -71,44 +69,44 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
    public static final byte RATIO_MAX = 127;
    public static final byte RATIO_MIN = -128;
    public static final byte START_ADDRESS = 64;
-   private ModernRoboticsUsbDcMotorController.a[] a;
+   private IsBusyHelper[] isBusyHelpers;
 
    protected ModernRoboticsUsbDcMotorController(SerialNumber var1, RobotUsbDevice var2, EventLoopManager var3) throws RobotCoreException, InterruptedException {
-      int var4 = 0;
       super(var1, var3, new ReadWriteRunnableBlocking(var1, var2, 30, 64, false));
-      this.a = new ModernRoboticsUsbDcMotorController.a[3];
+      this.isBusyHelpers = new IsBusyHelper[3];
       this.readWriteRunnable.setCallback(this);
 
-      while(var4 < this.a.length) {
-         this.a[var4] = new ModernRoboticsUsbDcMotorController.a(null);
-         ++var4;
+      int index = 0;
+      while(index < this.isBusyHelpers.length) {
+         this.isBusyHelpers[index] = new IsBusyHelper(null);
+         ++index;
       }
 
-      this.a();
-      this.b();
+      this.floatMotors();
+      this.initializePID();
    }
 
-   private void a() {
+   private void floatMotors() {
       this.setMotorPowerFloat(1);
       this.setMotorPowerFloat(2);
    }
 
-   private void a(int var1) {
-      if(var1 < 1 || var1 > 2) {
-         Object[] var2 = new Object[]{Integer.valueOf(var1), Integer.valueOf(2)};
+   private void validateMotor(int motor) {
+      if(motor < 1 || motor > 2) {
+         Object[] var2 = new Object[]{Integer.valueOf(motor), Integer.valueOf(2)};
          throw new IllegalArgumentException(String.format("Motor %d is invalid; valid motors are 1..%d", var2));
       }
    }
 
-   private void b() {
-      for(int var1 = 1; var1 <= 2; ++var1) {
-         this.write(ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP[var1], new byte[]{(byte)-128, (byte)64, (byte)-72});
+   private void initializePID() {
+      for(int motor = 1; motor <= 2; ++motor) {
+         this.write(ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP[motor], new byte[]{(byte)-128, (byte)64, (byte)-72});
       }
 
    }
 
-   public static DcMotorController.RunMode flagToRunMode(byte var0) {
-      switch(var0 & 3) {
+   public static DcMotorController.RunMode flagToRunMode(byte grf) {
+      switch(grf & 3) {
       case 0:
          return DcMotorController.RunMode.RUN_WITHOUT_ENCODERS;
       case 1:
@@ -122,8 +120,8 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
       }
    }
 
-   public static byte runModeToFlag(DcMotorController.RunMode var0) {
-      switch(null.a[var0.ordinal()]) {
+   public static byte runModeToFlag(DcMotorController.RunMode mode) {
+      switch(mode.ordinal()) {
       case 1:
       default:
          return (byte)1;
@@ -137,7 +135,7 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
    }
 
    public void close() {
-      this.a();
+      this.floatMotors();
       super.close();
    }
 
@@ -149,69 +147,69 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
       return "Modern Robotics USB DC Motor Controller";
    }
 
-   public DifferentialControlLoopCoefficients getDifferentialControlLoopCoefficients(int var1) {
-      this.a(var1);
-      DifferentialControlLoopCoefficients var2 = new DifferentialControlLoopCoefficients();
-      byte[] var3 = this.read(ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP[var1], 3);
-      var2.p = (double)var3[0];
-      var2.i = (double)var3[1];
-      var2.d = (double)var3[2];
-      return var2;
+   public DifferentialControlLoopCoefficients getDifferentialControlLoopCoefficients(int motor) {
+      this.validateMotor(motor);
+      DifferentialControlLoopCoefficients coeffs = new DifferentialControlLoopCoefficients();
+      byte[] data = this.read(ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP[motor], 3);
+      coeffs.p = (double)data[0];
+      coeffs.i = (double)data[1];
+      coeffs.d = (double)data[2];
+      return coeffs;
    }
 
-   public double getGearRatio(int var1) {
-      this.a(var1);
-      return (double)this.read(ADDRESS_MOTOR_GEAR_RATIO_MAP[var1], 1)[0] / 127.0D;
+   public double getGearRatio(int motor) {
+      this.validateMotor(motor);
+      return (double)this.read(ADDRESS_MOTOR_GEAR_RATIO_MAP[motor], 1)[0] / 127.0D;
    }
 
-   public DcMotorController.RunMode getMotorChannelMode(int var1) {
-      this.a(var1);
-      return flagToRunMode(this.read(ADDRESS_MOTOR_MODE_MAP[var1]));
+   public DcMotorController.RunMode getMotorChannelMode(int motor) {
+      this.validateMotor(motor);
+      return flagToRunMode(this.read(ADDRESS_MOTOR_MODE_MAP[motor]));
    }
 
    public DcMotorController.DeviceMode getMotorControllerDeviceMode() {
       return DcMotorController.DeviceMode.READ_WRITE;
    }
 
-   public int getMotorCurrentPosition(int var1) {
-      this.a(var1);
-      return TypeConversion.byteArrayToInt(this.read(ADDRESS_MOTOR_CURRENT_ENCODER_VALUE_MAP[var1], 4));
+   public int getMotorCurrentPosition(int motor) {
+      this.validateMotor(motor);
+      return TypeConversion.byteArrayToInt(this.read(ADDRESS_MOTOR_CURRENT_ENCODER_VALUE_MAP[motor], 4));
    }
 
-   public double getMotorPower(int var1) {
-      this.a(var1);
-      byte var2 = this.read(ADDRESS_MOTOR_POWER_MAP[var1]);
+   public double getMotorPower(int motor) {
+      this.validateMotor(motor);
+      byte var2 = this.read(ADDRESS_MOTOR_POWER_MAP[motor]);
       return var2 == -128?0.0D:(double)var2 / 100.0D;
    }
 
-   public boolean getMotorPowerFloat(int var1) {
-      this.a(var1);
-      return this.read(ADDRESS_MOTOR_POWER_MAP[var1]) == -128;
+   public boolean getMotorPowerFloat(int motor) {
+      this.validateMotor(motor);
+      return this.read(ADDRESS_MOTOR_POWER_MAP[motor]) == -128;
    }
 
-   public int getMotorTargetPosition(int var1) {
-      this.a(var1);
-      return TypeConversion.byteArrayToInt(this.read(ADDRESS_MOTOR_TARGET_ENCODER_VALUE_MAP[var1], 4));
+   public int getMotorTargetPosition(int motor) {
+      this.validateMotor(motor);
+      return TypeConversion.byteArrayToInt(this.read(ADDRESS_MOTOR_TARGET_ENCODER_VALUE_MAP[motor], 4));
    }
 
    public double getVoltage() {
       return 20.4D * ((double)(1023 & TypeConversion.byteArrayToShort(this.read(84, 2)) >> 6) / 1023.0D);
    }
 
-   public boolean isBusy(int var1) {
-      this.a(var1);
-      return this.a[var1].a();
+   public boolean isBusy(int motor) {
+      this.validateMotor(motor);
+      return this.isBusyHelpers[motor].isBusyHelper();
    }
 
    public void readComplete() throws InterruptedException {
-      for(int var1 = 1; var1 <= 2; ++var1) {
-         this.a[var1].a(this.getMotorCurrentPosition(var1));
+      for(int motor = 1; motor <= 2; ++motor) {
+         this.isBusyHelpers[motor].a(this.getMotorCurrentPosition(motor));
       }
 
    }
 
-   public void setDifferentialControlLoopCoefficients(int var1, DifferentialControlLoopCoefficients var2) {
-      this.a(var1);
+   public void setDifferentialControlLoopCoefficients(int motor, DifferentialControlLoopCoefficients var2) {
+      this.validateMotor(motor);
       if(var2.p > 255.0D) {
          var2.p = 255.0D;
       }
@@ -224,30 +222,30 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
          var2.d = 255.0D;
       }
 
-      int var3 = ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP[var1];
+      int var3 = ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP[motor];
       byte[] var4 = new byte[]{(byte)((int)var2.p), (byte)((int)var2.i), (byte)((int)var2.d)};
       this.write(var3, var4);
    }
 
-   public void setGearRatio(int var1, double var2) {
-      this.a(var1);
-      Range.throwIfRangeIsInvalid(var2, -1.0D, 1.0D);
-      int var4 = ADDRESS_MOTOR_GEAR_RATIO_MAP[var1];
-      byte[] var5 = new byte[]{(byte)((int)(127.0D * var2))};
+   public void setGearRatio(int motor, double ratio) {
+      this.validateMotor(motor);
+      Range.throwIfRangeIsInvalid(ratio, -1.0D, 1.0D);
+      int var4 = ADDRESS_MOTOR_GEAR_RATIO_MAP[motor];
+      byte[] var5 = new byte[]{(byte)((int)(127.0D * ratio))};
       this.write(var4, var5);
    }
 
-   public void setMotorChannelMode(int var1, DcMotorController.RunMode var2) {
-      this.a(var1);
-      byte var3 = runModeToFlag(var2);
-      this.write(ADDRESS_MOTOR_MODE_MAP[var1], var3);
+   public void setMotorChannelMode(int motor, DcMotorController.RunMode mode) {
+      this.validateMotor(motor);
+      byte var3 = runModeToFlag(mode);
+      this.write(ADDRESS_MOTOR_MODE_MAP[motor], var3);
    }
 
    public void setMotorControllerDeviceMode(DcMotorController.DeviceMode var1) {
    }
 
    public void setMotorPower(int var1, double var2) {
-      this.a(var1);
+      this.validateMotor(var1);
       Range.throwIfRangeIsInvalid(var2, -1.0D, 1.0D);
       int var4 = ADDRESS_MOTOR_POWER_MAP[var1];
       byte[] var5 = new byte[]{(byte)((int)(100.0D * var2))};
@@ -255,29 +253,30 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
    }
 
    public void setMotorPowerFloat(int var1) {
-      this.a(var1);
+      this.validateMotor(var1);
       this.write(ADDRESS_MOTOR_POWER_MAP[var1], new byte[]{(byte)-128});
    }
 
    public void setMotorTargetPosition(int var1, int var2) {
-      this.a(var1);
+      this.validateMotor(var1);
       Range.throwIfRangeIsInvalid((double)var2, -2.147483648E9D, 2.147483647E9D);
       this.write(ADDRESS_MOTOR_TARGET_ENCODER_VALUE_MAP[var1], TypeConversion.intToByteArray(var2));
    }
 
-   private static class a {
+   private static class IsBusyHelper
+      {
       private int[] a;
       private int[] b;
       private int c;
 
-      private a() {
+      private IsBusyHelper() {
          this.a = new int[3];
          this.b = new int[3];
          this.c = 0;
       }
 
       // $FF: synthetic method
-      a(Object var1) {
+      IsBusyHelper(Object var1) {
          this();
       }
 

@@ -5,8 +5,6 @@
 
 package com.qualcomm.hardware;
 
-import com.qualcomm.hardware.ReadWriteRunnableStandard;
-import com.qualcomm.hardware.ReadWriteRunnable.BlockingState;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -22,14 +20,14 @@ public class ReadWriteRunnableBlocking extends ReadWriteRunnableStandard {
     protected final Condition blockingCondition;
     protected final Condition waitingCondition;
     protected BlockingState blockingState;
-    private volatile boolean a;
+    private volatile boolean writeNeeded;
 
     public ReadWriteRunnableBlocking(SerialNumber serialNumber, RobotUsbDevice device, int monitorLength, int startAddress, boolean debug) {
         super(serialNumber, device, monitorLength, startAddress, debug);
         this.blockingCondition = this.blockingLock.newCondition();
         this.waitingCondition = this.waitingLock.newCondition();
         this.blockingState = BlockingState.BLOCKING;
-        this.a = false;
+        this.writeNeeded = false;
     }
 
     public void blockUntilReady() throws RobotCoreException, InterruptedException {
@@ -62,21 +60,21 @@ public class ReadWriteRunnableBlocking extends ReadWriteRunnableStandard {
     }
 
     public void write(int address, byte[] data) {
-        byte[] var3 = this.localDeviceWriteCache;
         synchronized(this.localDeviceWriteCache) {
             System.arraycopy(data, 0, this.localDeviceWriteCache, address, data.length);
-            this.a = true;
+            this.writeNeeded = true;
         }
     }
 
     public boolean writeNeeded() {
-        return this.a;
+        return this.writeNeeded;
     }
 
     public void setWriteNeeded(boolean set) {
-        this.a = set;
+        this.writeNeeded = set;
     }
 
+    // called immediately after readComplete() callback
     protected void waitForSyncdEvents() throws RobotCoreException, InterruptedException {
         try {
             this.blockingLock.lock();
