@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@id/included_header"
+        layout="@layout/header" />
+
+    <LinearLayout
+        android:id="@+id/scan_bottom"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:paddingBottom="5.0dip"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="8.0dip">
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2.0dip"
+            android:background="#ffff0000" />
+
+        <RelativeLayout
+            android:id="@+id/save_holder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/writeXML"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="0.0dip"
+                android:minWidth="0.0dip"
+                android:onClick="saveConfiguration"
+                android:text="@string/save_configuration"
+                android:textSize="12.0sp" />
+
+            <include
+                android:id="@+id/save_config_btn"
+                layout="@layout/info_button"
+                android:layout_width="60.0dip"
+                android:layout_height="60.0dip"
+                android:onClick="save_config" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/writeXML_text"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5.0dip"
+            android:text="@string/writeXML_text" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/holdsDevices"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@id/scan_bottom"
+        android:layout_below="@id/included_header"
+        android:orientation="vertical"
+        android:paddingBottom="8.0dip"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="5.0dip">
+
+        <Button
+            android:id="@+id/scanButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="0.0dip"
+            android:minWidth="0.0dip"
+            android:text="@string/scan"
+            android:textSize="12.0sp" />
+
+        <TextView
+            android:id="@+id/scanButton_text"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10.0dip"
+            android:text="@string/scanButton_text" />
+
+        <LinearLayout
+            android:id="@+id/warning_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="horizontal" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2.0dip"
+            android:background="#ffff0000" />
+
+        <RelativeLayout
+            android:id="@+id/devices_holder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Devices:"
+                android:textSize="16.0sp"
+                android:textStyle="bold" />
+
+            <include
+                android:id="@+id/devices_info_btn"
+                layout="@layout/info_button"
+                android:onClick="devices_info" />
+        </RelativeLayout>
+
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="vertical">
+
+                <ListView
+                    android:id="@+id/controllersList"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content" />
+
+                <LinearLayout
+                    android:id="@+id/empty_devicelist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="center"
+                    android:orientation="horizontal" />
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+
+</RelativeLayout>

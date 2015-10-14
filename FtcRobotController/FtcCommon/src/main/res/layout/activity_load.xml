@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/included_header"
+        layout="@layout/header" />
+
+    <LinearLayout
+        android:id="@+id/holds_buttons"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/load_bottom"
+        android:layout_below="@id/included_header"
+        android:orientation="vertical"
+        android:paddingBottom="8.0dip"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="5.0dip">
+
+        <Button
+            android:id="@+id/new_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="0.0dip"
+            android:minWidth="0.0dip"
+            android:onClick="new_button"
+            android:text="New"
+            android:textSize="16.0sp" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2.0dip"
+            android:background="#ffff0000" />
+
+        <RelativeLayout
+            android:id="@+id/files_holder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Available files:"
+                android:textSize="14.0sp"
+                android:textStyle="bold" />
+
+            <include
+                layout="@layout/info_button"
+                android:layout_width="60.0dip"
+                android:layout_height="60.0dip" />
+        </RelativeLayout>
+
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:id="@+id/inclusionlayout"
+                android:layout_width="fill_parent"
+                android:layout_height="0.0dip"
+                android:orientation="vertical" />
+        </ScrollView>
+
+        <LinearLayout
+            android:id="@+id/empty_filelist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="horizontal" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@id/load_bottom"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:paddingBottom="8.0dip"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="5.0dip">
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2.0dip"
+            android:background="#ffff0000" />
+
+        <RelativeLayout
+            android:id="@+id/autoconfigure_holder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/autoconfigure"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="0.0dip"
+                android:minWidth="0.0dip"
+                android:onClick="launch_autoConfigure"
+                android:text="@string/autoconfigure"
+                android:textSize="16.0sp" />
+
+            <include
+                layout="@layout/info_button"
+                android:layout_width="60.0dip"
+                android:layout_height="60.0dip" />
+        </RelativeLayout>
+    </LinearLayout>
+</RelativeLayout>
