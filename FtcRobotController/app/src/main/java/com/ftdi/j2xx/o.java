@@ -8,9 +8,7 @@ package com.ftdi.j2xx;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import com.ftdi.j2xx.FT_Device;
-import com.ftdi.j2xx.n;
-import com.ftdi.j2xx.q;
+
 import com.ftdi.j2xx.D2xxManager.D2xxException;
 import com.ftdi.j2xx.D2xxManager.DriverParameters;
 import java.io.IOException;
@@ -211,13 +209,13 @@ class o {
                     var19 = var13 * this.t;
                     var12.position(var19);
                     byte var14 = var12.get();
-                    var9 = (short)(this.l.g.modemStatus ^ (short)(var14 & 240));
-                    this.l.g.modemStatus = (short)(var14 & 240);
+                    var9 = (short)(this.l.ftDeviceInfoListNode.modemStatus ^ (short)(var14 & 240));
+                    this.l.ftDeviceInfoListNode.modemStatus = (short)(var14 & 240);
                     byte var15 = var12.get();
-                    this.l.g.lineStatus = (short)(var15 & 255);
+                    this.l.ftDeviceInfoListNode.lineStatus = (short)(var15 & 255);
                     var19 += 2;
                     if(var12.hasRemaining()) {
-                        var10 = (short)(this.l.g.lineStatus & 30);
+                        var10 = (short)(this.l.ftDeviceInfoListNode.lineStatus & 30);
                     } else {
                         var10 = 0;
                     }
@@ -392,21 +390,21 @@ class o {
             this.l.a |= 1L;
             var11 = new Intent("FT_EVENT_RXCHAR");
             var11.putExtra("message", "FT_EVENT_RXCHAR");
-            LocalBroadcastManager.getInstance(this.l.j).sendBroadcast(var11);
+            LocalBroadcastManager.getInstance(this.l.parentContext).sendBroadcast(var11);
         }
 
         if(var2 != 0 && (var10.a & 2L) != 0L && (this.l.a ^ 2L) == 2L) {
             this.l.a |= 2L;
             var11 = new Intent("FT_EVENT_MODEM_STATUS");
             var11.putExtra("message", "FT_EVENT_MODEM_STATUS");
-            LocalBroadcastManager.getInstance(this.l.j).sendBroadcast(var11);
+            LocalBroadcastManager.getInstance(this.l.parentContext).sendBroadcast(var11);
         }
 
         if(var3 != 0 && (var10.a & 4L) != 0L && (this.l.a ^ 4L) == 4L) {
             this.l.a |= 4L;
             var11 = new Intent("FT_EVENT_LINE_STATUS");
             var11.putExtra("message", "FT_EVENT_LINE_STATUS");
-            LocalBroadcastManager.getInstance(this.l.j).sendBroadcast(var11);
+            LocalBroadcastManager.getInstance(this.l.parentContext).sendBroadcast(var11);
         }
 
         return 0;
