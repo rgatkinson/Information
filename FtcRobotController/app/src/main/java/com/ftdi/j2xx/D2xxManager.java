@@ -152,13 +152,13 @@ public class D2xxManager {
         }
     }
 
-    private static synchronized boolean a(Context var0) {
+    private static synchronized boolean a(Context context) {
         boolean result = false;
-        if(var0 == null) {
+        if(context == null) {
             return result;
         } else {
-            if(b != var0) {
-                b = var0;
+            if(b != context) {
+                b = context;
                 c = PendingIntent.getBroadcast(b.getApplicationContext(), 0, new Intent("com.ftdi.j2xx"), 134217728);
                 d = new IntentFilter("com.ftdi.j2xx");
                 b.getApplicationContext().registerReceiver(i, d);
@@ -286,8 +286,8 @@ public class D2xxManager {
                         synchronized(this.f) {
                             this.b();
                             this.f = var4;
-                            int var13 = this.f.size();
-                            return var13;
+                            int numberOfDevices = this.f.size();
+                            return numberOfDevices;
                         }
                     }
 
@@ -390,22 +390,23 @@ public class D2xxManager {
         return this.openByIndex(parentContext, index, (D2xxManager.DriverParameters)null);
     }
 
+    // returns null if can't open
     public synchronized FT_Device openBySerialNumber(Context parentContext, String serialNumber, D2xxManager.DriverParameters params) {
-        D2xxManager.FtDeviceInfoListNode var4 = null;
+        D2xxManager.FtDeviceInfoListNode infoListNode = null;
         FT_Device ftDevice = null;
         if(parentContext == null) {
             return ftDevice;
         } else {
             a(parentContext);
 
-            for(int var7 = 0; var7 < this.f.size(); ++var7) {
-                FT_Device var6 = (FT_Device)this.f.get(var7);
-                if(var6 != null) {
-                    var4 = var6.ftDeviceInfoListNode;
-                    if(var4 == null) {
+            for(int i = 0; i < this.f.size(); ++i) {
+                FT_Device device = (FT_Device)this.f.get(i);
+                if(device != null) {
+                    infoListNode = device.ftDeviceInfoListNode;
+                    if(infoListNode == null) {
                         Log.d("D2xx::", "***devInfo cannot be null***");
-                    } else if(var4.serialNumber.equals(serialNumber)) {
-                        ftDevice = var6;
+                    } else if(infoListNode.serialNumber.equals(serialNumber)) {
+                        ftDevice = device;
                         break;
                     }
                 }

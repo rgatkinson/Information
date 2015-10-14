@@ -13,11 +13,11 @@ public class RobotUsbManagerFtdi implements RobotUsbManager {
    private Context context;
    private D2xxManager d2xxManager;
 
-   public RobotUsbManagerFtdi(Context var1) {
-      this.context = var1;
+   public RobotUsbManagerFtdi(Context context) {
+      this.context = context;
 
       try {
-         this.d2xxManager = D2xxManager.getInstance(var1);
+         this.d2xxManager = D2xxManager.getInstance(context);
       } catch (D2xxManager.D2xxException var3) {
          RobotLog.e("Unable to create D2xxManager; cannot open USB devices");
       }
@@ -31,10 +31,10 @@ public class RobotUsbManagerFtdi implements RobotUsbManager {
       return new SerialNumber(this.d2xxManager.getDeviceInfoListDetail(var1).serialNumber);
    }
 
-   public RobotUsbDevice openBySerialNumber(SerialNumber var1) throws RobotCoreException {
-      FT_Device ftDevice = this.d2xxManager.openBySerialNumber(this.context, var1.toString());
+   public RobotUsbDevice openBySerialNumber(SerialNumber serialNumber) throws RobotCoreException {
+      FT_Device ftDevice = this.d2xxManager.openBySerialNumber(this.context, serialNumber.toString());
       if(ftDevice == null) {
-         throw new RobotCoreException("Unable to open USB device with serial number " + var1);
+         throw new RobotCoreException("Unable to open USB device with serial number " + serialNumber);
       } else {
          return new RobotUsbDeviceFtdi(ftDevice);
       }

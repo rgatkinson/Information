@@ -5,11 +5,11 @@ import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
 import com.qualcomm.robotcore.util.SerialNumber;
 
 public interface RobotUsbManager {
-   String getDeviceDescriptionByIndex(int var1) throws RobotCoreException;
+   String getDeviceDescriptionByIndex(int index) throws RobotCoreException;
 
-   SerialNumber getDeviceSerialNumberByIndex(int var1) throws RobotCoreException;
+   SerialNumber getDeviceSerialNumberByIndex(int index) throws RobotCoreException;
 
-   RobotUsbDevice openBySerialNumber(SerialNumber var1) throws RobotCoreException;
+   RobotUsbDevice openBySerialNumber(SerialNumber serialNumber) throws RobotCoreException;
 
    int scanForDevices() throws RobotCoreException;
 }

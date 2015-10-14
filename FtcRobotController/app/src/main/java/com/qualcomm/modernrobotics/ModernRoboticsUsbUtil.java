@@ -37,47 +37,48 @@ public class ModernRoboticsUsbUtil {
    }
 
    private static RobotUsbDevice a(RobotUsbManager robotUsbManager, SerialNumber serialNumber) throws RobotCoreException {
-      int var2 = robotUsbManager.scanForDevices();
-      int var3 = 0;
+      int numberOfDevices = robotUsbManager.scanForDevices();
+      int index = 0;
 
-      String var4;
-      boolean var5;
+      String deviceDescription;
+      boolean found;
       while(true) {
-         if(var3 >= var2) {
-            var4 = "";
-            var5 = false;
+         if(index >= numberOfDevices) {
+            deviceDescription = "";
+            found = false;
             break;
          }
 
-         if(serialNumber.equals(robotUsbManager.getDeviceSerialNumberByIndex(var3))) {
-            var5 = true;
-            var4 = robotUsbManager.getDeviceDescriptionByIndex(var3) + " [" + serialNumber.getSerialNumber() + "]";
+         if(serialNumber.equals(robotUsbManager.getDeviceSerialNumberByIndex(index))) {
+            found = true;
+            deviceDescription = robotUsbManager.getDeviceDescriptionByIndex(index) + " [" + serialNumber.getSerialNumber() + "]";
             break;
          }
 
-         ++var3;
+         ++index;
       }
 
-      if(!var5) {
+      if(!found) {
          throwMessage("unable to find USB device with serial number " + serialNumber.toString());
       }
 
-      RobotUsbDevice var6 = null;
+      RobotUsbDevice robotUsbDevice = null;
 
       try {
-         var6 = robotUsbManager.openBySerialNumber(serialNumber);
-         var6.setBaudRate(250000);
-         var6.setDataCharacteristics((byte)8, (byte)0, (byte)0);
-         var6.setLatencyTimer(2);
+         robotUsbDevice = robotUsbManager.openBySerialNumber(serialNumber);
+         robotUsbDevice.setBaudRate(250000);
+         robotUsbDevice.setDataCharacteristics((byte) 8, (byte) 0, (byte) 0);
+         robotUsbDevice.setLatencyTimer(2);
       } catch (RobotCoreException e) {
-         throwMessage("Unable to open USB device " + serialNumber + " - " + var4 + ": " + e.getMessage());
+         throwMessage("Unable to open USB device " + serialNumber + " - " + deviceDescription + ": " + e.getMessage());
       }
 
+      // Odd little sleep!
       try {
          Thread.sleep(400L);
-         return var6;
-      } catch (InterruptedException var9) {
-         return var6;
+         return robotUsbDevice;
+      } catch (InterruptedException e) {
+         return robotUsbDevice;
       }
    }
 
