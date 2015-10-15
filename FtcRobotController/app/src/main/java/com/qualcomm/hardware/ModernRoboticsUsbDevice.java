@@ -18,14 +18,14 @@ public abstract class ModernRoboticsUsbDevice implements ReadWriteRunnable.Callb
    protected ExecutorService readWriteService = Executors.newSingleThreadExecutor();
    protected SerialNumber serialNumber;
 
-   public ModernRoboticsUsbDevice(SerialNumber var1, EventLoopManager var2, ReadWriteRunnable var3) throws RobotCoreException, InterruptedException {
-      this.serialNumber = var1;
-      this.readWriteRunnable = var3;
-      RobotLog.v("Starting up device " + var1.toString());
-      this.readWriteService.execute(var3);
-      var3.blockUntilReady();
-      var3.setCallback(this);
-      var2.registerSyncdDevice(var3);
+   public ModernRoboticsUsbDevice(SerialNumber serialNumber, EventLoopManager eventLoopManager, ReadWriteRunnable readWriteRunnable) throws RobotCoreException, InterruptedException {
+      this.serialNumber = serialNumber;
+      this.readWriteRunnable = readWriteRunnable;
+      RobotLog.v("Starting up device " + serialNumber.toString());
+      this.readWriteService.execute(readWriteRunnable);
+      readWriteRunnable.blockUntilReady();
+      readWriteRunnable.setCallback(this);
+      eventLoopManager.registerSyncdDevice(readWriteRunnable);
    }
 
    public void close() {

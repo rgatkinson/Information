@@ -71,8 +71,8 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
    public static final byte START_ADDRESS = 64;
    private IsBusyHelper[] isBusyHelpers;
 
-   protected ModernRoboticsUsbDcMotorController(SerialNumber var1, RobotUsbDevice var2, EventLoopManager var3) throws RobotCoreException, InterruptedException {
-      super(var1, var3, new ReadWriteRunnableBlocking(var1, var2, 30, 64, false));
+   protected ModernRoboticsUsbDcMotorController(SerialNumber serialNumber, RobotUsbDevice robotUsbDevice, EventLoopManager eventLoopManager) throws RobotCoreException, InterruptedException {
+      super(serialNumber, eventLoopManager, new ReadWriteRunnableBlocking(serialNumber, robotUsbDevice, MONITOR_LENGTH, START_ADDRESS, false));
       this.isBusyHelpers = new IsBusyHelper[3];
       this.readWriteRunnable.setCallback(this);
 

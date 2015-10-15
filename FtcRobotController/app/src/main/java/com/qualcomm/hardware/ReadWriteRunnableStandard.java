@@ -130,9 +130,9 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
     }
 
     public void run() {
-        boolean var1 = true;
-        int var2 = 0;
-        byte[] var3 = new byte[this.monitorLength + this.startAddress];
+        boolean isFirstReadWriteCycle = true;
+        int ibFirst = 0;
+        byte[] monitorData = new byte[this.monitorLength + this.startAddress];
         ElapsedTime var4 = new ElapsedTime();
         String var5 = "Device " + this.serialNumber.toString();
         this.running = true;
@@ -147,21 +147,21 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
                     var4.reset();
                 }
 
-                ReadWriteRunnableSegment var6;
-                byte[] var7;
+                ReadWriteRunnableSegment segment;
+                byte[] usbData;
                 try {
-                    this.usbHandler.read(var2, var3);
+                    this.usbHandler.read(ibFirst, monitorData);
 
                     while(!this.segmentReadQueue.isEmpty()) {
-                        var6 = (ReadWriteRunnableSegment)this.segments.get(this.segmentReadQueue.remove());
-                        var7 = new byte[var6.getReadBuffer().length];
-                        this.usbHandler.read(var6.getAddress(), var7);
+                        segment = (ReadWriteRunnableSegment)this.segments.get(this.segmentReadQueue.remove());
+                        usbData = new byte[segment.getReadBuffer().length];
+                        this.usbHandler.read(segment.getAddress(), usbData);
 
                         try {
-                            var6.getReadLock().lock();
-                            System.arraycopy(var7, 0, var6.getReadBuffer(), 0, var6.getReadBuffer().length);
+                            segment.getReadLock().lock();
+                            System.arraycopy(usbData, 0, segment.getReadBuffer(), 0, segment.getReadBuffer().length);
                         } finally {
-                            var6.getReadLock().unlock();
+                            segment.getReadLock().unlock();
                         }
                     }
                 } catch (RobotCoreException var34) {
@@ -170,7 +170,7 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
 
                 byte[] var39 = this.localDeviceReadCache;
                 synchronized(this.localDeviceReadCache) {
-                    System.arraycopy(var3, 0, this.localDeviceReadCache, var2, var3.length);
+                    System.arraycopy(monitorData, 0, this.localDeviceReadCache, ibFirst, monitorData.length);
                 }
 
                 if(this.DEBUG_LOGGING) {
@@ -179,31 +179,31 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
 
                 this.callback.readComplete();
                 this.waitForSyncdEvents();
-                if(var1) {
-                    var2 = this.startAddress;
-                    var3 = new byte[this.monitorLength];
-                    var1 = false;
+                if (isFirstReadWriteCycle) {
+                    ibFirst = this.startAddress;
+                    monitorData = new byte[this.monitorLength];
+                    isFirstReadWriteCycle = false;
                 }
 
                 var39 = this.localDeviceWriteCache;
                 synchronized(this.localDeviceWriteCache) {
-                    System.arraycopy(this.localDeviceWriteCache, var2, var3, 0, var3.length);
+                    System.arraycopy(this.localDeviceWriteCache, ibFirst, monitorData, 0, monitorData.length);
                 }
 
                 try {
-                    if(this.writeNeeded()) {
-                        this.usbHandler.write(var2, var3);
+                    if (this.writeNeeded()) {
+                        this.usbHandler.write(ibFirst, monitorData);
                         this.setWriteNeeded(false);
                     }
 
-                    for(; !this.segmentWriteQueue.isEmpty(); this.usbHandler.write(var6.getAddress(), var7)) {
-                        var6 = (ReadWriteRunnableSegment)this.segments.get(this.segmentWriteQueue.remove());
+                    for(; !this.segmentWriteQueue.isEmpty(); this.usbHandler.write(segment.getAddress(), usbData)) {
+                        segment = (ReadWriteRunnableSegment)this.segments.get(this.segmentWriteQueue.remove());
 
                         try {
-                            var6.getWriteLock().lock();
-                            var7 = Arrays.copyOf(var6.getWriteBuffer(), var6.getWriteBuffer().length);
+                            segment.getWriteLock().lock();
+                            usbData = Arrays.copyOf(segment.getWriteBuffer(), segment.getWriteBuffer().length);
                         } finally {
-                            var6.getWriteLock().unlock();
+                            segment.getWriteLock().unlock();
                         }
                     }
                 } catch (RobotCoreException var35) {

@@ -171,7 +171,7 @@ public class EventLoopManager {
 
         this.elapsed = new ElapsedTime(0L);
         this.reportRobotState(RobotState.RUNNING);
-        this.b = new Thread(new EventLoopManager.b((EventLoopManager.SyntheticClass_1)null), "Event Loop");
+        this.b = new Thread(new EventLoopRunnable((EventLoopManager.SyntheticClass_1)null), "Event Loop");
         this.b.start();
     }
 
@@ -339,8 +339,8 @@ public class EventLoopManager {
         }
     }
 
-    private class b implements Runnable {
-        private b() {
+    private class EventLoopRunnable implements Runnable {
+        private EventLoopRunnable() {
         }
 
         public void run() {
