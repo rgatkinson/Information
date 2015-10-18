@@ -121,14 +121,14 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
 
    }
 
-   public void sendTelemetryData(Telemetry var1) {
+   public void sendTelemetryData(Telemetry telemetry) {
       if(this.d.time() > this.e) {
          this.d.reset();
-         if(var1.hasData()) {
-            this.a.sendTelemetryData(var1);
+         if(telemetry.hasData()) {
+            this.a.sendTelemetryData(telemetry);
          }
 
-         var1.clearData();
+         telemetry.clearData();
       }
 
    }

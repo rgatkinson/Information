@@ -34,13 +34,13 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
     protected Callback callback;
     protected final boolean DEBUG_LOGGING;
 
-    public ReadWriteRunnableStandard(SerialNumber serialNumber, RobotUsbDevice device, int monitorLength, int startAddress, boolean debug) {
+    public ReadWriteRunnableStandard(SerialNumber serialNumber, RobotUsbDevice robotUsbDevice, int monitorLength, int startAddress, boolean debug) {
         this.serialNumber = serialNumber;
         this.startAddress = startAddress;
         this.monitorLength = monitorLength;
         this.DEBUG_LOGGING = debug;
         this.callback = new EmptyCallback();
-        this.usbHandler = new ReadWriteRunnableUsbHandler(device);
+        this.usbHandler = new ReadWriteRunnableUsbHandler(robotUsbDevice);
     }
 
     public void setCallback(Callback callback) {
@@ -74,14 +74,12 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
     }
 
     public byte[] readFromWriteCache(int address, int size) {
-        byte[] var3 = this.localDeviceWriteCache;
         synchronized(this.localDeviceWriteCache) {
             return Arrays.copyOfRange(this.localDeviceWriteCache, address, address + size);
         }
     }
 
     public byte[] read(int address, int size) {
-        byte[] var3 = this.localDeviceReadCache;
         synchronized(this.localDeviceReadCache) {
             return Arrays.copyOfRange(this.localDeviceReadCache, address, address + size);
         }

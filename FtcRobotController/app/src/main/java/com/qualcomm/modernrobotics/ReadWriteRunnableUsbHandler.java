@@ -17,8 +17,8 @@ public class ReadWriteRunnableUsbHandler {
    protected int usbSequentialWriteErrorCount = 0;
    protected byte[] writeCmd = new byte[]{(byte)85, (byte)-86, (byte)0, (byte)0, (byte)0};
 
-   public ReadWriteRunnableUsbHandler(RobotUsbDevice var1) {
-      this.device = var1;
+   public ReadWriteRunnableUsbHandler(RobotUsbDevice robotUsbDevice) {
+      this.device = robotUsbDevice;
    }
 
    private void a(int var1, byte[] var2) throws RobotCoreException {

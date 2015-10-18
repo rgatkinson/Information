@@ -44,12 +44,12 @@ public abstract class ModernRoboticsUsbDevice implements ReadWriteRunnable.Callb
       return this.read(0);
    }
 
-   public byte read(int var1) {
-      return this.read(var1, 1)[0];
+   public byte read(int register) {
+      return this.read(register, 1)[0];
    }
 
-   public byte[] read(int var1, int var2) {
-      return this.readWriteRunnable.read(var1, var2);
+   public byte[] read(int register, int count) {
+      return this.readWriteRunnable.read(register, count);
    }
 
    public void readComplete() throws InterruptedException {
@@ -63,13 +63,13 @@ public abstract class ModernRoboticsUsbDevice implements ReadWriteRunnable.Callb
       return this.readWriteRunnable.readFromWriteCache(var1, var2);
    }
 
-   public void write(int var1, byte var2) {
-      this.write(var1, new byte[]{var2});
+   public void write(int register, byte datum) {
+      this.write(register, new byte[]{datum});
    }
 
-   public void write(int var1, double var2) {
-      byte[] var4 = new byte[]{(byte)((int)var2)};
-      this.write(var1, var4);
+   public void write(int register, double doubleToBeByte) {
+      byte[] var4 = new byte[]{(byte)((int)doubleToBeByte)};
+      this.write(register, var4);
    }
 
    public void write(int var1, int var2) {
