@@ -205,7 +205,7 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
                         }
                     }
                 } catch (RobotCoreException var35) {
-                    RobotLog.w(String.format("could not write to device %s: %s", new Object[]{this.serialNumber, var35.getMessage()}));
+                    RobotLog.w(String.format("could not write to device %s: %s", this.serialNumber, var35.getMessage()));
                 }
 
                 if(this.DEBUG_LOGGING) {

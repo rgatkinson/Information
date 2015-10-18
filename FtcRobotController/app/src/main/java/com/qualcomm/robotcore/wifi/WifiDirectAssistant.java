@@ -42,9 +42,9 @@ public class WifiDirectAssistant {
    private String o;
    private String p;
    private InetAddress q;
-   private String r;
-   private String s;
-   private String t;
+   private String ownerAddress;
+   private String ownerName;
+   private String passphrase;
    private boolean u;
    private int v;
    private WifiDirectAssistant.WifiDirectAssistantCallback w;
@@ -55,9 +55,9 @@ public class WifiDirectAssistant {
       this.o = "";
       this.p = "";
       this.q = null;
-      this.r = "";
-      this.s = "";
-      this.t = "";
+      this.ownerAddress = "";
+      this.ownerName = "";
+      this.passphrase = "";
       this.u = false;
       this.v = 0;
       this.w = null;
@@ -272,15 +272,15 @@ public class WifiDirectAssistant {
    }
 
    public String getGroupOwnerMacAddress() {
-      return this.r;
+      return this.ownerAddress;
    }
 
    public String getGroupOwnerName() {
-      return this.s;
+      return this.ownerName;
    }
 
    public String getPassphrase() {
-      return this.t;
+      return this.passphrase;
    }
 
    public List<WifiP2pDevice> getPeers() {
@@ -414,27 +414,27 @@ public class WifiDirectAssistant {
          this();
       }
 
-      public void onGroupInfoAvailable(WifiP2pGroup var1) {
-         if(var1 != null) {
-            if(var1.isGroupOwner()) {
-               WifiDirectAssistant.this.r = WifiDirectAssistant.this.o;
-               WifiDirectAssistant.this.s = WifiDirectAssistant.this.p;
+      public void onGroupInfoAvailable(WifiP2pGroup groupInfo) {
+         if(groupInfo != null) {
+            if(groupInfo.isGroupOwner()) {
+               WifiDirectAssistant.this.ownerAddress = WifiDirectAssistant.this.o;
+               WifiDirectAssistant.this.ownerName = WifiDirectAssistant.this.p;
             } else {
-               WifiP2pDevice var2 = var1.getOwner();
-               WifiDirectAssistant.this.r = var2.deviceAddress;
-               WifiDirectAssistant.this.s = var2.deviceName;
+               WifiP2pDevice owner = groupInfo.getOwner();
+               WifiDirectAssistant.this.ownerAddress = owner.deviceAddress;
+               WifiDirectAssistant.this.ownerName = owner.deviceName;
             }
 
-            WifiDirectAssistant.this.t = var1.getPassphrase();
-            WifiDirectAssistant var6 = WifiDirectAssistant.this;
-            String var7;
-            if(WifiDirectAssistant.this.t != null) {
-               var7 = WifiDirectAssistant.this.t;
+            WifiDirectAssistant.this.passphrase = groupInfo.getPassphrase();
+            WifiDirectAssistant assistant = WifiDirectAssistant.this;
+            String passphrase;
+            if(WifiDirectAssistant.this.passphrase != null) {
+               passphrase = WifiDirectAssistant.this.passphrase;
             } else {
-               var7 = "";
+               passphrase = "";
             }
 
-            var6.t = var7;
+            assistant.passphrase = passphrase;
             RobotLog.v("Wifi Direct connection information available");
             WifiDirectAssistant.this.a(WifiDirectAssistant.Event.CONNECTION_INFO_AVAILABLE);
          }

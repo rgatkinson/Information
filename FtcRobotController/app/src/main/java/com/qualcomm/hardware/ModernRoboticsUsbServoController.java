@@ -28,14 +28,13 @@ public class ModernRoboticsUsbServoController extends ModernRoboticsUsbDevice im
    public static final byte START_ADDRESS = 64;
 
    protected ModernRoboticsUsbServoController(SerialNumber serialNumber, RobotUsbDevice robotUsbDevice, EventLoopManager eventLoopManager) throws RobotCoreException, InterruptedException {
-      super(serialNumber, eventLoopManager, new ReadWriteRunnableBlocking(serialNumber, robotUsbDevice, 9, 64, false));
+      super(serialNumber, eventLoopManager, new ReadWriteRunnableBlocking(serialNumber, robotUsbDevice, MONITOR_LENGTH, START_ADDRESS, false));
       this.pwmDisable();
    }
 
    private void validateServo(int servo) {
       if(servo < 1 || servo > ADDRESS_CHANNEL_MAP.length) {
-         Object[] var2 = new Object[]{Integer.valueOf(servo), Integer.valueOf(6)};
-         throw new IllegalArgumentException(String.format("Channel %d is invalid; valid channels are 1..%d", var2));
+         throw new IllegalArgumentException(String.format("Channel %d is invalid; valid channels are 1..%d", servo, MAX_SERVOS));
       }
    }
 
