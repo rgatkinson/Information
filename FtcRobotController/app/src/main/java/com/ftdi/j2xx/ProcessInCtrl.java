@@ -22,85 +22,86 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-class o {
+class ProcessInCtrl
+    {
     private Semaphore[] a;
-    private Semaphore[] b;
+    private Semaphore[] dataReceivedSemaphores;
     private n[] c;
     private ByteBuffer d;
     private ByteBuffer[] e;
-    private Pipe f;
-    private SinkChannel g;
-    private SourceChannel h;
-    private int i;
-    private int j;
-    private Object k;
-    private FT_Device l;
-    private DriverParameters m;
+    private Pipe pipe;
+    private SinkChannel sinkChannel;
+    private SourceChannel sourceChannel;
+    private int cBuffer;
+    private int cbAvailable;
+    private Object cbAvailableLock;
+    private FT_Device ftDevice;
+    private DriverParameters driverParameters;
     private Lock n;
     private Condition o;
-    private boolean p;
+    private boolean bufferIsFull;
     private Lock q;
     private Condition r;
     private Object s;
     private int t;
 
-    public o(FT_Device var1) {
-        this.l = var1;
-        this.m = this.l.d();
-        this.i = this.m.getBufferNumber();
-        int var2 = this.m.getMaxBufferSize();
-        this.t = this.l.e();
-        this.a = new Semaphore[this.i];
-        this.b = new Semaphore[this.i];
-        this.c = new n[this.i];
+    public ProcessInCtrl(FT_Device ftDevice) {
+        this.ftDevice = ftDevice;
+        this.driverParameters = this.ftDevice.getDriverParameters();
+        this.cBuffer = this.driverParameters.getBufferNumber();
+        int maxBufferSize = this.driverParameters.getMaxBufferSize();
+        this.t = this.ftDevice.e();
+        this.a = new Semaphore[this.cBuffer];
+        this.dataReceivedSemaphores = new Semaphore[this.cBuffer];
+        this.c = new n[this.cBuffer];
         this.e = new ByteBuffer[256];
         this.n = new ReentrantLock();
         this.o = this.n.newCondition();
-        this.p = false;
+        this.bufferIsFull = false;
         this.q = new ReentrantLock();
         this.r = this.q.newCondition();
-        this.k = new Object();
+        this.cbAvailableLock = new Object();
         this.s = new Object();
-        this.h();
-        this.d = ByteBuffer.allocateDirect(var2);
+        this.resetAvailable();
+        this.d = ByteBuffer.allocateDirect(maxBufferSize);
 
         try {
-            this.f = Pipe.open();
-            this.g = this.f.sink();
-            this.h = this.f.source();
+            this.pipe = Pipe.open();
+            this.sinkChannel = this.pipe.sink();
+            this.sourceChannel = this.pipe.source();
         } catch (IOException var6) {
             Log.d("ProcessInCtrl", "Create mMainPipe failed!");
             var6.printStackTrace();
         }
 
-        for(int var3 = 0; var3 < this.i; ++var3) {
-            this.c[var3] = new n(var2);
-            this.b[var3] = new Semaphore(1);
-            this.a[var3] = new Semaphore(1);
+        for(int iBuffer = 0; iBuffer < this.cBuffer; ++iBuffer) {
+            this.c[iBuffer] = new n(maxBufferSize);
+            this.dataReceivedSemaphores[iBuffer] = new Semaphore(1);
+            this.a[iBuffer] = new Semaphore(1);
 
             try {
-                this.c(var3);
+                this.waitForDataReceived(iBuffer);
             } catch (Exception var5) {
-                Log.d("ProcessInCtrl", "Acquire read buffer " + var3 + " failed!");
+                Log.d("ProcessInCtrl", "Acquire read buffer " + iBuffer + " failed!");
                 var5.printStackTrace();
             }
         }
 
     }
 
-    boolean a() {
-        return this.p;
+    boolean isBufferFull() {
+        return this.bufferIsFull;
     }
 
-    DriverParameters b() {
-        return this.m;
+    DriverParameters getDriverParameters() {
+        return this.driverParameters;
     }
 
     n a(int var1) {
         n var2 = null;
         n[] var3 = this.c;
         synchronized(this.c) {
-            if(var1 >= 0 && var1 < this.i) {
+            if(var1 >= 0 && var1 < this.cBuffer) {
                 var2 = this.c[var1];
             }
 
@@ -108,35 +109,35 @@ class o {
         }
     }
 
-    n b(int var1) throws InterruptedException {
+    n b(int iBuffer) throws InterruptedException {
         n var2 = null;
-        this.a[var1].acquire();
-        var2 = this.a(var1);
-        if(var2.c(var1) == null) {
+        this.a[iBuffer].acquire();
+        var2 = this.a(iBuffer);
+        if(var2.c(iBuffer) == null) {
             var2 = null;
         }
 
         return var2;
     }
 
-    n c(int var1) throws InterruptedException {
+    n waitForDataReceived(int iBuffer) throws InterruptedException {
         n var2 = null;
-        this.b[var1].acquire();
-        var2 = this.a(var1);
+        this.dataReceivedSemaphores[iBuffer].acquire();
+        var2 = this.a(iBuffer);
         return var2;
     }
 
-    public void d(int var1) throws InterruptedException {
+    public void d(int iBuffer) throws InterruptedException {
         n[] var2 = this.c;
         synchronized(this.c) {
-            this.c[var1].d(var1);
+            this.c[iBuffer].d(iBuffer);
         }
 
-        this.a[var1].release();
+        this.a[iBuffer].release();
     }
 
-    public void e(int var1) throws InterruptedException {
-        this.b[var1].release();
+    public void onDataReceived(int iBuffer) throws InterruptedException {
+        this.dataReceivedSemaphores[iBuffer].release();
     }
 
     public void processBulkIn(n var1) throws D2xxException {
@@ -146,9 +147,9 @@ class o {
         boolean var5 = false;
 
         try {
-            int var12 = var1.b();
-            if(var12 < 2) {
-                var1.a().clear();
+            int cbTransferred = var1.getCbTransferred();
+            if (cbTransferred < 2) {
+                var1.getByteBuffer().clear();
                 return;
             }
 
@@ -157,12 +158,12 @@ class o {
             int var7;
             synchronized(this.s) {
                 var6 = this.d();
-                var7 = var12 - 2;
+                var7 = cbTransferred - 2;
                 if(var6 < var7) {
                     Log.d("ProcessBulkIn::", " Buffer is full, waiting for read....");
                     this.a(var5, var3, var4);
                     this.n.lock();
-                    this.p = true;
+                    this.bufferIsFull = true;
                 }
             }
 
@@ -194,52 +195,52 @@ class o {
         short var9 = 0;
         short var10 = 0;
         boolean var11 = false;
-        ByteBuffer var12 = null;
-        var12 = var1.a();
-        int var17 = var1.b();
+        ByteBuffer buffer = null;
+        buffer = var1.getByteBuffer();
+        int var17 = var1.getCbTransferred();
         if(var17 > 0) {
             int var18 = var17 / this.t + (var17 % this.t > 0?1:0);
 
             for(int var13 = 0; var13 < var18; ++var13) {
                 int var19;
                 int var20;
-                if(var13 == var18 - 1) {
+                if (var13 == var18 - 1) {
                     var20 = var17;
-                    var12.limit(var17);
+                    buffer.limit(var17);
                     var19 = var13 * this.t;
-                    var12.position(var19);
-                    byte var14 = var12.get();
-                    var9 = (short)(this.l.ftDeviceInfoListNode.modemStatus ^ (short)(var14 & 240));
-                    this.l.ftDeviceInfoListNode.modemStatus = (short)(var14 & 240);
-                    byte var15 = var12.get();
-                    this.l.ftDeviceInfoListNode.lineStatus = (short)(var15 & 255);
+                    buffer.position(var19);
+                    byte var14 = buffer.get();
+                    var9 = (short)(this.ftDevice.ftDeviceInfoListNode.modemStatus ^ (short)(var14 & 240));
+                    this.ftDevice.ftDeviceInfoListNode.modemStatus = (short)(var14 & 240);
+                    byte var15 = buffer.get();
+                    this.ftDevice.ftDeviceInfoListNode.lineStatus = (short)(var15 & 255);
                     var19 += 2;
-                    if(var12.hasRemaining()) {
-                        var10 = (short)(this.l.ftDeviceInfoListNode.lineStatus & 30);
+                    if(buffer.hasRemaining()) {
+                        var10 = (short)(this.ftDevice.ftDeviceInfoListNode.lineStatus & 30);
                     } else {
                         var10 = 0;
                     }
                 } else {
                     var20 = (var13 + 1) * this.t;
-                    var12.limit(var20);
+                    buffer.limit(var20);
                     var19 = var13 * this.t + 2;
-                    var12.position(var19);
+                    buffer.position(var19);
                 }
 
                 var4 += var20 - var19;
-                this.e[var13] = var12.slice();
+                this.e[var13] = buffer.slice();
             }
 
             if(var4 != 0) {
                 var11 = true;
 
                 try {
-                    var7 = this.g.write(this.e, 0, var18);
+                    var7 = this.sinkChannel.write(this.e, 0, var18);
                     if(var7 != (long)var4) {
                         Log.d("extractReadData::", "written != totalData, written= " + var7 + " totalData=" + var4);
                     }
 
-                    this.f((int)var7);
+                    this.incrementAvailable((int) var7);
                     this.q.lock();
                     this.r.signalAll();
                     this.q.unlock();
@@ -249,107 +250,106 @@ class o {
                 }
             }
 
-            var12.clear();
+            buffer.clear();
             this.a(var11, var9, var10);
         }
 
     }
 
-    public int readBulkInData(byte[] var1, int var2, long var3) {
+    public int readBulkInData(byte[] data, int length, long msTimeout) {
         boolean var5 = false;
-        int var6 = 0;
-        int var7 = this.m.getMaxBufferSize();
-        long var8 = System.currentTimeMillis();
-        ByteBuffer var10 = ByteBuffer.wrap(var1, 0, var2);
-        if(var3 == 0L) {
-            var3 = (long)this.m.getReadTimeout();
+        int cbRead = 0;
+        int var7 = this.driverParameters.getMaxBufferSize();
+        long msReadStart = System.currentTimeMillis();
+        ByteBuffer buffer = ByteBuffer.wrap(data, 0, length);
+        if(msTimeout == 0L) {
+            msTimeout = (long)this.driverParameters.getReadTimeout();
         }
 
-        while(this.l.isOpen()) {
-            if(this.c() >= var2) {
-                SourceChannel var11 = this.h;
-                synchronized(this.h) {
+        while (this.ftDevice.isOpen()) {
+            if (this.cbAvailable() >= length) {
+
+                synchronized(this.sourceChannel) {
                     try {
-                        this.h.read(var10);
-                        this.g(var2);
-                    } catch (Exception var13) {
+                        this.sourceChannel.read(buffer);
+                        this.decrementAvailable(length);
+                    } catch (Exception e) {
                         Log.d("readBulkInData::", "Cannot read data from Source!!");
-                        var13.printStackTrace();
+                        e.printStackTrace();
                     }
                 }
 
-                Object var17 = this.s;
                 synchronized(this.s) {
-                    if(this.p) {
+                    if (this.bufferIsFull) {
                         Log.i("FTDI debug::", "buffer is full , and also re start buffer");
                         this.n.lock();
                         this.o.signalAll();
-                        this.p = false;
+                        this.bufferIsFull = false;
                         this.n.unlock();
                     }
                 }
 
-                var6 = var2;
+                cbRead = length;
                 break;
             }
 
             try {
                 this.q.lock();
-                this.r.await(System.currentTimeMillis() - var8, TimeUnit.MILLISECONDS);
+                this.r.await(System.currentTimeMillis() - msReadStart, TimeUnit.MILLISECONDS);
                 this.q.unlock();
-            } catch (InterruptedException var15) {
+            } catch (InterruptedException e) {
                 Log.d("readBulkInData::", "Cannot wait to read data!!");
-                var15.printStackTrace();
+                e.printStackTrace();
                 this.q.unlock();
             }
 
-            if(System.currentTimeMillis() - var8 >= var3) {
+            if(System.currentTimeMillis() - msReadStart >= msTimeout) {
                 break;
             }
         }
 
-        return var6;
+        return cbRead;
     }
 
-    private int f(int var1) {
-        Object var3 = this.k;
-        synchronized(this.k) {
-            this.j += var1;
-            int var2 = this.j;
+    private int incrementAvailable(int var1) {
+
+        synchronized(this.cbAvailableLock) {
+            this.cbAvailable += var1;
+            int var2 = this.cbAvailable;
             return var2;
         }
     }
 
-    private int g(int var1) {
-        Object var3 = this.k;
-        synchronized(this.k) {
-            this.j -= var1;
-            int var2 = this.j;
+    private int decrementAvailable(int var1) {
+
+        synchronized(this.cbAvailableLock) {
+            this.cbAvailable -= var1;
+            int var2 = this.cbAvailable;
             return var2;
         }
     }
 
-    private void h() {
-        Object var1 = this.k;
-        synchronized(this.k) {
-            this.j = 0;
+    private void resetAvailable() {
+
+        synchronized(this.cbAvailableLock) {
+            this.cbAvailable = 0;
         }
     }
 
-    public int c() {
-        Object var2 = this.k;
-        synchronized(this.k) {
-            int var1 = this.j;
+    public int cbAvailable() {
+
+        synchronized(this.cbAvailableLock) {
+            int var1 = this.cbAvailable;
             return var1;
         }
     }
 
     public int d() {
-        return this.m.getMaxBufferSize() - this.c() - 1;
+        return this.driverParameters.getMaxBufferSize() - this.cbAvailable() - 1;
     }
 
     public int e() {
-        int var1 = this.m.getBufferNumber();
+        int var1 = this.driverParameters.getBufferNumber();
         n var2 = null;
         boolean var3 = false;
         ByteBuffer var4 = this.d;
@@ -357,20 +357,20 @@ class o {
             int var8;
             try {
                 do {
-                    this.h.configureBlocking(false);
-                    var8 = this.h.read(this.d);
+                    this.sourceChannel.configureBlocking(false);
+                    var8 = this.sourceChannel.read(this.d);
                     this.d.clear();
                 } while(var8 != 0);
             } catch (Exception var6) {
                 var6.printStackTrace();
             }
 
-            this.h();
+            this.resetAvailable();
 
             for(int var5 = 0; var5 < var1; ++var5) {
                 var2 = this.a(var5);
-                if(var2.d() && var2.b() > 2) {
-                    var2.c();
+                if(var2.d() && var2.getCbTransferred() > 2) {
+                    var2.clear();
                 }
             }
 
@@ -384,34 +384,34 @@ class o {
         boolean var9 = false;
         var6 = 0L;
         q var10 = new q();
-        var10.a = this.l.i.a;
+        var10.a = this.ftDevice.i.a;
         Intent var11;
-        if(var1 && (var10.a & 1L) != 0L && (this.l.a ^ 1L) == 1L) {
-            this.l.a |= 1L;
+        if(var1 && (var10.a & 1L) != 0L && (this.ftDevice.a ^ 1L) == 1L) {
+            this.ftDevice.a |= 1L;
             var11 = new Intent("FT_EVENT_RXCHAR");
             var11.putExtra("message", "FT_EVENT_RXCHAR");
-            LocalBroadcastManager.getInstance(this.l.parentContext).sendBroadcast(var11);
+            LocalBroadcastManager.getInstance(this.ftDevice.parentContext).sendBroadcast(var11);
         }
 
-        if(var2 != 0 && (var10.a & 2L) != 0L && (this.l.a ^ 2L) == 2L) {
-            this.l.a |= 2L;
+        if(var2 != 0 && (var10.a & 2L) != 0L && (this.ftDevice.a ^ 2L) == 2L) {
+            this.ftDevice.a |= 2L;
             var11 = new Intent("FT_EVENT_MODEM_STATUS");
             var11.putExtra("message", "FT_EVENT_MODEM_STATUS");
-            LocalBroadcastManager.getInstance(this.l.parentContext).sendBroadcast(var11);
+            LocalBroadcastManager.getInstance(this.ftDevice.parentContext).sendBroadcast(var11);
         }
 
-        if(var3 != 0 && (var10.a & 4L) != 0L && (this.l.a ^ 4L) == 4L) {
-            this.l.a |= 4L;
+        if(var3 != 0 && (var10.a & 4L) != 0L && (this.ftDevice.a ^ 4L) == 4L) {
+            this.ftDevice.a |= 4L;
             var11 = new Intent("FT_EVENT_LINE_STATUS");
             var11.putExtra("message", "FT_EVENT_LINE_STATUS");
-            LocalBroadcastManager.getInstance(this.l.parentContext).sendBroadcast(var11);
+            LocalBroadcastManager.getInstance(this.ftDevice.parentContext).sendBroadcast(var11);
         }
 
         return 0;
     }
 
     public void f() throws InterruptedException {
-        int var1 = this.m.getBufferNumber();
+        int var1 = this.driverParameters.getBufferNumber();
 
         for(int var2 = 0; var2 < var1; ++var2) {
             if(this.a(var2).d()) {
@@ -421,18 +421,18 @@ class o {
 
     }
 
-    void g() {
+    void close() {
         int var1;
-        for(var1 = 0; var1 < this.i; ++var1) {
+        for(var1 = 0; var1 < this.cBuffer; ++var1) {
             try {
-                this.e(var1);
+                this.onDataReceived(var1);
             } catch (Exception var4) {
                 Log.d("ProcessInCtrl", "Acquire read buffer " + var1 + " failed!");
                 var4.printStackTrace();
             }
 
             this.c[var1] = null;
-            this.b[var1] = null;
+            this.dataReceivedSemaphores[var1] = null;
             this.a[var1] = null;
         }
 
@@ -441,11 +441,11 @@ class o {
         }
 
         this.a = null;
-        this.b = null;
+        this.dataReceivedSemaphores = null;
         this.c = null;
         this.e = null;
         this.d = null;
-        if(this.p) {
+        if(this.bufferIsFull) {
             this.n.lock();
             this.o.signalAll();
             this.n.unlock();
@@ -456,22 +456,22 @@ class o {
         this.q.unlock();
         this.n = null;
         this.o = null;
-        this.k = null;
+        this.cbAvailableLock = null;
         this.q = null;
         this.r = null;
 
         try {
-            this.g.close();
-            this.g = null;
-            this.h.close();
-            this.h = null;
-            this.f = null;
+            this.sinkChannel.close();
+            this.sinkChannel = null;
+            this.sourceChannel.close();
+            this.sourceChannel = null;
+            this.pipe = null;
         } catch (IOException var3) {
             Log.d("ProcessInCtrl", "Close mMainPipe failed!");
             var3.printStackTrace();
         }
 
-        this.l = null;
-        this.m = null;
+        this.ftDevice = null;
+        this.driverParameters = null;
     }
 }

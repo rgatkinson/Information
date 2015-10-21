@@ -7,17 +7,17 @@ public interface RobotUsbDevice {
 
    void purge(RobotUsbDevice.Channel var1) throws RobotCoreException;
 
-   int read(byte[] var1) throws RobotCoreException;
+   int read(byte[] data) throws RobotCoreException;
 
-   int read(byte[] var1, int var2, int var3) throws RobotCoreException;
+   int read(byte[] data, int length, int msTimeout) throws RobotCoreException;
 
    void setBaudRate(int var1) throws RobotCoreException;
 
-   void setDataCharacteristics(byte var1, byte var2, byte var3) throws RobotCoreException;
+   void setDataCharacteristics(byte databits, byte stopbits, byte parity) throws RobotCoreException;
 
-   void setLatencyTimer(int var1) throws RobotCoreException;
+   void setLatencyTimer(int ms) throws RobotCoreException;
 
-   void write(byte[] var1) throws RobotCoreException;
+   void write(byte[] data) throws RobotCoreException;
 
    public static enum Channel {
       BOTH,

@@ -3,27 +3,27 @@ package com.ftdi.j2xx;
 import android.util.Log;
 
 class ProcessRequestRunnable implements Runnable {
-   int a;
-   private o b;
+   int cBuffer;
+   private ProcessInCtrl processInCtrl;
 
-   ProcessRequestRunnable(o var1) {
-      this.b = var1;
-      this.a = this.b.b().getBufferNumber();
+   ProcessRequestRunnable(ProcessInCtrl var1) {
+      this.processInCtrl = var1;
+      this.cBuffer = this.processInCtrl.getDriverParameters().getBufferNumber();
    }
 
    public void run() {
-      int var1 = 0;
+      int iBuffer = 0;
 
       try {
          do {
-            n var6 = this.b.c(var1);
-            if(var6.b() > 0) {
-               this.b.processBulkIn(var6);
-               var6.c();
+            n var6 = this.processInCtrl.waitForDataReceived(iBuffer);
+            if(var6.getCbTransferred() > 0) {
+               this.processInCtrl.processBulkIn(var6);
+               var6.clear();
             }
 
-            this.b.d(var1);
-            var1 = (var1 + 1) % this.a;
+            this.processInCtrl.d(iBuffer);
+            iBuffer = (iBuffer + 1) % this.cBuffer;
          } while(!Thread.interrupted());
 
          throw new InterruptedException();

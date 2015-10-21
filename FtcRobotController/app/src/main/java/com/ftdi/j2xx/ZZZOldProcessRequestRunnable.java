@@ -4,9 +4,9 @@ import android.util.Log;
 
 class ZZZOldProcessRequestRunnable implements Runnable {
    int bufferCount;
-   private o oDevice;
+   private ProcessInCtrl oDevice;
 
-   ZZZOldProcessRequestRunnable(o var1) {
+   ZZZOldProcessRequestRunnable(ProcessInCtrl var1) {
       this.oDevice = var1;
       this.bufferCount = this.oDevice.getDriverParameters().getBufferNumber();
    }
@@ -16,10 +16,10 @@ class ZZZOldProcessRequestRunnable implements Runnable {
 
       try {
          do {
-            n var6 = this.oDevice.c(bufferNum);
-            if(var6.b() > 0) {
+            n var6 = this.oDevice.waitForDataReceived(bufferNum);
+            if(var6.getCbTransferred() > 0) {
                this.oDevice.processBulkIn(var6);
-               var6.c();
+               var6.clear();
             }
 
             this.oDevice.d(bufferNum);

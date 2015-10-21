@@ -34,7 +34,7 @@ public class FT_Device {
     private Thread threadProcessRequest;
     private Thread threadBulkIn;
     FtDeviceInfoListNode ftDeviceInfoListNode;
-    private o p;
+    private ProcessInCtrl processInCtrl;
     private k q;
     private byte r;
     r h;
@@ -60,7 +60,7 @@ public class FT_Device {
             this.ftDeviceInfoListNode = new FtDeviceInfoListNode();
             this.usbRequest = new UsbRequest();
 
-            this.a(usbManager.openDevice(this.usbDevice));
+            this.setUsbDeviceConnection(usbManager.openDevice(this.usbDevice));
 
             if(this.getUsbDeviceConnection() == null) {
                 Log.e("FTDI_Device::", "Failed to open the device!");
@@ -202,7 +202,7 @@ public class FT_Device {
                     default:
                         this.getUsbDeviceConnection().releaseInterface(this.usbInterface);
                         this.getUsbDeviceConnection().close();
-                        this.a((UsbDeviceConnection)null);
+                        this.setUsbDeviceConnection((UsbDeviceConnection) null);
                         this.p();
                     }
                 }
@@ -263,8 +263,8 @@ public class FT_Device {
         return this.usbDeviceConnection;
     }
 
-    void a(UsbDeviceConnection var1) {
-        this.usbDeviceConnection = var1;
+    void setUsbDeviceConnection(UsbDeviceConnection usbDeviceConnection) {
+        this.usbDeviceConnection = usbDeviceConnection;
     }
 
     synchronized boolean setParentContext(Context parentContext) {
@@ -284,7 +284,7 @@ public class FT_Device {
         this.driverParameters.setReadTimeout(params.getReadTimeout());
     }
 
-    DriverParameters d() {
+    DriverParameters getDriverParameters() {
         return this.driverParameters;
     }
 
@@ -309,44 +309,44 @@ public class FT_Device {
 
     }
 
-    synchronized boolean a(UsbManager var1) {
-        boolean var2 = false;
-        if(this.isOpen()) {
-            return var2;
-        } else if(var1 == null) {
+    synchronized boolean open(UsbManager usbManager) {
+        boolean result = false;
+        if (this.isOpen()) {
+            return result;
+        } else if(usbManager == null) {
             Log.e("FTDI_Device::", "UsbManager cannot be null.");
-            return var2;
+            return result;
         } else if(this.getUsbDeviceConnection() != null) {
             Log.e("FTDI_Device::", "There should not have an UsbConnection.");
-            return var2;
+            return result;
         } else {
-            this.a(var1.openDevice(this.usbDevice));
+            this.setUsbDeviceConnection(usbManager.openDevice(this.usbDevice));
             if(this.getUsbDeviceConnection() == null) {
                 Log.e("FTDI_Device::", "UsbConnection cannot be null.");
-                return var2;
+                return result;
             } else if(!this.getUsbDeviceConnection().claimInterface(this.usbInterface, true)) {
                 Log.e("FTDI_Device::", "ClaimInteface returned false.");
-                return var2;
+                return result;
             } else {
                 Log.d("FTDI_Device::", "open SUCCESS");
                 if(!this.q()) {
                     Log.e("FTDI_Device::", "Failed to find endpoints.");
-                    return var2;
+                    return result;
                 } else {
                     this.usbRequest.initialize(this.usbDeviceConnection, this.e);
                     Log.d("D2XX::", "**********************Device Opened**********************");
-                    this.p = new o(this);
-                    this.bulkInRunnable = new BulkInRunnable(this, this.p, this.getUsbDeviceConnection(), this.f);
+                    this.processInCtrl = new ProcessInCtrl(this);
+                    this.bulkInRunnable = new BulkInRunnable(this, this.processInCtrl, this.getUsbDeviceConnection(), this.f);
                     this.threadBulkIn = new Thread(this.bulkInRunnable);
                     this.threadBulkIn.setName("bulkInThread");
-                    this.threadProcessRequest = new Thread(new ProcessRequestRunnable(this.p));
+                    this.threadProcessRequest = new Thread(new ProcessRequestRunnable(this.processInCtrl));
                     this.threadProcessRequest.setName("processRequestThread");
                     this.a(true, true);
                     this.threadBulkIn.start();
                     this.threadProcessRequest.start();
                     this.o();
-                    var2 = true;
-                    return var2;
+                    result = true;
+                    return result;
                 }
             }
         }
@@ -381,14 +381,14 @@ public class FT_Device {
             this.usbDeviceConnection = null;
         }
 
-        if(this.p != null) {
-            this.p.g();
+        if(this.processInCtrl != null) {
+            this.processInCtrl.close();
         }
 
         this.threadProcessRequest = null;
         this.threadBulkIn = null;
         this.bulkInRunnable = null;
-        this.p = null;
+        this.processInCtrl = null;
         this.p();
     }
 
@@ -406,11 +406,11 @@ public class FT_Device {
             return -1;
         } else if(length <= 0) {
             return -2;
-        } else if(this.p == null) {
+        } else if(this.processInCtrl == null) {
             return -3;
         } else {
-            int var6 = this.p.readBulkInData(data, length, wait_ms);
-            return var6;
+            int cbRead = this.processInCtrl.readBulkInData(data, length, wait_ms);
+            return cbRead;
         }
     }
 
@@ -427,40 +427,40 @@ public class FT_Device {
     }
 
     public int write(byte[] data, int length, boolean wait) {
-        int var6 = -1;
+        int cbWritten = -1;
         if(!this.isOpen()) {
-            return var6;
+            return cbWritten;
         } else if(length < 0) {
-            return var6;
+            return cbWritten;
         } else {
-            UsbRequest var4 = this.usbRequest;
+            UsbRequest usbRequest = this.usbRequest;    // reuses instance var: so: only one outstanding write at a time
             if(wait) {
-                var4.setClientData(this);
+                usbRequest.setClientData(this);
             }
 
             if(length == 0) {
-                byte[] var7 = new byte[1];
-                if(var4.queue(ByteBuffer.wrap(var7), length)) {
-                    var6 = length;
+                byte[] avoidZeroLengthData = new byte[1];
+                if(usbRequest.queue(ByteBuffer.wrap(avoidZeroLengthData), length)) {
+                    cbWritten = length;
                 }
-            } else if(var4.queue(ByteBuffer.wrap(data), length)) {
-                var6 = length;
+            } else if(usbRequest.queue(ByteBuffer.wrap(data), length)) {
+                cbWritten = length;
             }
 
             Object var5;
-            if(wait) {
+            if (wait) {
                 do {
-                    var4 = this.usbDeviceConnection.requestWait();
-                    if(var4 == null) {
+                    usbRequest = this.usbDeviceConnection.requestWait();
+                    if(usbRequest == null) {
                         Log.e("FTDI_Device::", "UsbConnection.requestWait() == null");
                         return -99;
                     }
 
-                    var5 = var4.getClientData();
+                    var5 = usbRequest.getClientData();
                 } while(var5 != this);
             }
 
-            return var6;
+            return cbWritten;
         }
     }
 
@@ -471,7 +471,7 @@ public class FT_Device {
     public short getModemStatus() {
         if(!this.isOpen()) {
             return (short)-1;
-        } else if(this.p == null) {
+        } else if(this.processInCtrl == null) {
             return (short)-2;
         } else {
             this.a &= -3L;
@@ -480,21 +480,21 @@ public class FT_Device {
     }
 
     public short getLineStatus() {
-        return !this.isOpen()?-1:(this.p == null?-2:this.ftDeviceInfoListNode.lineStatus);
+        return !this.isOpen()?-1:(this.processInCtrl == null?-2:this.ftDeviceInfoListNode.lineStatus);
     }
 
     public int getQueueStatus() {
-        return !this.isOpen()?-1:(this.p == null?-2:this.p.c());
+        return !this.isOpen()?-1:(this.processInCtrl == null?-2:this.processInCtrl.cbAvailable());
     }
 
     public boolean readBufferFull() {
-        return this.p.a();
+        return this.processInCtrl.isBufferFull();
     }
 
     public long getEventStatus() {
         if(!this.isOpen()) {
             return -1L;
-        } else if(this.p == null) {
+        } else if(this.processInCtrl == null) {
             return -2L;
         } else {
             long var1 = this.a;
@@ -881,8 +881,8 @@ public class FT_Device {
 
     public void stopInTask() {
         try {
-            if(!this.bulkInRunnable.c()) {
-                this.bulkInRunnable.a();
+            if(!this.bulkInRunnable.isStopped()) {
+                this.bulkInRunnable.stop();
             }
         } catch (InterruptedException var2) {
             Log.d("FTDI_Device::", "stopInTask called!");
@@ -892,11 +892,11 @@ public class FT_Device {
     }
 
     public void restartInTask() {
-        this.bulkInRunnable.b();
+        this.bulkInRunnable.restart();
     }
 
     public boolean stoppedInTask() {
-        return this.bulkInRunnable.c();
+        return this.bulkInRunnable.isStopped();
     }
 
     public boolean purge(byte flags) {
@@ -933,7 +933,7 @@ public class FT_Device {
                     return var3;
                 }
 
-                this.p.e();
+                this.processInCtrl.e();
             }
 
             if(var2) {

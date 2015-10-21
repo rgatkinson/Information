@@ -8,87 +8,86 @@ package com.ftdi.j2xx;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.util.Log;
-import com.ftdi.j2xx.FT_Device;
-import com.ftdi.j2xx.n;
-import com.ftdi.j2xx.o;
+
 import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
 
 class BulkInRunnable implements Runnable {
-    UsbDeviceConnection a;
-    UsbEndpoint b;
-    o c;
-    FT_Device d;
-    int e;
-    int f;
-    int g;
-    Semaphore h;
-    boolean i;
+    UsbDeviceConnection usbDeviceConnection;
+    UsbEndpoint usbEndpoint;
+    ProcessInCtrl processInCtrl;
+    FT_Device ftDevice;
+    int cBuffer;
+    int maxTransferSize;
+    int readTimeout;
+    Semaphore semaphore;
+    boolean isStopped;
 
-    BulkInRunnable(FT_Device var1, o var2, UsbDeviceConnection var3, UsbEndpoint var4) {
-        this.d = var1;
-        this.b = var4;
-        this.a = var3;
-        this.c = var2;
-        this.e = this.c.b().getBufferNumber();
-        this.f = this.c.b().getMaxTransferSize();
-        this.g = this.d.d().getReadTimeout();
-        this.h = new Semaphore(1);
-        this.i = false;
+    BulkInRunnable(FT_Device ftDevice, ProcessInCtrl processInCtrl, UsbDeviceConnection usbDeviceConnection, UsbEndpoint usbEndpoint) {
+        this.ftDevice           = ftDevice;
+        this.usbEndpoint        = usbEndpoint;
+        this.usbDeviceConnection = usbDeviceConnection;
+        this.processInCtrl      = processInCtrl;
+        this.cBuffer = this.processInCtrl.getDriverParameters().getBufferNumber();
+        this.maxTransferSize    = this.processInCtrl.getDriverParameters().getMaxTransferSize();
+        this.readTimeout        = this.ftDevice.getDriverParameters().getReadTimeout();
+        this.semaphore          = new Semaphore(1);
+        this.isStopped          = false;
     }
 
-    void a() throws InterruptedException {
-        this.h.acquire();
-        this.i = true;
+    void stop() throws InterruptedException {
+        this.semaphore.acquire();
+        this.isStopped = true;
     }
 
-    void b() {
-        this.i = false;
-        this.h.release();
+    void restart() {
+        this.isStopped = false;
+        this.semaphore.release();
     }
 
-    boolean c() {
-        return this.i;
+    boolean isStopped() {
+        return this.isStopped;
     }
 
     public void run() {
-        ByteBuffer var1 = null;
+        ByteBuffer byteBuffer = null;
         n var2 = null;
-        int var3 = 0;
+        int iBuffer = 0;
         boolean var4 = false;
         Object var5 = null;
 
         try {
             do {
-                if(this.i) {
-                    this.h.acquire();
-                    this.h.release();
+                if (this.isStopped) {
+                    this.semaphore.acquire();
+                    this.semaphore.release();
                 }
 
-                var2 = this.c.b(var3);
-                if(var2.b() == 0) {
-                    var1 = var2.a();
-                    var1.clear();
-                    var2.a(var3);
-                    byte[] var12 = var1.array();
-                    int var11 = this.a.bulkTransfer(this.b, var12, this.f, this.g);
-                    if(var11 > 0) {
-                        var1.position(var11);
-                        var1.flip();
-                        var2.b(var11);
-                        this.c.e(var3);
+                var2 = this.processInCtrl.b(iBuffer);
+                if (var2.getCbTransferred() == 0) {
+                    byteBuffer = var2.getByteBuffer();
+                    byteBuffer.clear();
+                    var2.setBufferNumber(iBuffer);
+                    byte[] var12 = byteBuffer.array();
+
+                    int cbTransferred = this.usbDeviceConnection.bulkTransfer(this.usbEndpoint, var12, this.maxTransferSize, this.readTimeout);
+                    if (cbTransferred > 0) {
+                        byteBuffer.position(cbTransferred);
+                        byteBuffer.flip();
+                        var2.setCbTransferred(cbTransferred);
+                        this.processInCtrl.onDataReceived(iBuffer);
                     }
                 }
 
-                ++var3;
-                var3 %= this.e;
+                ++iBuffer;
+                iBuffer %= this.cBuffer;
             } while(!Thread.interrupted());
 
             throw new InterruptedException();
-        } catch (InterruptedException var9) {
+        } catch (InterruptedException interrupt) {
             try {
-                this.c.f();
-                this.c.e();
+                this.processInCtrl.f();
+                this.processInCtrl.e();
             } catch (Exception var8) {
                 Log.d("BulkIn::", "Stop BulkIn thread");
                 var8.printStackTrace();

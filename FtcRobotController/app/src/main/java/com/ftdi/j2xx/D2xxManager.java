@@ -367,7 +367,7 @@ public class D2xxManager {
                 var2.setDriverParameters(var3);
             }
 
-            if(var2.a(theUsbManager) && var2.isOpen()) {
+            if(var2.open(theUsbManager) && var2.isOpen()) {
                 var4 = true;
             }
 
@@ -552,7 +552,7 @@ public class D2xxManager {
         private int a = 16384;
         private int b = 16384;
         private int c = 16;
-        private int d = 5000;
+        private int readTimeout = 5000;
 
         public DriverParameters() {
         }
@@ -606,12 +606,12 @@ public class D2xxManager {
         }
 
         public boolean setReadTimeout(int timeout) {
-            this.d = timeout;
+            this.readTimeout = timeout;
             return true;
         }
 
         public int getReadTimeout() {
-            return this.d;
+            return this.readTimeout;
         }
     }
 

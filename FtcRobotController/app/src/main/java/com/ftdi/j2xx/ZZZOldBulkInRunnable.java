@@ -15,7 +15,7 @@ import java.util.concurrent.Semaphore;
 class ZZZOldBulkInRunnable implements Runnable {
     UsbDeviceConnection usbDeviceConnection;
     UsbEndpoint usbEndpoint;
-    o oDevice;
+    ProcessInCtrl oDevice;
     FT_Device ftDevice;
     int bufferCount;
     int maxTransferSize;
@@ -23,14 +23,14 @@ class ZZZOldBulkInRunnable implements Runnable {
     Semaphore semaphore;
     boolean semaphoreAcquired;
 
-    ZZZOldBulkInRunnable(FT_Device var1, o var2, UsbDeviceConnection var3, UsbEndpoint var4) {
+    ZZZOldBulkInRunnable(FT_Device var1, ProcessInCtrl var2, UsbDeviceConnection var3, UsbEndpoint var4) {
         this.ftDevice = var1;
         this.usbEndpoint = var4;
         this.usbDeviceConnection = var3;
         this.oDevice = var2;
         this.bufferCount = this.oDevice.getDriverParameters().getBufferNumber();
         this.maxTransferSize = this.oDevice.getDriverParameters().getMaxTransferSize();
-        this.readTimeout = this.ftDevice.d().getReadTimeout();
+        this.readTimeout = this.ftDevice.getDriverParameters().getReadTimeout();
         this.semaphore = new Semaphore(1);
         this.semaphoreAcquired = false;
     }
@@ -64,17 +64,17 @@ class ZZZOldBulkInRunnable implements Runnable {
                 }
 
                 var2 = this.oDevice.b(var3);
-                if(var2.b() == 0) {
-                    var1 = var2.a();
+                if(var2.getCbTransferred() == 0) {
+                    var1 = var2.getByteBuffer();
                     var1.clear();
-                    var2.a(var3);
+                    var2.setBufferNumber(var3);
                     byte[] var12 = var1.array();
                     int var11 = this.usbDeviceConnection.bulkTransfer(this.usbEndpoint, var12, this.maxTransferSize, this.readTimeout);
                     if(var11 > 0) {
                         var1.position(var11);
                         var1.flip();
-                        var2.b(var11);
-                        this.oDevice.e(var3);
+                        var2.setCbTransferred(var11);
+                        this.oDevice.onDataReceived(var3);
                     }
                 }
 
