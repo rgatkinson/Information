@@ -83,22 +83,22 @@ public class HardwareDeviceManager extends DeviceManager {
 
     public DcMotorController createUsbDcMotorController(SerialNumber serialNumber) throws RobotCoreException, InterruptedException {
         RobotLog.v("Creating Modern Robotics USB DC Motor Controller - " + serialNumber.toString());
-        ModernRoboticsUsbDcMotorController var2 = null;
+        ModernRoboticsUsbDcMotorController newMotorController = null;
 
         try {
-            RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
-            byte[] var4 = ModernRoboticsUsbUtil.getUsbDeviceHeader(var3);
-            DeviceType var5 = ModernRoboticsUsbUtil.getDeviceType(var4);
-            if(var5 != DeviceType.MODERN_ROBOTICS_USB_DC_MOTOR_CONTROLLER) {
+            RobotUsbDevice robotUsbDevice = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
+            byte[] header = ModernRoboticsUsbUtil.getUsbDeviceHeader(robotUsbDevice);
+            DeviceType deviceType = ModernRoboticsUsbUtil.getDeviceType(header);
+            if(deviceType != DeviceType.MODERN_ROBOTICS_USB_DC_MOTOR_CONTROLLER) {
                 this.printErrAndThrow(serialNumber.toString() + " is not a Modern Robotics USB DC Motor Controller");
             }
 
-            var2 = new ModernRoboticsUsbDcMotorController(serialNumber, var3, this.eventLoopManager);
-        } catch (RobotCoreException var6) {
-            RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB DC Motor Controller", var6);
+            newMotorController = new ModernRoboticsUsbDcMotorController(serialNumber, robotUsbDevice, this.eventLoopManager);
+        } catch (RobotCoreException e) {
+            RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB DC Motor Controller", e);
         }
 
-        return var2;
+        return newMotorController;
     }
 
     public ServoController createUsbServoController(SerialNumber serialNumber) throws RobotCoreException, InterruptedException {

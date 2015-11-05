@@ -10,7 +10,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import com.qualcomm.ftccommon.DbgLog;
+
 import com.qualcomm.ftccommon.UpdateUI.Callback;
 import com.qualcomm.robotcore.eventloop.EventLoop;
 import com.qualcomm.robotcore.eventloop.EventLoopManager.EventLoopMonitor;
@@ -28,31 +28,31 @@ import java.net.InetAddress;
 
 public class FtcRobotControllerService extends Service implements WifiDirectAssistantCallback {
     private final IBinder a = new FtcRobotControllerService.FtcRobotControllerBinder();
-    private WifiDirectAssistant b;
-    private Robot c;
-    private EventLoop d;
-    private Event e;
+    private WifiDirectAssistant wifiDirectAssistant;
+    private Robot robot;
+    private EventLoop eventLoop;
+    private Event event;
     private String f;
-    private Callback g;
-    private final FtcRobotControllerService.a h;
-    private final ElapsedTime i;
+    private Callback callback;
+    private final FtcRobotEventLoopMonitor eventLoopMonitor;
+    private final ElapsedTime elapsed;
     private Thread j;
 
     public FtcRobotControllerService() {
-        this.e = Event.DISCONNECTED;
+        this.event = Event.DISCONNECTED;
         this.f = "Robot Status: null";
-        this.g = null;
-        this.h = new FtcRobotControllerService.a((FtcRobotControllerService.SyntheticClass_1)null);
-        this.i = new ElapsedTime();
+        this.callback = null;
+        this.eventLoopMonitor = new FtcRobotEventLoopMonitor((FtcRobotControllerService.SyntheticClass_1)null);
+        this.elapsed = new ElapsedTime();
         this.j = null;
     }
 
     public WifiDirectAssistant getWifiDirectAssistant() {
-        return this.b;
+        return this.wifiDirectAssistant;
     }
 
     public Event getWifiDirectStatus() {
-        return this.e;
+        return this.event;
     }
 
     public String getRobotStatus() {
@@ -62,13 +62,13 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
     public IBinder onBind(Intent intent) {
         DbgLog.msg("Starting FTC Controller Service");
         DbgLog.msg("Android device is " + Build.MANUFACTURER + ", " + Build.MODEL);
-        this.b = WifiDirectAssistant.getWifiDirectAssistant(this);
-        this.b.setCallback(this);
-        this.b.enable();
+        this.wifiDirectAssistant = WifiDirectAssistant.getWifiDirectAssistant(this);
+        this.wifiDirectAssistant.setCallback(this);
+        this.wifiDirectAssistant.enable();
         if(Build.MODEL.equals("FL7007")) {
-            this.b.discoverPeers();
+            this.wifiDirectAssistant.discoverPeers();
         } else {
-            this.b.createGroup();
+            this.wifiDirectAssistant.createGroup();
         }
 
         return this.a;
@@ -76,13 +76,13 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
 
     public boolean onUnbind(Intent intent) {
         DbgLog.msg("Stopping FTC Controller Service");
-        this.b.disable();
+        this.wifiDirectAssistant.disable();
         this.shutdownRobot();
         return false;
     }
 
     public synchronized void setCallback(Callback callback) {
-        this.g = callback;
+        this.callback = callback;
     }
 
     public synchronized void setupRobot(EventLoop eventLoop) {
@@ -99,7 +99,7 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
 
         RobotLog.clearGlobalErrorMsg();
         DbgLog.msg("Processing robot setup");
-        this.d = eventLoop;
+        this.eventLoop = eventLoop;
         this.j = new Thread(new FtcRobotControllerService.b((FtcRobotControllerService.SyntheticClass_1)null), "Robot Setup");
         this.j.start();
 
@@ -114,11 +114,11 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
             this.j.interrupt();
         }
 
-        if(this.c != null) {
-            this.c.shutdown();
+        if(this.robot != null) {
+            this.robot.shutdown();
         }
 
-        this.c = null;
+        this.robot = null;
         this.a("Robot Status: null");
     }
 
@@ -126,33 +126,33 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
         switch(FtcRobotControllerService.SyntheticClass_1.b[event.ordinal()]) {
         case 1:
             DbgLog.msg("Wifi Direct - Group Owner");
-            this.b.cancelDiscoverPeers();
+            this.wifiDirectAssistant.cancelDiscoverPeers();
             break;
         case 2:
             DbgLog.error("Wifi Direct - connected as peer, was expecting Group Owner");
             break;
         case 3:
-            DbgLog.msg("Wifi Direct Passphrase: " + this.b.getPassphrase());
+            DbgLog.msg("Wifi Direct Passphrase: " + this.wifiDirectAssistant.getPassphrase());
             break;
         case 4:
-            DbgLog.error("Wifi Direct Error: " + this.b.getFailureReason());
+            DbgLog.error("Wifi Direct Error: " + this.wifiDirectAssistant.getFailureReason());
         }
 
         this.a(event);
     }
 
     private void a(Event var1) {
-        this.e = var1;
-        if(this.g != null) {
-            this.g.wifiDirectUpdate(this.e);
+        this.event = var1;
+        if(this.callback != null) {
+            this.callback.wifiDirectUpdate(this.event);
         }
 
     }
 
     private void a(String var1) {
         this.f = var1;
-        if(this.g != null) {
-            this.g.robotUpdate(var1);
+        if(this.callback != null) {
+            this.callback.robotUpdate(var1);
         }
 
     }
@@ -163,9 +163,9 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
 
         public void run() {
             try {
-                if(FtcRobotControllerService.this.c != null) {
-                    FtcRobotControllerService.this.c.shutdown();
-                    FtcRobotControllerService.this.c = null;
+                if(FtcRobotControllerService.this.robot != null) {
+                    FtcRobotControllerService.this.robot.shutdown();
+                    FtcRobotControllerService.this.robot = null;
                 }
 
                 FtcRobotControllerService.this.a("Robot Status: scanning for USB devices");
@@ -177,14 +177,14 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
                     return;
                 }
 
-                FtcRobotControllerService.this.c = RobotFactory.createRobot();
+                FtcRobotControllerService.this.robot = RobotFactory.createRobot();
                 FtcRobotControllerService.this.a("Robot Status: waiting on network");
-                FtcRobotControllerService.this.i.reset();
+                FtcRobotControllerService.this.elapsed.reset();
 
-                while(!FtcRobotControllerService.this.b.isConnected()) {
+                while(!FtcRobotControllerService.this.wifiDirectAssistant.isConnected()) {
                     try {
                         Thread.sleep(1000L);
-                        if(FtcRobotControllerService.this.i.time() > 120.0D) {
+                        if(FtcRobotControllerService.this.elapsed.time() > 120.0D) {
                             FtcRobotControllerService.this.a("Robot Status: network timed out");
                             return;
                         }
@@ -197,9 +197,9 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
                 FtcRobotControllerService.this.a("Robot Status: starting robot");
 
                 try {
-                    FtcRobotControllerService.this.c.eventLoopManager.setMonitor(FtcRobotControllerService.this.h);
-                    InetAddress var1 = FtcRobotControllerService.this.b.getGroupOwnerAddress();
-                    FtcRobotControllerService.this.c.start(var1, FtcRobotControllerService.this.d);
+                    FtcRobotControllerService.this.robot.eventLoopManager.setMonitor(FtcRobotControllerService.this.eventLoopMonitor);
+                    InetAddress var1 = FtcRobotControllerService.this.wifiDirectAssistant.getGroupOwnerAddress();
+                    FtcRobotControllerService.this.robot.start(var1, FtcRobotControllerService.this.eventLoop);
                 } catch (RobotCoreException var2) {
                     FtcRobotControllerService.this.a("Robot Status: failed to start robot");
                     RobotLog.setGlobalErrorMsg(var2.getMessage());
@@ -212,30 +212,30 @@ public class FtcRobotControllerService extends Service implements WifiDirectAssi
         }
     }
 
-    private class a implements EventLoopMonitor {
-        private a() {
+    private class FtcRobotEventLoopMonitor implements EventLoopMonitor {
+        private FtcRobotEventLoopMonitor() {
         }
 
         public void onStateChange(RobotState state) {
-            if(FtcRobotControllerService.this.g != null) {
+            if(FtcRobotControllerService.this.callback != null) {
                 switch(FtcRobotControllerService.SyntheticClass_1.a[state.ordinal()]) {
                 case 1:
-                    FtcRobotControllerService.this.g.robotUpdate("Robot Status: init");
+                    FtcRobotControllerService.this.callback.robotUpdate("Robot Status: init");
                     break;
                 case 2:
-                    FtcRobotControllerService.this.g.robotUpdate("Robot Status: not started");
+                    FtcRobotControllerService.this.callback.robotUpdate("Robot Status: not started");
                     break;
                 case 3:
-                    FtcRobotControllerService.this.g.robotUpdate("Robot Status: running");
+                    FtcRobotControllerService.this.callback.robotUpdate("Robot Status: running");
                     break;
                 case 4:
-                    FtcRobotControllerService.this.g.robotUpdate("Robot Status: stopped");
+                    FtcRobotControllerService.this.callback.robotUpdate("Robot Status: stopped");
                     break;
                 case 5:
-                    FtcRobotControllerService.this.g.robotUpdate("Robot Status: EMERGENCY STOP");
+                    FtcRobotControllerService.this.callback.robotUpdate("Robot Status: EMERGENCY STOP");
                     break;
                 case 6:
-                    FtcRobotControllerService.this.g.robotUpdate("Robot Status: dropped connection");
+                    FtcRobotControllerService.this.callback.robotUpdate("Robot Status: dropped connection");
                 }
 
             }

@@ -41,26 +41,26 @@ public class WifiDirectAssistant {
    private WifiDirectAssistant.Event n;
    private String o;
    private String p;
-   private InetAddress q;
+   private InetAddress inetAddress;
    private String ownerAddress;
    private String ownerName;
    private String passphrase;
    private boolean u;
    private int v;
-   private WifiDirectAssistant.WifiDirectAssistantCallback w;
+   private WifiDirectAssistant.WifiDirectAssistantCallback callback;
 
    private WifiDirectAssistant(Context var1) {
       this.m = WifiDirectAssistant.ConnectStatus.NOT_CONNECTED;
       this.n = null;
       this.o = "";
       this.p = "";
-      this.q = null;
+      this.inetAddress = null;
       this.ownerAddress = "";
       this.ownerName = "";
       this.passphrase = "";
       this.u = false;
       this.v = 0;
-      this.w = null;
+      this.callback = null;
       this.c = var1;
       this.intentFilter = new IntentFilter();
       this.intentFilter.addAction("android.net.wifi.p2p.STATE_CHANGED");
@@ -81,11 +81,11 @@ public class WifiDirectAssistant {
       RobotLog.v("Wifi Direct device information: " + this.p + " " + this.o);
    }
 
-   private void a(WifiDirectAssistant.Event var1) {
-      if(this.n != var1 || this.n == WifiDirectAssistant.Event.PEERS_AVAILABLE) {
-         this.n = var1;
-         if(this.w != null) {
-            this.w.onWifiDirectEvent(var1);
+   private void a(WifiDirectAssistant.Event event) {
+      if(this.n != event || this.n == WifiDirectAssistant.Event.PEERS_AVAILABLE) {
+         this.n = event;
+         if(this.callback != null) {
+            this.callback.onWifiDirectEvent(event);
             return;
          }
       }
@@ -248,7 +248,7 @@ public class WifiDirectAssistant {
    }
 
    public WifiDirectAssistant.WifiDirectAssistantCallback getCallback() {
-      return this.w;
+      return this.callback;
    }
 
    public WifiDirectAssistant.ConnectStatus getConnectStatus() {
@@ -268,7 +268,7 @@ public class WifiDirectAssistant {
    }
 
    public InetAddress getGroupOwnerAddress() {
-      return this.q;
+      return this.inetAddress;
    }
 
    public String getGroupOwnerMacAddress() {
@@ -329,7 +329,7 @@ public class WifiDirectAssistant {
    }
 
    public void setCallback(WifiDirectAssistant.WifiDirectAssistantCallback var1) {
-      this.w = var1;
+      this.callback = var1;
    }
 
    public static enum ConnectStatus {
@@ -386,8 +386,8 @@ public class WifiDirectAssistant {
 
       public void onConnectionInfoAvailable(WifiP2pInfo var1) {
          WifiDirectAssistant.this.wifiP2pManager.requestGroupInfo(WifiDirectAssistant.this.channel, WifiDirectAssistant.this.groupInfoListener);
-         WifiDirectAssistant.this.q = var1.groupOwnerAddress;
-         RobotLog.d("Group owners address: " + WifiDirectAssistant.this.q.toString());
+         WifiDirectAssistant.this.inetAddress = var1.groupOwnerAddress;
+         RobotLog.d("Group owners address: " + WifiDirectAssistant.this.inetAddress.toString());
          if(var1.groupFormed && var1.isGroupOwner) {
             RobotLog.d("Wifi Direct group formed, this device is the group owner (GO)");
             WifiDirectAssistant.this.m = WifiDirectAssistant.ConnectStatus.GROUP_OWNER;
@@ -474,10 +474,10 @@ public class WifiDirectAssistant {
          this();
       }
 
-      public void onReceive(Context var1, Intent var2) {
-         String var3 = var2.getAction();
-         if("android.net.wifi.p2p.STATE_CHANGED".equals(var3)) {
-            int var8 = var2.getIntExtra("wifi_p2p_state", -1);
+      public void onReceive(Context context, Intent intent) {
+         String action = intent.getAction();
+         if("android.net.wifi.p2p.STATE_CHANGED".equals(action)) {
+            int var8 = intent.getIntExtra("wifi_p2p_state", -1);
             WifiDirectAssistant var9 = WifiDirectAssistant.this;
             boolean var10;
             if(var8 == 2) {
@@ -489,15 +489,15 @@ public class WifiDirectAssistant {
             var9.d = var10;
             RobotLog.d("Wifi Direct state - enabled: " + WifiDirectAssistant.this.d);
          } else {
-            if("android.net.wifi.p2p.PEERS_CHANGED".equals(var3)) {
+            if("android.net.wifi.p2p.PEERS_CHANGED".equals(action)) {
                RobotLog.d("Wifi Direct peers changed");
                WifiDirectAssistant.this.wifiP2pManager.requestPeers(WifiDirectAssistant.this.channel, WifiDirectAssistant.this.peerListListener);
                return;
             }
 
-            if("android.net.wifi.p2p.CONNECTION_STATE_CHANGE".equals(var3)) {
-               NetworkInfo var4 = (NetworkInfo)var2.getParcelableExtra("networkInfo");
-               WifiP2pInfo var5 = (WifiP2pInfo)var2.getParcelableExtra("wifiP2pInfo");
+            if("android.net.wifi.p2p.CONNECTION_STATE_CHANGE".equals(action)) {
+               NetworkInfo var4 = (NetworkInfo)intent.getParcelableExtra("networkInfo");
+               WifiP2pInfo var5 = (WifiP2pInfo)intent.getParcelableExtra("wifiP2pInfo");
                RobotLog.d("Wifi Direct connection changed - connected: " + var4.isConnected());
                if(var4.isConnected()) {
                   WifiDirectAssistant.this.wifiP2pManager.requestConnectionInfo(WifiDirectAssistant.this.channel, WifiDirectAssistant.this.connectionInfoListener);
@@ -518,9 +518,9 @@ public class WifiDirectAssistant {
                return;
             }
 
-            if("android.net.wifi.p2p.THIS_DEVICE_CHANGED".equals(var3)) {
+            if("android.net.wifi.p2p.THIS_DEVICE_CHANGED".equals(action)) {
                RobotLog.d("Wifi Direct this device changed");
-               WifiDirectAssistant.this.a((WifiP2pDevice)var2.getParcelableExtra("wifiP2pDevice"));
+               WifiDirectAssistant.this.a((WifiP2pDevice)intent.getParcelableExtra("wifiP2pDevice"));
                return;
             }
          }

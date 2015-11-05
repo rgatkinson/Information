@@ -17,18 +17,18 @@ public class ModernRoboticsUsbUtil {
    public static final int MFG_CODE_MODERN_ROBOTICS = 77;
    private static Analytics a;
 
-   private static DeviceManager.DeviceType a(byte[] var0) {
-      if(var0[1] != 77) {
+   private static DeviceManager.DeviceType deviceTypeFromHeaderBytes(byte[] var0) {
+      if(var0[1] != MFG_CODE_MODERN_ROBOTICS) {
          return DeviceManager.DeviceType.FTDI_USB_UNKNOWN_DEVICE;
       } else {
          switch(var0[2]) {
-         case 65:
+         case DEVICE_ID_DEVICE_INTERFACE_MODULE:
             return DeviceManager.DeviceType.MODERN_ROBOTICS_USB_DEVICE_INTERFACE_MODULE;
-         case 73:
+         case DEVICE_ID_LEGACY_MODULE:
             return DeviceManager.DeviceType.MODERN_ROBOTICS_USB_LEGACY_MODULE;
-         case 77:
+         case DEVICE_ID_DC_MOTOR_CONTROLLER:
             return DeviceManager.DeviceType.MODERN_ROBOTICS_USB_DC_MOTOR_CONTROLLER;
-         case 83:
+         case DEVICE_ID_SERVO_CONTROLLER:
             return DeviceManager.DeviceType.MODERN_ROBOTICS_USB_SERVO_CONTROLLER;
          default:
             return DeviceManager.DeviceType.MODERN_ROBOTICS_USB_UNKNOWN_DEVICE;
@@ -88,15 +88,15 @@ public class ModernRoboticsUsbUtil {
       throw new RobotCoreException(message);
    }
 
-   private static byte[] a(RobotUsbDevice var0) throws RobotCoreException {
+   private static byte[] readUsbDeviceHeader(RobotUsbDevice robotUsbDevice) throws RobotCoreException {
       byte[] var1 = new byte[5];
       byte[] var2 = new byte[3];
       byte[] var3 = new byte[]{(byte)85, (byte)-86, (byte)-128, (byte)0, (byte)3};
 
       try {
-         var0.purge(RobotUsbDevice.Channel.RX);
-         var0.write(var3);
-         var0.read(var1);
+         robotUsbDevice.purge(RobotUsbDevice.Channel.RX);
+         robotUsbDevice.write(var3);
+         robotUsbDevice.read(var1);
       } catch (RobotCoreException var5) {
          throwMessage("error reading USB device headers");
       }
@@ -104,17 +104,17 @@ public class ModernRoboticsUsbUtil {
       if(!ModernRoboticsPacket.a(var1, 3)) {
          return var2;
       } else {
-         var0.read(var2);
+         robotUsbDevice.read(var2);
          return var2;
       }
    }
 
-   public static DeviceManager.DeviceType getDeviceType(byte[] var0) {
-      return a(var0);
+   public static DeviceManager.DeviceType getDeviceType(byte[] headerBytes) {
+      return deviceTypeFromHeaderBytes(headerBytes);
    }
 
-   public static byte[] getUsbDeviceHeader(RobotUsbDevice var0) throws RobotCoreException {
-      return a(var0);
+   public static byte[] getUsbDeviceHeader(RobotUsbDevice robotUsbDevice) throws RobotCoreException {
+      return readUsbDeviceHeader(robotUsbDevice);
    }
 
    public static void init(Context var0, HardwareMap var1) {
