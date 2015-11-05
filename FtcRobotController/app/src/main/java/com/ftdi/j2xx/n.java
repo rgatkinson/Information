@@ -1,64 +1,66 @@
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by Fernflower decompiler)
+//
+
 package com.ftdi.j2xx;
 
 import java.nio.ByteBuffer;
 
 class n {
-   private int a;
-   private ByteBuffer b;
-   private int c;
-   private boolean d;
+    private int a;
+    private ByteBuffer b;
+    private int c;
+    private boolean d;
 
-   public n(int var1) {
-      this.b = ByteBuffer.allocate(var1);
-      this.b(0);
-   }
+    public n(int var1) {
+        this.b = ByteBuffer.allocate(var1);
+        this.b(0);
+    }
 
-   ByteBuffer a() {
-      return this.b;
-   }
+    void a(int var1) {
+        this.a = var1;
+    }
 
-   void a(int var1) {
-      this.a = var1;
-   }
+    ByteBuffer a() {
+        return this.b;
+    }
 
-   int b() {
-      return this.c;
-   }
+    int b() {
+        return this.c;
+    }
 
-   void b(int var1) {
-      this.c = var1;
-   }
+    void b(int var1) {
+        this.c = var1;
+    }
 
-   ByteBuffer c(int param1) {
-      // $FF: Couldn't be decompiled
-   }
+    synchronized void c() {
+        this.b.clear();
+        this.b(0);
+    }
 
-   void c() {
-      synchronized(this){}
+    synchronized boolean d() {
+        return this.d;
+    }
 
-      try {
-         this.b.clear();
-         this.b(0);
-      } finally {
-         ;
-      }
+    synchronized ByteBuffer c(int var1) {
+        ByteBuffer var2 = null;
+        if(!this.d) {
+            this.d = true;
+            this.a = var1;
+            var2 = this.b;
+        }
 
-   }
+        return var2;
+    }
 
-   boolean d() {
-      synchronized(this){}
+    synchronized boolean d(int var1) {
+        boolean var2 = false;
+        if(this.d && var1 == this.a) {
+            this.d = false;
+            var2 = true;
+        }
 
-      boolean var2;
-      try {
-         var2 = this.d;
-      } finally {
-         ;
-      }
-
-      return var2;
-   }
-
-   boolean d(int param1) {
-      // $FF: Couldn't be decompiled
-   }
+        return var2;
+    }
 }
