@@ -15,6 +15,10 @@ public class HiTechnicNxtGyroSensor extends GyroSensor {
       this.b = var2;
    }
 
+   public void calibrate() {
+      this.notSupported();
+   }
+
    public void close() {
    }
 
@@ -26,12 +30,41 @@ public class HiTechnicNxtGyroSensor extends GyroSensor {
       return "NXT Gyro Sensor";
    }
 
+   public int getHeading() {
+      this.notSupported();
+      return 0;
+   }
+
    public double getRotation() {
       return (double)TypeConversion.byteArrayToShort(this.a.readAnalog(this.b), ByteOrder.LITTLE_ENDIAN);
    }
 
    public int getVersion() {
       return 1;
+   }
+
+   public boolean isCalibrating() {
+      this.notSupported();
+      return false;
+   }
+
+   public int rawX() {
+      this.notSupported();
+      return 0;
+   }
+
+   public int rawY() {
+      this.notSupported();
+      return 0;
+   }
+
+   public int rawZ() {
+      this.notSupported();
+      return 0;
+   }
+
+   public void resetZAxisIntegrator() {
+      this.notSupported();
    }
 
    public String status() {

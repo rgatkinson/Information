@@ -28,7 +28,7 @@ import com.qualcomm.ftccommon.FtcRobotControllerService;
 import com.qualcomm.ftccommon.Restarter;
 import com.qualcomm.ftccommon.UpdateUI;
 import com.qualcomm.ftcrobotcontroller.opmodes.FtcOpModeRegister;
-import com.qualcomm.hardware.ModernRoboticsHardwareFactory;
+import com.qualcomm.hardware.HardwareFactory;
 import com.qualcomm.robotcore.hardware.configuration.Utility;
 import com.qualcomm.robotcore.util.Dimmer;
 import com.qualcomm.robotcore.util.ImmersiveMode;
@@ -98,7 +98,7 @@ public class FtcRobotControllerActivity extends Activity {
       if(this.controllerService != null) {
          FileInputStream var1 = this.fileSetup();
          if(var1 != null) {
-            ModernRoboticsHardwareFactory var2 = new ModernRoboticsHardwareFactory(this.context);
+            HardwareFactory var2 = new HardwareFactory(this.context);
             var2.setXmlInputStream(var1);
             this.eventLoop = new FtcEventLoop(var2, new FtcOpModeRegister(), this.callback, this);
             this.controllerService.setCallback(this.callback);
@@ -199,23 +199,23 @@ public class FtcRobotControllerActivity extends Activity {
 
    public boolean onOptionsItemSelected(MenuItem var1) {
       switch(var1.getItemId()) {
-      case 2131427528:
+      case 2131427532:
          this.startActivityForResult(new Intent("com.qualcomm.ftccommon.FtcRobotControllerSettingsActivity.intent.action.Launch"), 3);
          return true;
-      case 2131427529:
+      case 2131427533:
          this.dimmer.handleDimTimer();
          Toast.makeText(this.context, "Restarting Robot", 0).show();
          this.requestRobotRestart();
          return true;
-      case 2131427530:
+      case 2131427534:
          Intent var2 = new Intent("com.qualcomm.ftccommon.ViewLogsActivity.intent.action.Launch");
          var2.putExtra("Filename", RobotLog.getLogFilename(this));
          this.startActivity(var2);
          return true;
-      case 2131427531:
+      case 2131427535:
          this.startActivity(new Intent("com.qualcomm.ftccommon.configuration.AboutActivity.intent.action.Launch"));
          return true;
-      case 2131427532:
+      case 2131427536:
          this.finish();
          return true;
       default:

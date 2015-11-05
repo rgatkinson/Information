@@ -3,6 +3,7 @@ package com.qualcomm.hardware;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.I2cController;
 import com.qualcomm.robotcore.hardware.IrSeekerSensor;
+import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.TypeConversion;
 import java.util.concurrent.locks.Lock;
 
@@ -134,7 +135,12 @@ public class ModernRoboticsI2cIrSeekerSensorV3 extends IrSeekerSensor implements
 
    public void setI2cAddress(int var1) {
       IrSeekerSensor.throwIfModernRoboticsI2cAddressIsInvalid(var1);
+      RobotLog.i(this.getDeviceName() + ", just changed the I2C address. Original address: " + this.I2C_ADDRESS + ", new address: " + var1);
       this.I2C_ADDRESS = var1;
+      this.a.enableI2cReadMode(this.b, this.I2C_ADDRESS, 4, 12);
+      this.a.setI2cPortActionFlag(this.b);
+      this.a.writeI2cCacheToController(this.b);
+      this.a.registerForI2cPortReadyCallback(this, this.b);
    }
 
    public void setMode(IrSeekerSensor.Mode var1) {

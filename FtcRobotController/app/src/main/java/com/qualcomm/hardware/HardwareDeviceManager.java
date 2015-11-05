@@ -16,6 +16,7 @@ import com.qualcomm.hardware.HiTechnicNxtUltrasonicSensor;
 import com.qualcomm.hardware.ModernRoboticsAnalogOpticalDistanceSensor;
 import com.qualcomm.hardware.ModernRoboticsDigitalTouchSensor;
 import com.qualcomm.hardware.ModernRoboticsI2cColorSensor;
+import com.qualcomm.hardware.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.ModernRoboticsI2cIrSeekerSensorV3;
 import com.qualcomm.hardware.ModernRoboticsUsbDcMotorController;
 import com.qualcomm.hardware.ModernRoboticsUsbDeviceInterfaceModule;
@@ -57,16 +58,16 @@ import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.SerialNumber;
 import java.util.Map;
 
-public class ModernRoboticsDeviceManager extends DeviceManager {
-   private static ModernRoboticsDeviceManager.a a;
+public class HardwareDeviceManager extends DeviceManager {
+   private static HardwareDeviceManager.a a;
    private RobotUsbManager b;
    private final EventLoopManager c;
 
    static {
-      a = ModernRoboticsDeviceManager.a.a;
+      a = HardwareDeviceManager.a.a;
    }
 
-   public ModernRoboticsDeviceManager(Context var1, EventLoopManager var2) throws RobotCoreException {
+   public HardwareDeviceManager(Context var1, EventLoopManager var2) throws RobotCoreException {
       this.c = var2;
       switch(null.a[a.ordinal()]) {
       case 1:
@@ -93,17 +94,23 @@ public class ModernRoboticsDeviceManager extends DeviceManager {
       }
    }
 
+   private void a(RobotUsbDevice var1, String var2, SerialNumber var3) throws RobotCoreException {
+      String var4 = var2 + " [" + var3 + "] is returning garbage data via the USB bus";
+      var1.close();
+      this.a(var4);
+   }
+
    private void a(String var1) throws RobotCoreException {
       System.err.println(var1);
       throw new RobotCoreException(var1);
    }
 
    public static void disableDeviceEmulation() {
-      a = ModernRoboticsDeviceManager.a.a;
+      a = HardwareDeviceManager.a.a;
    }
 
    public static void enableDeviceEmulation() {
-      a = ModernRoboticsDeviceManager.a.b;
+      a = HardwareDeviceManager.a.b;
    }
 
    public ColorSensor createAdafruitI2cColorSensor(DeviceInterfaceModule var1, int var2) {
@@ -132,7 +139,7 @@ public class ModernRoboticsDeviceManager extends DeviceManager {
       try {
          RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.b, var1);
          if(ModernRoboticsUsbUtil.getDeviceType(ModernRoboticsUsbUtil.getUsbDeviceHeader(var3)) != DeviceManager.DeviceType.MODERN_ROBOTICS_USB_DEVICE_INTERFACE_MODULE) {
-            this.a(var1.toString() + " is not a Modern Robotics USB Core Device Interface Module");
+            this.a(var3, "Modern Robotics USB Core Device Interface Module", var1);
          }
 
          ModernRoboticsUsbDeviceInterfaceModule var4 = new ModernRoboticsUsbDeviceInterfaceModule(var1, var3, this.c);
@@ -171,6 +178,11 @@ public class ModernRoboticsDeviceManager extends DeviceManager {
    public ColorSensor createModernRoboticsI2cColorSensor(DeviceInterfaceModule var1, int var2) {
       RobotLog.v("Creating Modern Robotics I2C Color Sensor - Port: " + var2);
       return new ModernRoboticsI2cColorSensor(var1, var2);
+   }
+
+   public GyroSensor createModernRoboticsI2cGyroSensor(DeviceInterfaceModule var1, int var2) {
+      RobotLog.v("Creating Modern Robotics I2C Gyro Sensor - Port: " + var2);
+      return new ModernRoboticsI2cGyro(var1, var2);
    }
 
    public AccelerationSensor createNxtAccelerationSensor(LegacyModule var1, int var2) {
@@ -239,7 +251,7 @@ public class ModernRoboticsDeviceManager extends DeviceManager {
       try {
          RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.b, var1);
          if(ModernRoboticsUsbUtil.getDeviceType(ModernRoboticsUsbUtil.getUsbDeviceHeader(var3)) != DeviceManager.DeviceType.MODERN_ROBOTICS_USB_DC_MOTOR_CONTROLLER) {
-            this.a(var1.toString() + " is not a Modern Robotics USB DC Motor Controller");
+            this.a(var3, "Modern Robotics USB DC Motor Controller", var1);
          }
 
          ModernRoboticsUsbDcMotorController var4 = new ModernRoboticsUsbDcMotorController(var1, var3, this.c);
@@ -256,7 +268,7 @@ public class ModernRoboticsDeviceManager extends DeviceManager {
       try {
          RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.b, var1);
          if(ModernRoboticsUsbUtil.getDeviceType(ModernRoboticsUsbUtil.getUsbDeviceHeader(var3)) != DeviceManager.DeviceType.MODERN_ROBOTICS_USB_LEGACY_MODULE) {
-            this.a(var1.toString() + " is not a Modern Robotics USB Legacy Module");
+            this.a(var3, "Modern Robotics USB Legacy Module", var1);
          }
 
          ModernRoboticsUsbLegacyModule var4 = new ModernRoboticsUsbLegacyModule(var1, var3, this.c);
@@ -273,7 +285,7 @@ public class ModernRoboticsDeviceManager extends DeviceManager {
       try {
          RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.b, var1);
          if(ModernRoboticsUsbUtil.getDeviceType(ModernRoboticsUsbUtil.getUsbDeviceHeader(var3)) != DeviceManager.DeviceType.MODERN_ROBOTICS_USB_SERVO_CONTROLLER) {
-            this.a(var1.toString() + " is not a Modern Robotics USB Servo Controller");
+            this.a(var3, "Modern Robotics USB Servo Controller", var1);
          }
 
          ModernRoboticsUsbServoController var4 = new ModernRoboticsUsbServoController(var1, var3, this.c);
@@ -293,7 +305,7 @@ public class ModernRoboticsDeviceManager extends DeviceManager {
       b;
 
       static {
-         ModernRoboticsDeviceManager.a[] var0 = new ModernRoboticsDeviceManager.a[]{a, b};
+         HardwareDeviceManager.a[] var0 = new HardwareDeviceManager.a[]{a, b};
       }
    }
 }

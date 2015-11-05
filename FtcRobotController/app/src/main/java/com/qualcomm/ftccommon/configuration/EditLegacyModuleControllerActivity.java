@@ -149,7 +149,7 @@ public class EditLegacyModuleControllerActivity extends Activity {
       String var4 = var2.getName();
       EditText var5 = (EditText)var1.findViewById(R.id.editTextResult_name);
       int var6 = Integer.parseInt(((TextView)var1.findViewById(R.id.portNumber)).getText().toString());
-      var5.addTextChangedListener(new EditLegacyModuleControllerActivity.a(var2, null));
+      var5.addTextChangedListener(new EditLegacyModuleControllerActivity.a(this.a(var6), null));
       var5.setText(var4);
       if(a) {
          RobotLog.e("[populatePort] name: " + var4 + ", port: " + var6 + ", type: " + var2.getType());
@@ -274,7 +274,7 @@ public class EditLegacyModuleControllerActivity extends Activity {
 
          if(var4 != null) {
             ControllerConfiguration var5 = (ControllerConfiguration)var4;
-            this.b(var5);
+            this.b((DeviceConfiguration)var5);
             this.a(this.a(var5.getPort()), (DeviceConfiguration)this.g.get(var5.getPort()));
             if(!this.c.toLowerCase().contains("Unsaved".toLowerCase())) {
                String var6 = "Unsaved " + this.c;
@@ -325,7 +325,7 @@ public class EditLegacyModuleControllerActivity extends Activity {
          this.e = (LegacyModuleControllerConfiguration)var1;
          this.g = (ArrayList)this.e.getDevices();
          this.f.setText(this.e.getName());
-         this.f.addTextChangedListener(new EditLegacyModuleControllerActivity.a(this.e, null));
+         this.f.addTextChangedListener(new EditLegacyModuleControllerActivity.a(null));
          ((TextView)this.findViewById(R.id.legacy_serialNumber)).setText(this.e.getSerialNumber().toString());
 
          for(int var2 = 0; var2 < this.g.size(); ++var2) {
@@ -345,20 +345,36 @@ public class EditLegacyModuleControllerActivity extends Activity {
    }
 
    private class a implements TextWatcher {
-      private DeviceConfiguration b;
+      private int b;
+      private boolean c;
 
-      private a(DeviceConfiguration var2) {
-         this.b = var2;
+      private a() {
+         this.c = false;
+         this.c = true;
+      }
+
+      private a(View var2) {
+         this.c = false;
+         this.b = Integer.parseInt(((TextView)var2.findViewById(R.id.portNumber)).getText().toString());
       }
 
       // $FF: synthetic method
-      a(DeviceConfiguration var2, Object var3) {
+      a(View var2, Object var3) {
+         this();
+      }
+
+      // $FF: synthetic method
+      a(Object var2) {
          this();
       }
 
       public void afterTextChanged(Editable var1) {
          String var2 = var1.toString();
-         this.b.setName(var2);
+         if(this.c) {
+            EditLegacyModuleControllerActivity.this.e.setName(var2);
+         } else {
+            ((DeviceConfiguration)EditLegacyModuleControllerActivity.this.g.get(this.b)).setName(var2);
+         }
       }
 
       public void beforeTextChanged(CharSequence var1, int var2, int var3, int var4) {

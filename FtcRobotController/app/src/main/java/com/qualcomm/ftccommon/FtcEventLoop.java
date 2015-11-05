@@ -4,6 +4,7 @@ import android.content.Context;
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.ftccommon.FtcEventLoopHandler;
 import com.qualcomm.ftccommon.UpdateUI;
+import com.qualcomm.hardware.HardwareFactory;
 import com.qualcomm.modernrobotics.ModernRoboticsUsbUtil;
 import com.qualcomm.robotcore.eventloop.EventLoop;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
@@ -11,7 +12,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.HardwareFactory;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.robocol.Command;
 import com.qualcomm.robotcore.util.Util;
@@ -33,6 +33,7 @@ public class FtcEventLoop implements EventLoop {
 
    private void a(String var1) {
       String var2 = this.a.getOpMode(var1);
+      this.a.resetGamepads();
       this.b.initActiveOpMode(var2);
       this.a.sendCommand(new Command("CMD_INIT_OP_MODE_RESP", var2));
    }

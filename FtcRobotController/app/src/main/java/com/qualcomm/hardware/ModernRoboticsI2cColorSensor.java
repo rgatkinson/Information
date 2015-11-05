@@ -4,13 +4,14 @@ import android.graphics.Color;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.I2cController;
+import com.qualcomm.robotcore.hardware.IrSeekerSensor;
+import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.TypeConversion;
 import java.util.concurrent.locks.Lock;
 
 public class ModernRoboticsI2cColorSensor extends ColorSensor implements I2cController.I2cPortReadyCallback {
    public static final int ADDRESS_COLOR_NUMBER = 4;
    public static final int ADDRESS_COMMAND = 3;
-   public static final int ADDRESS_I2C = 60;
    public static final int BUFFER_LENGTH = 6;
    public static final int COMMAND_ACTIVE_LED = 0;
    public static final int COMMAND_PASSIVE_LED = 1;
@@ -20,6 +21,7 @@ public class ModernRoboticsI2cColorSensor extends ColorSensor implements I2cCont
    public static final int OFFSET_COMMAND = 4;
    public static final int OFFSET_GREEN_READING = 7;
    public static final int OFFSET_RED_READING = 6;
+   public volatile int I2C_ADDRESS = 60;
    private final DeviceInterfaceModule a;
    private final byte[] b;
    private final Lock c;
@@ -38,7 +40,7 @@ public class ModernRoboticsI2cColorSensor extends ColorSensor implements I2cCont
       this.c = var1.getI2cReadCacheLock(var2);
       this.d = var1.getI2cWriteCache(var2);
       this.e = var1.getI2cWriteCacheLock(var2);
-      var1.enableI2cReadMode(var2, 60, 3, 6);
+      var1.enableI2cReadMode(var2, this.I2C_ADDRESS, 3, 6);
       var1.setI2cPortActionFlag(var2);
       var1.writeI2cCacheToController(var2);
       var1.registerForI2cPortReadyCallback(this, var2);
@@ -99,6 +101,10 @@ public class ModernRoboticsI2cColorSensor extends ColorSensor implements I2cCont
       return "Modern Robotics I2C Color Sensor";
    }
 
+   public int getI2cAddress() {
+      return this.I2C_ADDRESS;
+   }
+
    public int getVersion() {
       return 1;
    }
@@ -111,11 +117,11 @@ public class ModernRoboticsI2cColorSensor extends ColorSensor implements I2cCont
       this.a.setI2cPortActionFlag(this.h);
       this.a.readI2cCacheFromController(this.h);
       if(this.f == ModernRoboticsI2cColorSensor.a.b) {
-         this.a.enableI2cWriteMode(this.h, 60, 3, 6);
+         this.a.enableI2cWriteMode(this.h, this.I2C_ADDRESS, 3, 6);
          this.a.writeI2cCacheToController(this.h);
          this.f = ModernRoboticsI2cColorSensor.a.c;
       } else if(this.f == ModernRoboticsI2cColorSensor.a.c) {
-         this.a.enableI2cReadMode(this.h, 60, 3, 6);
+         this.a.enableI2cReadMode(this.h, this.I2C_ADDRESS, 3, 6);
          this.a.writeI2cCacheToController(this.h);
          this.f = ModernRoboticsI2cColorSensor.a.a;
       } else {
@@ -125,6 +131,16 @@ public class ModernRoboticsI2cColorSensor extends ColorSensor implements I2cCont
 
    public int red() {
       return this.a(6);
+   }
+
+   public void setI2cAddress(int var1) {
+      IrSeekerSensor.throwIfModernRoboticsI2cAddressIsInvalid(var1);
+      RobotLog.i(this.getDeviceName() + ", just changed I2C address. Original address: " + this.I2C_ADDRESS + ", new address: " + var1);
+      this.I2C_ADDRESS = var1;
+      this.a.enableI2cReadMode(this.h, this.I2C_ADDRESS, 3, 6);
+      this.a.setI2cPortActionFlag(this.h);
+      this.a.writeI2cCacheToController(this.h);
+      this.a.registerForI2cPortReadyCallback(this, this.h);
    }
 
    private static enum a {

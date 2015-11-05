@@ -1,10 +1,10 @@
 package com.qualcomm.hardware;
 
 import android.content.Context;
+import com.qualcomm.hardware.HardwareDeviceManager;
 import com.qualcomm.hardware.MatrixDcMotorController;
 import com.qualcomm.hardware.MatrixMasterController;
 import com.qualcomm.hardware.MatrixServoController;
-import com.qualcomm.hardware.ModernRoboticsDeviceManager;
 import com.qualcomm.hardware.ModernRoboticsUsbDcMotorController;
 import com.qualcomm.hardware.ModernRoboticsUsbLegacyModule;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
@@ -21,7 +21,6 @@ import com.qualcomm.robotcore.hardware.DeviceManager;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DigitalChannelController;
 import com.qualcomm.robotcore.hardware.GyroSensor;
-import com.qualcomm.robotcore.hardware.HardwareFactory;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.IrSeekerSensor;
@@ -47,11 +46,11 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 
-public class ModernRoboticsHardwareFactory implements HardwareFactory {
+public class HardwareFactory {
    private Context a;
    private InputStream b = null;
 
-   public ModernRoboticsHardwareFactory(Context var1) {
+   public HardwareFactory(Context var1) {
       this.a = var1;
    }
 
@@ -126,7 +125,10 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
                break;
             case 15:
                this.j(var2, var3, var4, var6);
+               break;
             case 16:
+               this.k(var2, var3, var4, var6);
+            case 17:
                break;
             default:
                RobotLog.w("Unexpected device type connected to Device Interface Module while parsing XML: " + var7.toString());
@@ -226,10 +228,10 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
                break;
             case 15:
                this.d(var1, var2, var4, var6);
-            case 16:
                break;
-            case 17:
+            case 16:
                this.e(var1, var2, var4, var6);
+            case 17:
                break;
             case 18:
                this.f(var1, var2, var4, var6);
@@ -258,7 +260,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
    }
 
    public static void disableDeviceEmulation() {
-      ModernRoboticsDeviceManager.disableDeviceEmulation();
+      HardwareDeviceManager.disableDeviceEmulation();
    }
 
    private void e(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
@@ -272,7 +274,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
    }
 
    public static void enableDeviceEmulation() {
-      ModernRoboticsDeviceManager.enableDeviceEmulation();
+      HardwareDeviceManager.enableDeviceEmulation();
    }
 
    private void f(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
@@ -333,6 +335,11 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
 
    }
 
+   private void k(HardwareMap var1, DeviceManager var2, DeviceInterfaceModule var3, DeviceConfiguration var4) {
+      GyroSensor var5 = var2.createModernRoboticsI2cGyroSensor(var3, var4.getPort());
+      var1.gyroSensor.put(var4.getName(), var5);
+   }
+
    private void k(HardwareMap var1, DeviceManager var2, LegacyModule var3, DeviceConfiguration var4) {
       ServoController var5 = var2.createNxtServoController(var3, var4.getPort());
       var1.servoController.put(var4.getName(), var5);
@@ -350,6 +357,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
       MatrixMasterController var5 = new MatrixMasterController((ModernRoboticsUsbLegacyModule)var3, var4.getPort());
       MatrixDcMotorController var6 = new MatrixDcMotorController(var5);
       var1.dcMotorController.put(var4.getName() + "Motor", var6);
+      var1.dcMotorController.put(var4.getName(), var6);
       Iterator var7 = ((MatrixControllerConfiguration)var4).getMotors().iterator();
 
       while(var7.hasNext()) {
@@ -360,6 +368,7 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
 
       MatrixServoController var8 = new MatrixServoController(var5);
       var1.servoController.put(var4.getName() + "Servo", var8);
+      var1.servoController.put(var4.getName(), var8);
       Iterator var9 = ((MatrixControllerConfiguration)var4).getServos().iterator();
 
       while(var9.hasNext()) {
@@ -372,11 +381,11 @@ public class ModernRoboticsHardwareFactory implements HardwareFactory {
 
    public HardwareMap createHardwareMap(EventLoopManager var1) throws RobotCoreException, InterruptedException {
       if(this.b == null) {
-         throw new RobotCoreException("XML input stream is null, ModernRoboticsHardwareFactory cannot create a hardware map");
+         throw new RobotCoreException("XML input stream is null, HardwareFactory cannot create a hardware map");
       } else {
          HardwareMap var2 = new HardwareMap();
          RobotLog.v("Starting Modern Robotics device manager");
-         ModernRoboticsDeviceManager var3 = new ModernRoboticsDeviceManager(this.a, var1);
+         HardwareDeviceManager var3 = new HardwareDeviceManager(this.a, var1);
          Iterator var4 = (new ReadXMLFileHandler(this.a)).parse(this.b).iterator();
 
          while(var4.hasNext()) {

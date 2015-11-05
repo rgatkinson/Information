@@ -188,7 +188,7 @@ public class OpModeManager {
          while(var3.hasNext()) {
             DcMotor var5 = (DcMotor)var3.next();
             var5.setPower(0.0D);
-            var5.setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
+            var5.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
          }
 
          Iterator var4 = this.hardwareMap.lightSensor.iterator();

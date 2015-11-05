@@ -7,6 +7,7 @@ public class XMLConfigurationConstants {
    public static final String COLOR_SENSOR = "ColorSensor";
    public static final String DEVICE_INTERFACE_MODULE = "DeviceInterfaceModule";
    public static final String DIGITAL_DEVICE = "DigitalDevice";
+   public static final String GYRO = "Gyro";
    public static final String I2C_DEVICE = "I2cDevice";
    public static final String IR_SEEKER = "IrSeeker";
    public static final String IR_SEEKER_V3 = "IrSeekerV3";

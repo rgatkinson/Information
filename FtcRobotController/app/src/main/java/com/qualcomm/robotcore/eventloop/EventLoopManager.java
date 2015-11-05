@@ -88,15 +88,15 @@ public class EventLoopManager {
       var2.fromByteArray(var1.getData());
       if(var2.user >= 1 && var2.user <= 2) {
          int var3 = -1 + var2.user;
-         this.h[var3] = var2;
+         this.h[var3].copy(var2);
          if(this.h[0].id == this.h[1].id) {
             RobotLog.v("Gamepad moved position, removing stale gamepad");
             if(var3 == 0) {
-               this.h[1] = new Gamepad();
+               this.h[1].copy(new Gamepad());
             }
 
             if(var3 == 1) {
-               this.h[0] = new Gamepad();
+               this.h[0].copy(new Gamepad());
                return;
             }
          }
@@ -261,6 +261,7 @@ public class EventLoopManager {
    public void handleDroppedConnection() {
       OpModeManager var1 = this.g.getOpModeManager();
       String var2 = "Lost connection while running op mode: " + var1.getActiveOpModeName();
+      this.resetGamepads();
       var1.initActiveOpMode("Stop Robot");
       this.a(RobotState.DROPPED_CONNECTION);
       RobotLog.i(var2);
@@ -268,6 +269,16 @@ public class EventLoopManager {
 
    public void registerSyncdDevice(SyncdDevice var1) {
       this.k.add(var1);
+   }
+
+   public void resetGamepads() {
+      Gamepad[] var1 = this.h;
+      int var2 = var1.length;
+
+      for(int var3 = 0; var3 < var2; ++var3) {
+         var1[var3].reset();
+      }
+
    }
 
    public void sendCommand(Command var1) {
@@ -309,10 +320,10 @@ public class EventLoopManager {
 
    public void start(EventLoop var1) throws RobotCoreException {
       this.e = false;
+      this.setEventLoop(var1);
       this.c = new Thread(new EventLoopManager.d(null), "Scheduled Sends");
       this.c.start();
       (new Thread(new EventLoopManager.c(null))).start();
-      this.setEventLoop(var1);
    }
 
    public void unregisterSyncdDevice(SyncdDevice var1) {

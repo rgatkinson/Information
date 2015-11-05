@@ -5,12 +5,16 @@ import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IrSeekerSensor;
 import com.qualcomm.robotcore.robocol.Telemetry;
+import com.qualcomm.robotcore.util.RobotLog;
 import java.util.concurrent.locks.Lock;
 
 public class LinearI2cAddressChange extends LinearOpMode {
    public static final int ADDRESS_MEMORY_START = 0;
    public static final int ADDRESS_SET_NEW_I2C_ADDRESS = 112;
    public static final int BUFFER_CHANGE_ADDRESS_LENGTH = 3;
+   public static final byte COLOR_SENSOR_FIRMWARE_REV = 16;
+   public static final byte COLOR_SENSOR_ORIGINAL_ADDRESS = 60;
+   public static final byte COLOR_SENSOR_SENSOR_ID = 67;
    public static final byte FIRMWARE_REV = 18;
    public static final byte IR_SEEKER_V3_FIRMWARE_REV = 18;
    public static final byte IR_SEEKER_V3_ORIGINAL_ADDRESS = 56;
@@ -24,7 +28,7 @@ public class LinearI2cAddressChange extends LinearOpMode {
    int currentAddress = 56;
    DeviceInterfaceModule dim;
    int newAddress = 66;
-   int port = 3;
+   int port = 5;
    byte[] readCache;
    Lock readLock;
    byte[] writeCache;
@@ -85,12 +89,12 @@ public class LinearI2cAddressChange extends LinearOpMode {
          this.sleep(1000L);
          ++var1;
          if(var1 >= 10) {
-            Telemetry var8 = this.telemetry;
-            Object[] var9 = new Object[]{Integer.valueOf(this.currentAddress)};
-            var8.addData("I2cAddressChange", String.format("Looping too long with no change, probably have the wrong address. Current address: %02x", var9));
-            HardwareMap.DeviceMapping var10 = this.hardwareMap.irSeekerSensor;
+            Telemetry var10 = this.telemetry;
             Object[] var11 = new Object[]{Integer.valueOf(this.currentAddress)};
-            var10.get(String.format("Looping too long with no change, probably have the wrong address. Current address: %02x", var11));
+            var10.addData("I2cAddressChange", String.format("Looping too long with no change, probably have the wrong address. Current address: 0x%02x", var11));
+            HardwareMap.DeviceMapping var12 = this.hardwareMap.irSeekerSensor;
+            Object[] var13 = new Object[]{Integer.valueOf(this.currentAddress)};
+            var12.get(String.format("Looping too long with no change, probably have the wrong address. Current address: 0x%02x", var13));
          }
       }
 
@@ -119,6 +123,9 @@ public class LinearI2cAddressChange extends LinearOpMode {
       Telemetry var5 = this.telemetry;
       StringBuilder var6 = (new StringBuilder()).append("Successfully changed the I2C address.");
       Object[] var7 = new Object[]{Integer.valueOf(this.newAddress)};
-      var5.addData("I2cAddressChange", var6.append(String.format("New address: %02x", var7)).toString());
+      var5.addData("I2cAddressChange", var6.append(String.format("New address: 0x%02x", var7)).toString());
+      StringBuilder var8 = (new StringBuilder()).append("Successfully changed the I2C address.");
+      Object[] var9 = new Object[]{Integer.valueOf(this.newAddress)};
+      RobotLog.i(var8.append(String.format("New address: 0x%02x", var9)).toString());
    }
 }

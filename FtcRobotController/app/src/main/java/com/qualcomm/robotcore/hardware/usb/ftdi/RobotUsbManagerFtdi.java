@@ -35,7 +35,7 @@ public class RobotUsbManagerFtdi implements RobotUsbManager {
    public RobotUsbDevice openBySerialNumber(SerialNumber var1) throws RobotCoreException {
       FT_Device var2 = this.b.openBySerialNumber(this.a, var1.toString());
       if(var2 == null) {
-         throw new RobotCoreException("Unable to open USB device with serial number " + var1);
+         throw new RobotCoreException("FTDI driver failed to open USB device with serial number " + var1 + " (returned null device)");
       } else {
          return new RobotUsbDeviceFtdi(var2);
       }

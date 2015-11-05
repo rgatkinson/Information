@@ -10,7 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.ftccommon.R;
-import com.qualcomm.hardware.ModernRoboticsDeviceManager;
+import com.qualcomm.hardware.HardwareDeviceManager;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DeviceManager;
@@ -260,7 +260,7 @@ public class AutoConfigureActivity extends Activity {
       this.c = (Button)this.findViewById(R.id.configureUSB);
 
       try {
-         this.d = new ModernRoboticsDeviceManager(this.a, (EventLoopManager)null);
+         this.d = new HardwareDeviceManager(this.a, (EventLoopManager)null);
       } catch (RobotCoreException var3) {
          this.g.complainToast("Failed to open the Device Manager", this.a);
          DbgLog.error("Failed to open deviceManager: " + var3.toString());

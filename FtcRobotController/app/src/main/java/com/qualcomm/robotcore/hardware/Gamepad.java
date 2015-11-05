@@ -6,6 +6,7 @@ import android.view.MotionEvent;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.robocol.RobocolParsable;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.RobotLog;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Set;
@@ -128,6 +129,10 @@ public class Gamepad implements RobocolParsable {
       }
 
       return var1;
+   }
+
+   public void copy(Gamepad var1) throws RobotCoreException {
+      this.fromByteArray(var1.toByteArray());
    }
 
    public void fromByteArray(byte[] var1) throws RobotCoreException {
@@ -280,6 +285,15 @@ public class Gamepad implements RobocolParsable {
 
    protected boolean pressed(KeyEvent var1) {
       return var1.getAction() == 0;
+   }
+
+   public void reset() {
+      try {
+         this.copy(new Gamepad());
+      } catch (RobotCoreException var2) {
+         RobotLog.e("Gamepad library in an invalid state");
+         throw new IllegalStateException("Gamepad library in an invalid state");
+      }
    }
 
    public void setJoystickDeadzone(float var1) {

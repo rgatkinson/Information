@@ -49,11 +49,10 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
       try {
          this.blockUntilReady();
          this.startBlockingWork();
-         return;
       } catch (InterruptedException var7) {
-         ;
+         RobotLog.w("Exception while closing USB device: " + var7.getMessage());
       } catch (RobotCoreException var8) {
-         return;
+         RobotLog.w("Exception while closing USB device: " + var8.getMessage());
       } finally {
          this.running = false;
 
@@ -61,7 +60,6 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
             Thread.yield();
          }
 
-         this.usbHandler.close();
       }
 
    }

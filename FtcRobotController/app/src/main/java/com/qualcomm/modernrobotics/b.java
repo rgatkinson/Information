@@ -6,46 +6,26 @@ import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.SerialNumber;
 import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public class RobotUsbDeviceEmulator implements RobotUsbDevice {
-   public static final int MFG_CODE_MODERN_ROBOTICS = 77;
-   public final boolean DEBUG_LOGGING;
-   private byte[] a;
-   private byte[] b;
-   private BlockingQueue<byte[]> c;
-   public String description;
-   protected final byte[] readRsp;
-   public SerialNumber serialNumber;
-   protected final byte[] writeRsp;
-
-   public RobotUsbDeviceEmulator(SerialNumber var1, String var2, int var3) {
-      this(var1, var2, var3, false);
-   }
-
-   public RobotUsbDeviceEmulator(SerialNumber var1, String var2, int var3, boolean var4) {
-      this.a = new byte[256];
-      this.b = null;
-      this.c = new LinkedBlockingQueue();
-      this.writeRsp = new byte[]{(byte)51, (byte)-52, (byte)0, (byte)0, (byte)0};
-      this.readRsp = new byte[]{(byte)51, (byte)-52, (byte)-128, (byte)0, (byte)0};
-      this.DEBUG_LOGGING = var4;
-      this.serialNumber = var1;
-      this.description = var2;
-      this.a[0] = -1;
-      this.a[1] = 77;
-      this.a[2] = (byte)var3;
-   }
+class b implements RobotUsbDevice {
+   public final boolean a;
+   public SerialNumber b;
+   public String c;
+   protected final byte[] d;
+   protected final byte[] e;
+   private byte[] f;
+   private byte[] g;
+   private BlockingQueue<byte[]> h;
 
    private int a(byte[] var1, int var2, int var3) {
       byte[] var5;
-      if(this.b != null) {
-         var5 = Arrays.copyOf(this.b, this.b.length);
-         this.b = null;
+      if(this.g != null) {
+         var5 = Arrays.copyOf(this.g, this.g.length);
+         this.g = null;
       } else {
          try {
-            var5 = (byte[])this.c.poll((long)var3, TimeUnit.MILLISECONDS);
+            var5 = (byte[])this.h.poll((long)var3, TimeUnit.MILLISECONDS);
          } catch (InterruptedException var6) {
             RobotLog.w("USB mock bus interrupted during read");
             var5 = null;
@@ -54,7 +34,7 @@ public class RobotUsbDeviceEmulator implements RobotUsbDevice {
 
       if(var5 == null) {
          RobotLog.w("USB mock bus read timeout");
-         System.arraycopy(this.readRsp, 0, var1, 0, this.readRsp.length);
+         System.arraycopy(this.e, 0, var1, 0, this.e.length);
          var1[2] = -1;
          var1[4] = 0;
       } else {
@@ -62,20 +42,20 @@ public class RobotUsbDeviceEmulator implements RobotUsbDevice {
       }
 
       if(var5 != null && var2 < var5.length) {
-         this.b = new byte[var5.length - var2];
-         System.arraycopy(var5, var1.length, this.b, 0, this.b.length);
+         this.g = new byte[var5.length - var2];
+         System.arraycopy(var5, var1.length, this.g, 0, this.g.length);
       }
 
-      if(this.DEBUG_LOGGING) {
-         RobotLog.d(this.serialNumber + " USB send: " + Arrays.toString(var1));
+      if(this.a) {
+         RobotLog.d(this.b + " USB send: " + Arrays.toString(var1));
       }
 
       return var1.length;
    }
 
    private void a(final byte[] var1) {
-      if(this.DEBUG_LOGGING) {
-         RobotLog.d(this.serialNumber + " USB recd: " + Arrays.toString(var1));
+      if(this.a) {
+         RobotLog.d(this.b + " USB recd: " + Arrays.toString(var1));
       }
 
       (new Thread() {
@@ -86,20 +66,20 @@ public class RobotUsbDeviceEmulator implements RobotUsbDevice {
    }
 
    // $FF: synthetic method
-   static byte[] a(RobotUsbDeviceEmulator var0) {
-      return var0.a;
+   static byte[] a(b var0) {
+      return var0.f;
    }
 
    // $FF: synthetic method
-   static BlockingQueue b(RobotUsbDeviceEmulator var0) {
-      return var0.c;
+   static BlockingQueue b(b var0) {
+      return var0.h;
    }
 
    public void close() {
    }
 
    public void purge(RobotUsbDevice.Channel var1) throws RobotCoreException {
-      this.c.clear();
+      this.h.clear();
    }
 
    public int read(byte[] var1) throws RobotCoreException {

@@ -2,7 +2,7 @@ package com.qualcomm.modernrobotics;
 
 import android.content.Context;
 import com.qualcomm.analytics.Analytics;
-import com.qualcomm.modernrobotics.ModernRoboticsPacket;
+import com.qualcomm.modernrobotics.a;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DeviceManager;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -63,22 +63,34 @@ public class ModernRoboticsUsbUtil {
          a("unable to find USB device with serial number " + var1.toString());
       }
 
-      RobotUsbDevice var6 = null;
+      RobotUsbDevice var7;
+      label29: {
+         RobotUsbDevice var10;
+         try {
+            var10 = var0.openBySerialNumber(var1);
+         } catch (RobotCoreException var13) {
+            a("Unable to open USB device " + var1 + " - " + var4 + ": " + var13.getMessage());
+            var7 = null;
+            break label29;
+         }
+
+         var7 = var10;
+      }
 
       try {
-         var6 = var0.openBySerialNumber(var1);
-         var6.setBaudRate(250000);
-         var6.setDataCharacteristics((byte)8, (byte)0, (byte)0);
-         var6.setLatencyTimer(2);
-      } catch (RobotCoreException var10) {
-         a("Unable to open USB device " + var1 + " - " + var4 + ": " + var10.getMessage());
+         var7.setBaudRate(250000);
+         var7.setDataCharacteristics((byte)8, (byte)0, (byte)0);
+         var7.setLatencyTimer(2);
+      } catch (RobotCoreException var12) {
+         var7.close();
+         a("Unable to open USB device " + var1 + " - " + var4 + ": " + var12.getMessage());
       }
 
       try {
          Thread.sleep(400L);
-         return var6;
-      } catch (InterruptedException var9) {
-         return var6;
+         return var7;
+      } catch (InterruptedException var11) {
+         return var7;
       }
    }
 
@@ -97,10 +109,10 @@ public class ModernRoboticsUsbUtil {
          var0.write(var3);
          var0.read(var1);
       } catch (RobotCoreException var5) {
-         a("error reading USB device headers");
+         a("error reading Modern Robotics USB device headers");
       }
 
-      if(!ModernRoboticsPacket.a(var1, 3)) {
+      if(!a.a(var1, 3)) {
          return var2;
       } else {
          var0.read(var2);

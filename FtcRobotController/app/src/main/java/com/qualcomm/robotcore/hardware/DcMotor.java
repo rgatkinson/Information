@@ -29,8 +29,9 @@ public class DcMotor implements HardwareDevice {
       this.setPowerFloat();
    }
 
+   @Deprecated
    public DcMotorController.RunMode getChannelMode() {
-      return this.controller.getMotorChannelMode(this.portNumber);
+      return this.getMode();
    }
 
    public String getConnectionInfo() {
@@ -56,6 +57,10 @@ public class DcMotor implements HardwareDevice {
 
    public DcMotor.Direction getDirection() {
       return this.direction;
+   }
+
+   public DcMotorController.RunMode getMode() {
+      return this.controller.getMotorChannelMode(this.portNumber);
    }
 
    public int getPortNumber() {
@@ -92,13 +97,18 @@ public class DcMotor implements HardwareDevice {
       return this.controller.isBusy(this.portNumber);
    }
 
+   @Deprecated
    public void setChannelMode(DcMotorController.RunMode var1) {
-      this.mode = var1;
-      this.controller.setMotorChannelMode(this.portNumber, var1);
+      this.setMode(var1);
    }
 
    public void setDirection(DcMotor.Direction var1) {
       this.direction = var1;
+   }
+
+   public void setMode(DcMotorController.RunMode var1) {
+      this.mode = var1;
+      this.controller.setMotorChannelMode(this.portNumber, var1);
    }
 
    public void setPower(double var1) {

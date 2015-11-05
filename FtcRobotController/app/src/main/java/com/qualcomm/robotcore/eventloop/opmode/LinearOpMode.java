@@ -10,6 +10,10 @@ public abstract class LinearOpMode extends OpMode {
    private ElapsedTime c = new ElapsedTime();
    private volatile boolean d = false;
 
+   private void a() {
+      // $FF: Couldn't be decompiled
+   }
+
    public final void init() {
       this.a = new LinearOpMode.a(this);
       this.b = new Thread(this.a, "Linear OpMode Helper");
@@ -17,10 +21,11 @@ public abstract class LinearOpMode extends OpMode {
    }
 
    public final void init_loop() {
+      this.a();
    }
 
    public final void loop() {
-      // $FF: Couldn't be decompiled
+      this.a();
    }
 
    public boolean opModeIsActive() {

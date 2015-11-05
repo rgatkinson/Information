@@ -432,6 +432,9 @@ public class FtcDriverStationActivity extends Activity implements WifiDirectAssi
       var4.show(this.getFragmentManager(), "op_mode_selection");
       this.setTextView(this.systemTelemetry, "");
       this.setVisibility(this.systemTelemetry, 8);
+      this.opModeUseTimer = false;
+      this.setImageResource(this.buttonStartTimed, 2130837521);
+      this.setTextView(this.textTimer, "");
       this.pendingCommands.add(new Command("CMD_INIT_OP_MODE", "Stop Robot"));
    }
 
@@ -532,16 +535,16 @@ public class FtcDriverStationActivity extends Activity implements WifiDirectAssi
 
    public boolean onOptionsItemSelected(MenuItem var1) {
       switch(var1.getItemId()) {
-      case 2131493090:
+      case 2131493095:
          this.startActivity(new Intent(this.getBaseContext(), SettingsActivity.class));
          return true;
-      case 2131493091:
+      case 2131493096:
          this.pendingCommands.add(new Command("CMD_RESTART_ROBOT"));
          return true;
-      case 2131493092:
+      case 2131493097:
          this.startActivity(new Intent("com.qualcomm.ftccommon.configuration.AboutActivity.intent.action.Launch"));
          return true;
-      case 2131493093:
+      case 2131493098:
          this.finish();
          return true;
       default:
@@ -552,6 +555,8 @@ public class FtcDriverStationActivity extends Activity implements WifiDirectAssi
    protected void onPause() {
       super.onPause();
       this.analytics.unregister();
+      this.userToGamepadMap.clear();
+      this.pendingCommands.add(new Command("CMD_INIT_OP_MODE", "Stop Robot"));
    }
 
    protected void onResume() {
@@ -930,10 +935,6 @@ public class FtcDriverStationActivity extends Activity implements WifiDirectAssi
 
       public long getTimeRemainingInSeconds() {
          return this.countdown / 1000L;
-      }
-
-      public boolean isRunning() {
-         return this.running;
       }
 
       public void setCountdown(long var1) {

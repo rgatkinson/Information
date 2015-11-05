@@ -114,6 +114,10 @@ public class AdafruitI2cColorSensor extends ColorSensor implements I2cController
       return "Adafruit I2C Color Sensor";
    }
 
+   public int getI2cAddress() {
+      throw new UnsupportedOperationException("getI2cAddress is not supported.");
+   }
+
    public int getVersion() {
       return 1;
    }
@@ -139,5 +143,9 @@ public class AdafruitI2cColorSensor extends ColorSensor implements I2cController
 
    public int red() {
       return this.a(7, 6);
+   }
+
+   public void setI2cAddress(int var1) {
+      throw new UnsupportedOperationException("setI2cAddress is not supported.");
    }
 }

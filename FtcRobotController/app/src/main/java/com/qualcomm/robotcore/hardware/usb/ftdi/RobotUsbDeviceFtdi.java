@@ -42,19 +42,19 @@ public class RobotUsbDeviceFtdi implements RobotUsbDevice {
 
    public void setBaudRate(int var1) throws RobotCoreException {
       if(!this.a.setBaudRate(var1)) {
-         throw new RobotCoreException("failed to set baud rate to " + var1);
+         throw new RobotCoreException("FTDI driver failed to set baud rate to " + var1);
       }
    }
 
    public void setDataCharacteristics(byte var1, byte var2, byte var3) throws RobotCoreException {
       if(!this.a.setDataCharacteristics(var1, var2, var3)) {
-         throw new RobotCoreException("failed to set data characteristics");
+         throw new RobotCoreException("FTDI driver failed to set data characteristics");
       }
    }
 
    public void setLatencyTimer(int var1) throws RobotCoreException {
       if(!this.a.setLatencyTimer((byte)var1)) {
-         throw new RobotCoreException("failed to set latency timer to " + var1);
+         throw new RobotCoreException("FTDI driver failed to set latency timer to " + var1);
       }
    }
 
