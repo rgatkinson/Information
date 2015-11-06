@@ -1,5 +1,6 @@
 package com.qualcomm.modernrobotics;
 
+import com.qualcomm.modernrobotics.a;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -16,50 +17,52 @@ public class ReadWriteRunnableUsbHandler {
    protected int usbSequentialWriteErrorCount = 0;
    protected byte[] writeCmd = new byte[]{(byte)85, (byte)-86, (byte)0, (byte)0, (byte)0};
 
-   public ReadWriteRunnableUsbHandler(RobotUsbDevice robotUsbDevice) {
-      this.device = robotUsbDevice;
+   public ReadWriteRunnableUsbHandler(RobotUsbDevice var1) {
+      this.device = var1;
    }
 
-   private void issueReadCommand(int var1, byte[] var2) throws RobotCoreException {
+   private void a(int var1, byte[] var2) throws RobotCoreException, InterruptedException {
       this.readCmd[3] = (byte)var1;
       this.readCmd[4] = (byte)var2.length;
       this.device.write(this.readCmd);
       Arrays.fill(this.respHeader, (byte)0);
       int var3 = this.device.read(this.respHeader, this.respHeader.length, 100);
-      if(!ModernRoboticsPacket.a(this.respHeader, var2.length)) {
+      if(!a.a(this.respHeader, var2.length)) {
          ++this.usbSequentialReadErrorCount;
          if(var3 == this.respHeader.length) {
-            this.throwUnexpectedResponse(this.readCmd, "comm error");
+            Thread.sleep(100L);
+            this.a(this.readCmd, "comm error");
          } else {
-            this.throwUnexpectedResponse(this.readCmd, "comm timeout");
+            this.a(this.readCmd, "comm timeout");
          }
       }
 
       if(this.device.read(var2, var2.length, 100) != var2.length) {
-         this.throwUnexpectedResponse(this.readCmd, "comm timeout on payload");
+         this.a(this.readCmd, "comm timeout on payload");
       }
 
       this.usbSequentialReadErrorCount = 0;
    }
 
-   private void throwUnexpectedResponse(byte[] var1, String var2) throws RobotCoreException {
+   private void a(byte[] var1, String var2) throws RobotCoreException {
       RobotLog.w(bufferToString(var1) + " -> " + bufferToString(this.respHeader));
       this.device.purge(RobotUsbDevice.Channel.BOTH);
       throw new RobotCoreException(var2);
    }
 
-   private void issueWriteCommand(int var1, byte[] data) throws RobotCoreException {
+   private void b(int var1, byte[] var2) throws RobotCoreException, InterruptedException {
       this.writeCmd[3] = (byte)var1;
-      this.writeCmd[4] = (byte)data.length;
-      this.device.write(Util.concatenateByteArrays(this.writeCmd, data));
+      this.writeCmd[4] = (byte)var2.length;
+      this.device.write(Util.concatenateByteArrays(this.writeCmd, var2));
       Arrays.fill(this.respHeader, (byte)0);
       int var3 = this.device.read(this.respHeader, this.respHeader.length, 100);
-      if(!ModernRoboticsPacket.a(this.respHeader, 0)) {
+      if(!a.a(this.respHeader, 0)) {
          ++this.usbSequentialWriteErrorCount;
          if(var3 == this.respHeader.length) {
-            this.throwUnexpectedResponse(this.writeCmd, "comm error");
+            Thread.sleep(100L);
+            this.a(this.writeCmd, "comm error");
          } else {
-            this.throwUnexpectedResponse(this.writeCmd, "comm timeout");
+            this.a(this.writeCmd, "comm timeout");
          }
       }
 
@@ -91,17 +94,17 @@ public class ReadWriteRunnableUsbHandler {
       this.device.purge(var1);
    }
 
-   public void read(int var1, byte[] var2) throws RobotCoreException {
-      this.issueReadCommand(var1, var2);
+   public void read(int var1, byte[] var2) throws RobotCoreException, InterruptedException {
+      this.a(var1, var2);
    }
 
    public void throwIfUsbErrorCountIsTooHigh() throws RobotCoreException {
-      if(this.usbSequentialReadErrorCount >= 10 && this.usbSequentialWriteErrorCount >= 10) {
+      if(this.usbSequentialReadErrorCount > 10 || this.usbSequentialWriteErrorCount > 10) {
          throw new RobotCoreException("Too many sequential USB errors on device");
       }
    }
 
-   public void write(int var1, byte[] var2) throws RobotCoreException {
-      this.issueWriteCommand(var1, var2);
+   public void write(int var1, byte[] var2) throws RobotCoreException, InterruptedException {
+      this.b(var1, var2);
    }
 }

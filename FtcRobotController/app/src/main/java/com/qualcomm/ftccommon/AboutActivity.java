@@ -8,13 +8,13 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-
+import com.qualcomm.ftccommon.R;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.Version;
 import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 
 public class AboutActivity extends Activity {
-   WifiDirectAssistant wifiDirectAssistant = null;
+   WifiDirectAssistant a = null;
 
    protected void onStart() {
       super.onStart();
@@ -22,11 +22,11 @@ public class AboutActivity extends Activity {
       ListView var1 = (ListView)this.findViewById(R.id.aboutList);
 
       try {
-         this.wifiDirectAssistant = WifiDirectAssistant.getWifiDirectAssistant((Context)null);
-         this.wifiDirectAssistant.enable();
+         this.a = WifiDirectAssistant.getWifiDirectAssistant((Context)null);
+         this.a.enable();
       } catch (NullPointerException var3) {
          RobotLog.i("Cannot start Wifi Direct Assistant");
-         this.wifiDirectAssistant = null;
+         this.a = null;
       }
 
       var1.setAdapter(new ArrayAdapter(this, 17367044, 16908308) {
@@ -55,14 +55,14 @@ public class AboutActivity extends Activity {
             var1.title = "Wifi Direct Information";
             var1.info = "unavailable";
             StringBuilder var2 = new StringBuilder();
-            if(AboutActivity.this.wifiDirectAssistant != null && AboutActivity.this.wifiDirectAssistant.isEnabled()) {
-               var2.append("Name: ").append(AboutActivity.this.wifiDirectAssistant.getDeviceName());
-               if(AboutActivity.this.wifiDirectAssistant.isGroupOwner()) {
-                  var2.append("\nIP Address").append(AboutActivity.this.wifiDirectAssistant.getGroupOwnerAddress().getHostAddress());
-                  var2.append("\nPassphrase: ").append(AboutActivity.this.wifiDirectAssistant.getPassphrase());
+            if(AboutActivity.this.a != null && AboutActivity.this.a.isEnabled()) {
+               var2.append("Name: ").append(AboutActivity.this.a.getDeviceName());
+               if(AboutActivity.this.a.isGroupOwner()) {
+                  var2.append("\nIP Address").append(AboutActivity.this.a.getGroupOwnerAddress().getHostAddress());
+                  var2.append("\nPassphrase: ").append(AboutActivity.this.a.getPassphrase());
                   var2.append("\nGroup Owner");
-               } else if(AboutActivity.this.wifiDirectAssistant.isConnected()) {
-                  var2.append("\nGroup Owner: ").append(AboutActivity.this.wifiDirectAssistant.getGroupOwnerName());
+               } else if(AboutActivity.this.a.isConnected()) {
+                  var2.append("\nGroup Owner: ").append(AboutActivity.this.a.getGroupOwnerName());
                   var2.append("\nConnected");
                } else {
                   var2.append("\nNo connection information");
@@ -110,8 +110,8 @@ public class AboutActivity extends Activity {
 
    protected void onStop() {
       super.onStop();
-      if(this.wifiDirectAssistant != null) {
-         this.wifiDirectAssistant.disable();
+      if(this.a != null) {
+         this.a.disable();
       }
 
    }

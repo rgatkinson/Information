@@ -1,5 +1,7 @@
 package com.qualcomm.hardware;
 
+import com.qualcomm.hardware.ModernRoboticsUsbDevice;
+import com.qualcomm.hardware.ReadWriteRunnableBlocking;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DcMotorController;
@@ -12,7 +14,7 @@ import com.qualcomm.robotcore.util.TypeConversion;
 
 public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice implements DcMotorController, VoltageSensor {
    public static final int ADDRESS_BATTERY_VOLTAGE = 84;
-   public static final int[] ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP = new int[]{255, 87, 91};   // same as legacy
+   public static final int[] ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP = new int[]{255, 87, 91};
    public static final int ADDRESS_MOTOR1_CURRENT_ENCODER_VALUE = 76;
    public static final int ADDRESS_MOTOR1_D_COEFFICIENT = 89;
    public static final int ADDRESS_MOTOR1_GEAR_RATIO = 86;
@@ -27,13 +29,13 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
    public static final int ADDRESS_MOTOR2_I_COEFFICIENT = 92;
    public static final int ADDRESS_MOTOR2_MODE = 71;
    public static final int ADDRESS_MOTOR2_POWER = 70;
-   public static final int ADDRESS_MOTOR2_P_COEFFICIENT = 91;                                   // same as legacy
-   public static final int ADDRESS_MOTOR2_TARGET_ENCODER_VALUE = 72;                            // same as legacy
-   public static final int[] ADDRESS_MOTOR_CURRENT_ENCODER_VALUE_MAP = new int[]{255, 76, 80};  // same as legacy
-   public static final int[] ADDRESS_MOTOR_GEAR_RATIO_MAP = new int[]{255, 86, 90};             // same as legacy
-   public static final int[] ADDRESS_MOTOR_MODE_MAP = new int[]{255, 68, 71};                   // same as legacy
-   public static final int[] ADDRESS_MOTOR_POWER_MAP = new int[]{255, 69, 70};                  // same as legacy
-   public static final int[] ADDRESS_MOTOR_TARGET_ENCODER_VALUE_MAP = new int[]{255, 64, 72};   // same as legacy
+   public static final int ADDRESS_MOTOR2_P_COEFFICIENT = 91;
+   public static final int ADDRESS_MOTOR2_TARGET_ENCODER_VALUE = 72;
+   public static final int[] ADDRESS_MOTOR_CURRENT_ENCODER_VALUE_MAP = new int[]{255, 76, 80};
+   public static final int[] ADDRESS_MOTOR_GEAR_RATIO_MAP = new int[]{255, 86, 90};
+   public static final int[] ADDRESS_MOTOR_MODE_MAP = new int[]{255, 68, 71};
+   public static final int[] ADDRESS_MOTOR_POWER_MAP = new int[]{255, 69, 70};
+   public static final int[] ADDRESS_MOTOR_TARGET_ENCODER_VALUE_MAP = new int[]{255, 64, 72};
    public static final int ADDRESS_UNUSED = 255;
    public static final double BATTERY_MAX_MEASURABLE_VOLTAGE = 20.4D;
    public static final int BATTERY_MAX_MEASURABLE_VOLTAGE_INT = 1023;
@@ -61,51 +63,52 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
    public static final int DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAX = 255;
    public static final int MAX_MOTOR = 2;
    public static final int MIN_MOTOR = 1;
+   public static final int MONITOR_LENGTH = 30;
    public static final byte POWER_BREAK = 0;
    public static final byte POWER_FLOAT = -128;
    public static final byte POWER_MAX = 100;
    public static final byte POWER_MIN = -100;
    public static final byte RATIO_MAX = 127;
    public static final byte RATIO_MIN = -128;
-   // Read all of the the state on every cycle
-   public static final int MONITOR_LENGTH = 30;
    public static final byte START_ADDRESS = 64;
-   private IsBusyHelper[] isBusyHelpers;
+   private ModernRoboticsUsbDcMotorController.a[] a;
 
-   protected ModernRoboticsUsbDcMotorController(SerialNumber serialNumber, RobotUsbDevice robotUsbDevice, EventLoopManager eventLoopManager) throws RobotCoreException, InterruptedException {
-      super(serialNumber, eventLoopManager, new ReadWriteRunnableBlocking(serialNumber, robotUsbDevice, MONITOR_LENGTH, START_ADDRESS, false));
-      this.isBusyHelpers = new IsBusyHelper[3];
+   protected ModernRoboticsUsbDcMotorController(SerialNumber var1, RobotUsbDevice var2, EventLoopManager var3) throws RobotCoreException, InterruptedException {
+      int var4 = 0;
+      super(var1, var3, new ReadWriteRunnableBlocking(var1, var2, 30, 64, false));
+      this.a = new ModernRoboticsUsbDcMotorController.a[3];
       this.readWriteRunnable.setCallback(this);
 
-      int index = 0;
-      while(index < this.isBusyHelpers.length) {
-         this.isBusyHelpers[index] = new IsBusyHelper(null);
-         ++index;
+      while(var4 < this.a.length) {
+         this.a[var4] = new ModernRoboticsUsbDcMotorController.a(null);
+         ++var4;
       }
 
-      this.floatMotors();
-      this.initializePID();
+      this.a();
+      this.b();
    }
 
-   private void floatMotors() {
+   private void a() {
       this.setMotorPowerFloat(1);
       this.setMotorPowerFloat(2);
    }
 
-   private void validateMotor(int motor) {
-      if(motor < MIN_MOTOR || motor > MAX_MOTOR) {
-         throw new IllegalArgumentException(String.format("Motor %d is invalid; valid motors are 1..%d", motor, MAX_MOTOR));
+   private void a(int var1) {
+      if(var1 < 1 || var1 > 2) {
+         Object[] var2 = new Object[]{Integer.valueOf(var1), Integer.valueOf(2)};
+         throw new IllegalArgumentException(String.format("Motor %d is invalid; valid motors are 1..%d", var2));
       }
    }
 
-   private void initializePID() {
-      for(int motor = MIN_MOTOR; motor <= MAX_MOTOR; ++motor) {
-         this.write(ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP[motor], new byte[]{(byte)DEFAULT_P_COEFFICIENT, (byte)DEFAULT_I_COEFFICIENT, (byte)DEFAULT_D_COEFFICIENT});
+   private void b() {
+      for(int var1 = 1; var1 <= 2; ++var1) {
+         this.write(ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP[var1], new byte[]{(byte)-128, (byte)64, (byte)-72});
       }
+
    }
 
-   public static DcMotorController.RunMode flagToRunMode(byte grf) {
-      switch(grf & 3) {
+   public static DcMotorController.RunMode flagToRunMode(byte var0) {
+      switch(var0 & 3) {
       case 0:
          return DcMotorController.RunMode.RUN_WITHOUT_ENCODERS;
       case 1:
@@ -119,8 +122,8 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
       }
    }
 
-   public static byte runModeToFlag(DcMotorController.RunMode mode) {
-      switch(mode.ordinal()) {
+   public static byte runModeToFlag(DcMotorController.RunMode var0) {
+      switch(null.a[var0.ordinal()]) {
       case 1:
       default:
          return (byte)1;
@@ -134,7 +137,7 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
    }
 
    public void close() {
-      this.floatMotors();
+      this.a();
       super.close();
    }
 
@@ -146,162 +149,161 @@ public class ModernRoboticsUsbDcMotorController extends ModernRoboticsUsbDevice 
       return "Modern Robotics USB DC Motor Controller";
    }
 
-   public DifferentialControlLoopCoefficients getDifferentialControlLoopCoefficients(int motor) {
-      this.validateMotor(motor);
-      DifferentialControlLoopCoefficients coeffs = new DifferentialControlLoopCoefficients();
-      byte[] data = this.read(ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP[motor], 3);
-      coeffs.p = (double)data[0];
-      coeffs.i = (double)data[1];
-      coeffs.d = (double)data[2];
-      return coeffs;
+   public DifferentialControlLoopCoefficients getDifferentialControlLoopCoefficients(int var1) {
+      this.a(var1);
+      DifferentialControlLoopCoefficients var2 = new DifferentialControlLoopCoefficients();
+      byte[] var3 = this.read(ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP[var1], 3);
+      var2.p = (double)var3[0];
+      var2.i = (double)var3[1];
+      var2.d = (double)var3[2];
+      return var2;
    }
 
-   public double getGearRatio(int motor) {
-      this.validateMotor(motor);
-      return (double)this.read(ADDRESS_MOTOR_GEAR_RATIO_MAP[motor], 1)[0] / 127.0D;
+   public double getGearRatio(int var1) {
+      this.a(var1);
+      return (double)this.read(ADDRESS_MOTOR_GEAR_RATIO_MAP[var1], 1)[0] / 127.0D;
    }
 
-   public DcMotorController.RunMode getMotorChannelMode(int motor) {
-      this.validateMotor(motor);
-      return flagToRunMode(this.read(ADDRESS_MOTOR_MODE_MAP[motor]));
+   public DcMotorController.RunMode getMotorChannelMode(int var1) {
+      this.a(var1);
+      return flagToRunMode(this.read(ADDRESS_MOTOR_MODE_MAP[var1]));
    }
 
    public DcMotorController.DeviceMode getMotorControllerDeviceMode() {
       return DcMotorController.DeviceMode.READ_WRITE;
    }
 
-   public int getMotorCurrentPosition(int motor) {
-      this.validateMotor(motor);
-      return TypeConversion.byteArrayToInt(this.read(ADDRESS_MOTOR_CURRENT_ENCODER_VALUE_MAP[motor], 4));
+   public int getMotorCurrentPosition(int var1) {
+      this.a(var1);
+      return TypeConversion.byteArrayToInt(this.read(ADDRESS_MOTOR_CURRENT_ENCODER_VALUE_MAP[var1], 4));
    }
 
-   public double getMotorPower(int motor) {
-      this.validateMotor(motor);
-      byte bPower = this.read(ADDRESS_MOTOR_POWER_MAP[motor]);
-      return bPower == POWER_FLOAT ? 0.0D : (double)bPower / 100.0D;
+   public double getMotorPower(int var1) {
+      this.a(var1);
+      byte var2 = this.read(ADDRESS_MOTOR_POWER_MAP[var1]);
+      return var2 == -128?0.0D:(double)var2 / 100.0D;
    }
 
-   public boolean getMotorPowerFloat(int motor) {
-      this.validateMotor(motor);
-      return this.read(ADDRESS_MOTOR_POWER_MAP[motor]) == -128;
+   public boolean getMotorPowerFloat(int var1) {
+      this.a(var1);
+      return this.read(ADDRESS_MOTOR_POWER_MAP[var1]) == -128;
    }
 
-   public int getMotorTargetPosition(int motor) {
-      this.validateMotor(motor);
-      return TypeConversion.byteArrayToInt(this.read(ADDRESS_MOTOR_TARGET_ENCODER_VALUE_MAP[motor], 4));
+   public int getMotorTargetPosition(int var1) {
+      this.a(var1);
+      return TypeConversion.byteArrayToInt(this.read(ADDRESS_MOTOR_TARGET_ENCODER_VALUE_MAP[var1], 4));
    }
 
    public double getVoltage() {
       return 20.4D * ((double)(1023 & TypeConversion.byteArrayToShort(this.read(84, 2)) >> 6) / 1023.0D);
    }
 
-   public boolean isBusy(int motor) {
-      this.validateMotor(motor);
-      return this.isBusyHelpers[motor].isBusy();
+   public boolean isBusy(int var1) {
+      this.a(var1);
+      return this.a[var1].a();
    }
 
    public void readComplete() throws InterruptedException {
-      for(int motor = 1; motor <= 2; ++motor) {
-         this.isBusyHelpers[motor].notePositionAtReadComplete(this.getMotorCurrentPosition(motor));
+      for(int var1 = 1; var1 <= 2; ++var1) {
+         this.a[var1].a(this.getMotorCurrentPosition(var1));
       }
 
    }
 
-   public void setDifferentialControlLoopCoefficients(int motor, DifferentialControlLoopCoefficients coeffs) {
-      this.validateMotor(motor);
-      if(coeffs.p > 255.0D) {
-         coeffs.p = 255.0D;
+   public void setDifferentialControlLoopCoefficients(int var1, DifferentialControlLoopCoefficients var2) {
+      this.a(var1);
+      if(var2.p > 255.0D) {
+         var2.p = 255.0D;
       }
 
-      if(coeffs.i > 255.0D) {
-         coeffs.i = 255.0D;
+      if(var2.i > 255.0D) {
+         var2.i = 255.0D;
       }
 
-      if(coeffs.d > 255.0D) {
-         coeffs.d = 255.0D;
+      if(var2.d > 255.0D) {
+         var2.d = 255.0D;
       }
 
-      int register = ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP[motor];
-      byte[] data = new byte[]{(byte)((int)coeffs.p), (byte)((int)coeffs.i), (byte)((int)coeffs.d)};
-      this.write(register, data);
+      int var3 = ADDRESS_MAX_DIFFERENTIAL_CONTROL_LOOP_COEFFICIENT_MAP[var1];
+      byte[] var4 = new byte[]{(byte)((int)var2.p), (byte)((int)var2.i), (byte)((int)var2.d)};
+      this.write(var3, var4);
    }
 
-   public void setGearRatio(int motor, double ratio) {
-      this.validateMotor(motor);
-      Range.throwIfRangeIsInvalid(ratio, -1.0D, 1.0D);
-      int register = ADDRESS_MOTOR_GEAR_RATIO_MAP[motor];
-      byte[] data = new byte[]{(byte)((int)(127.0D * ratio))};
-      this.write(register, data);
-   }
-
-   public void setMotorChannelMode(int motor, DcMotorController.RunMode mode) {
-      this.validateMotor(motor);
-      byte var3 = runModeToFlag(mode);
-      this.write(ADDRESS_MOTOR_MODE_MAP[motor], var3);
-   }
-
-   public void setMotorControllerDeviceMode(DcMotorController.DeviceMode mode) {
-   // ignored
-   }
-
-   public void setMotorPower(int motor, double power) {
-      this.validateMotor(motor);
-      Range.throwIfRangeIsInvalid(power, -1.0D, 1.0D);
-      int var4 = ADDRESS_MOTOR_POWER_MAP[motor];
-      byte[] var5 = new byte[]{(byte)((int)(100.0D * power))};
+   public void setGearRatio(int var1, double var2) {
+      this.a(var1);
+      Range.throwIfRangeIsInvalid(var2, -1.0D, 1.0D);
+      int var4 = ADDRESS_MOTOR_GEAR_RATIO_MAP[var1];
+      byte[] var5 = new byte[]{(byte)((int)(127.0D * var2))};
       this.write(var4, var5);
    }
 
-   public void setMotorPowerFloat(int motor) {
-      this.validateMotor(motor);
-      this.write(ADDRESS_MOTOR_POWER_MAP[motor], new byte[]{(byte)-128});
+   public void setMotorChannelMode(int var1, DcMotorController.RunMode var2) {
+      this.a(var1);
+      byte var3 = runModeToFlag(var2);
+      this.write(ADDRESS_MOTOR_MODE_MAP[var1], var3);
    }
 
-   public void setMotorTargetPosition(int motor, int position) {
-      this.validateMotor(motor);
-      Range.throwIfRangeIsInvalid((double)position, -2.147483648E9D, 2.147483647E9D);
-      this.write(ADDRESS_MOTOR_TARGET_ENCODER_VALUE_MAP[motor], TypeConversion.intToByteArray(position));
+   public void setMotorControllerDeviceMode(DcMotorController.DeviceMode var1) {
    }
 
-   private static class IsBusyHelper
-      {
-      private int[] positions;
-      private int[] dPositions;
-      private int circularIndex;
+   public void setMotorPower(int var1, double var2) {
+      this.a(var1);
+      Range.throwIfRangeIsInvalid(var2, -1.0D, 1.0D);
+      int var4 = ADDRESS_MOTOR_POWER_MAP[var1];
+      byte[] var5 = new byte[]{(byte)((int)(100.0D * var2))};
+      this.write(var4, var5);
+   }
 
-      private IsBusyHelper() {
-         this.positions = new int[3];
-         this.dPositions = new int[3];
-         this.circularIndex = 0;
+   public void setMotorPowerFloat(int var1) {
+      this.a(var1);
+      this.write(ADDRESS_MOTOR_POWER_MAP[var1], new byte[]{(byte)-128});
+   }
+
+   public void setMotorTargetPosition(int var1, int var2) {
+      this.a(var1);
+      Range.throwIfRangeIsInvalid((double)var2, -2.147483648E9D, 2.147483647E9D);
+      this.write(ADDRESS_MOTOR_TARGET_ENCODER_VALUE_MAP[var1], TypeConversion.intToByteArray(var2));
+   }
+
+   private static class a {
+      private int[] a;
+      private int[] b;
+      private int c;
+
+      private a() {
+         this.a = new int[3];
+         this.b = new int[3];
+         this.c = 0;
       }
 
       // $FF: synthetic method
-      IsBusyHelper(Object var1) {
+      a(Object var1) {
          this();
       }
 
-      public void notePositionAtReadComplete(int currentPosition) {
-         int prevPosition = this.positions[this.circularIndex];
-         this.circularIndex = (1 + this.circularIndex) % this.positions.length;
-         this.dPositions[this.circularIndex] = Math.abs(prevPosition - currentPosition);
-         this.positions[this.circularIndex] = currentPosition;
+      public void a(int var1) {
+         int var2 = this.a[this.c];
+         this.c = (1 + this.c) % this.a.length;
+         this.b[this.c] = Math.abs(var2 - var1);
+         this.a[this.c] = var1;
       }
 
-      public boolean isBusy() {
-         int[] dPositions = this.dPositions;
-         int count = dPositions.length;
-         int totalMovement;
-         int i = 0;
-         for(totalMovement = 0; i < count; ++i) {
-            totalMovement += dPositions[i];
+      public boolean a() {
+         int[] var1 = this.b;
+         int var2 = var1.length;
+         int var3 = 0;
+
+         int var4;
+         for(var4 = 0; var3 < var2; ++var3) {
+            var4 += var1[var3];
          }
 
-         boolean result = false;
-         if(totalMovement > 6) {
-            result = true;
+         boolean var5 = false;
+         if(var4 > 6) {
+            var5 = true;
          }
 
-         return result;
+         return var5;
       }
    }
 }

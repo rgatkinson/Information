@@ -57,6 +57,8 @@ public abstract class DeviceManager {
 
    public abstract ColorSensor createModernRoboticsI2cColorSensor(DeviceInterfaceModule var1, int var2);
 
+   public abstract GyroSensor createModernRoboticsI2cGyroSensor(DeviceInterfaceModule var1, int var2);
+
    public abstract AccelerationSensor createNxtAccelerationSensor(LegacyModule var1, int var2);
 
    public abstract ColorSensor createNxtColorSensor(LegacyModule var1, int var2);

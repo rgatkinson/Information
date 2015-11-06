@@ -269,14 +269,14 @@ public class PushBotHardware extends OpMode {
 
    public void reset_left_drive_encoder() {
       if(this.v_motor_left_drive != null) {
-         this.v_motor_left_drive.setChannelMode(DcMotorController.RunMode.RESET_ENCODERS);
+         this.v_motor_left_drive.setMode(DcMotorController.RunMode.RESET_ENCODERS);
       }
 
    }
 
    public void reset_right_drive_encoder() {
       if(this.v_motor_right_drive != null) {
-         this.v_motor_right_drive.setChannelMode(DcMotorController.RunMode.RESET_ENCODERS);
+         this.v_motor_right_drive.setMode(DcMotorController.RunMode.RESET_ENCODERS);
       }
 
    }
@@ -288,14 +288,14 @@ public class PushBotHardware extends OpMode {
 
    public void run_using_left_drive_encoder() {
       if(this.v_motor_left_drive != null) {
-         this.v_motor_left_drive.setChannelMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+         this.v_motor_left_drive.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
       }
 
    }
 
    public void run_using_right_drive_encoder() {
       if(this.v_motor_right_drive != null) {
-         this.v_motor_right_drive.setChannelMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+         this.v_motor_right_drive.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
       }
 
    }
@@ -306,15 +306,15 @@ public class PushBotHardware extends OpMode {
    }
 
    public void run_without_left_drive_encoder() {
-      if(this.v_motor_left_drive != null && this.v_motor_left_drive.getChannelMode() == DcMotorController.RunMode.RESET_ENCODERS) {
-         this.v_motor_left_drive.setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
+      if(this.v_motor_left_drive != null && this.v_motor_left_drive.getMode() == DcMotorController.RunMode.RESET_ENCODERS) {
+         this.v_motor_left_drive.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
       }
 
    }
 
    public void run_without_right_drive_encoder() {
-      if(this.v_motor_right_drive != null && this.v_motor_right_drive.getChannelMode() == DcMotorController.RunMode.RESET_ENCODERS) {
-         this.v_motor_right_drive.setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
+      if(this.v_motor_right_drive != null && this.v_motor_right_drive.getMode() == DcMotorController.RunMode.RESET_ENCODERS) {
+         this.v_motor_right_drive.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
       }
 
    }

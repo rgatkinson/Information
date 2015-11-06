@@ -56,6 +56,7 @@ public abstract class LinearOpMode extends OpMode {
     }
 
     public final void init_loop() {
+        this.a();
     }
 
     public final void start() {
@@ -66,13 +67,7 @@ public abstract class LinearOpMode extends OpMode {
     }
 
     public final void loop() {
-        if(this.a.a()) {
-            throw this.a.b();
-        } else {
-            synchronized(this) {
-                this.notifyAll();
-            }
-        }
+        this.a();
     }
 
     public final void stop() {
@@ -95,6 +90,16 @@ public abstract class LinearOpMode extends OpMode {
             System.exit(-1);
         }
 
+    }
+
+    private void a() {
+        if(this.a.a()) {
+            throw this.a.b();
+        } else {
+            synchronized(this) {
+                this.notifyAll();
+            }
+        }
     }
 
     private static class a implements Runnable {

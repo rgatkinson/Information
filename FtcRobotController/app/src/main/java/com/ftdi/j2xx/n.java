@@ -8,35 +8,35 @@ package com.ftdi.j2xx;
 import java.nio.ByteBuffer;
 
 class n {
-    private int iBuffer;
-    private ByteBuffer byteBuffer;
-    private int cbTransferred;
+    private int a;
+    private ByteBuffer b;
+    private int c;
     private boolean d;
 
-    public n(int cbAllocate) {
-        this.byteBuffer = ByteBuffer.allocate(cbAllocate);
-        this.setCbTransferred(0);
+    public n(int var1) {
+        this.b = ByteBuffer.allocate(var1);
+        this.b(0);
     }
 
-    void setBufferNumber(int iBuffer) {
-        this.iBuffer = iBuffer;
+    void a(int var1) {
+        this.a = var1;
     }
 
-    ByteBuffer getByteBuffer() {
-        return this.byteBuffer;
+    ByteBuffer a() {
+        return this.b;
     }
 
-    int getCbTransferred() {
-        return this.cbTransferred;
+    int b() {
+        return this.c;
     }
 
-    void setCbTransferred(int cbTransferred) {
-        this.cbTransferred = cbTransferred;
+    void b(int var1) {
+        this.c = var1;
     }
 
-    synchronized void clear() {
-        this.byteBuffer.clear();
-        this.setCbTransferred(0);
+    synchronized void c() {
+        this.b.clear();
+        this.b(0);
     }
 
     synchronized boolean d() {
@@ -47,18 +47,20 @@ class n {
         ByteBuffer var2 = null;
         if(!this.d) {
             this.d = true;
-            this.iBuffer = var1;
-            var2 = this.byteBuffer;
+            this.a = var1;
+            var2 = this.b;
         }
+
         return var2;
     }
 
     synchronized boolean d(int var1) {
         boolean var2 = false;
-        if(this.d && var1 == this.iBuffer) {
+        if(this.d && var1 == this.a) {
             this.d = false;
             var2 = true;
         }
+
         return var2;
     }
 }

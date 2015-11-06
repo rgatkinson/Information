@@ -32,22 +32,23 @@ public class K9Line extends OpMode {
    public void loop() {
       this.arm.setPosition(this.armPosition);
       this.claw.setPosition(this.clawPosition);
-      double var1;
+      double var1 = this.reflectedLight.getLightDetected();
       double var3;
-      if(0.0D < 0.5D) {
-         var1 = 0.15D;
-         var3 = 0.0D;
-      } else {
-         var1 = 0.0D;
+      double var5;
+      if(var1 < 0.5D) {
          var3 = 0.15D;
+         var5 = 0.0D;
+      } else {
+         var3 = 0.0D;
+         var5 = 0.15D;
       }
 
-      this.motorRight.setPower(var1);
-      this.motorLeft.setPower(var3);
+      this.motorRight.setPower(var3);
+      this.motorLeft.setPower(var5);
       this.telemetry.addData("Text", "*** Robot Data***");
-      this.telemetry.addData("reflection", "reflection:  " + Double.toString(0.0D));
-      this.telemetry.addData("left tgt pwr", "left  pwr: " + Double.toString(var1));
-      this.telemetry.addData("right tgt pwr", "right pwr: " + Double.toString(var3));
+      this.telemetry.addData("reflection", "reflection:  " + Double.toString(var1));
+      this.telemetry.addData("left tgt pwr", "left  pwr: " + Double.toString(var3));
+      this.telemetry.addData("right tgt pwr", "right pwr: " + Double.toString(var5));
    }
 
    public void stop() {

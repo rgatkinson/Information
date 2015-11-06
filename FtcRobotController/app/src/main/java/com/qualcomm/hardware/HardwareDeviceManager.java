@@ -1,12 +1,27 @@
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by Fernflower decompiler)
-//
-
 package com.qualcomm.hardware;
 
 import android.content.Context;
-
+import com.qualcomm.hardware.AdafruitI2cColorSensor;
+import com.qualcomm.hardware.HiTechnicNxtAccelerationSensor;
+import com.qualcomm.hardware.HiTechnicNxtColorSensor;
+import com.qualcomm.hardware.HiTechnicNxtCompassSensor;
+import com.qualcomm.hardware.HiTechnicNxtDcMotorController;
+import com.qualcomm.hardware.HiTechnicNxtGyroSensor;
+import com.qualcomm.hardware.HiTechnicNxtIrSeekerSensor;
+import com.qualcomm.hardware.HiTechnicNxtLightSensor;
+import com.qualcomm.hardware.HiTechnicNxtServoController;
+import com.qualcomm.hardware.HiTechnicNxtTouchSensor;
+import com.qualcomm.hardware.HiTechnicNxtTouchSensorMultiplexer;
+import com.qualcomm.hardware.HiTechnicNxtUltrasonicSensor;
+import com.qualcomm.hardware.ModernRoboticsAnalogOpticalDistanceSensor;
+import com.qualcomm.hardware.ModernRoboticsDigitalTouchSensor;
+import com.qualcomm.hardware.ModernRoboticsI2cColorSensor;
+import com.qualcomm.hardware.ModernRoboticsI2cGyro;
+import com.qualcomm.hardware.ModernRoboticsI2cIrSeekerSensorV3;
+import com.qualcomm.hardware.ModernRoboticsUsbDcMotorController;
+import com.qualcomm.hardware.ModernRoboticsUsbDeviceInterfaceModule;
+import com.qualcomm.hardware.ModernRoboticsUsbLegacyModule;
+import com.qualcomm.hardware.ModernRoboticsUsbServoController;
 import com.qualcomm.modernrobotics.ModernRoboticsUsbUtil;
 import com.qualcomm.modernrobotics.RobotUsbManagerEmulator;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
@@ -41,276 +56,256 @@ import com.qualcomm.robotcore.hardware.usb.RobotUsbManager;
 import com.qualcomm.robotcore.hardware.usb.ftdi.RobotUsbManagerFtdi;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.SerialNumber;
-import java.util.HashMap;
 import java.util.Map;
 
 public class HardwareDeviceManager extends DeviceManager {
-    private static EnumA enumA;
-    private RobotUsbManager robotUsbManager;
-    private final EventLoopManager eventLoopManager;
+   private static HardwareDeviceManager.a a;
+   private RobotUsbManager b;
+   private final EventLoopManager c;
 
-    public HardwareDeviceManager(Context context, EventLoopManager manager) throws RobotCoreException {
-        this.eventLoopManager = manager;
-        switch(HardwareDeviceManager.SyntheticClass_1.a[enumA.ordinal()]) {
-        case 1:
-            this.robotUsbManager = new RobotUsbManagerEmulator();
-            break;
-        default:
-            this.robotUsbManager = new RobotUsbManagerFtdi(context);
-        }
+   static {
+      a = HardwareDeviceManager.a.a;
+   }
 
-    }
+   public HardwareDeviceManager(Context var1, EventLoopManager var2) throws RobotCoreException {
+      this.c = var2;
+      switch(null.a[a.ordinal()]) {
+      case 1:
+         this.b = new RobotUsbManagerEmulator();
+         return;
+      default:
+         this.b = new RobotUsbManagerFtdi(var1);
+      }
+   }
 
-    public Map<SerialNumber, DeviceType> scanForUsbDevices() throws RobotCoreException {
-        HashMap mapSerialNumberToDeviceType = new HashMap();
+   private ModernRoboticsUsbDeviceInterfaceModule a(DeviceInterfaceModule var1) {
+      if(!(var1 instanceof ModernRoboticsUsbDeviceInterfaceModule)) {
+         throw new IllegalArgumentException("Modern Robotics Device Manager needs a Modern Robotics Device Interface Module");
+      } else {
+         return (ModernRoboticsUsbDeviceInterfaceModule)var1;
+      }
+   }
 
-        try {
-            int numberOfDevices = this.robotUsbManager.scanForDevices();
+   private ModernRoboticsUsbLegacyModule a(LegacyModule var1) {
+      if(!(var1 instanceof ModernRoboticsUsbLegacyModule)) {
+         throw new IllegalArgumentException("Modern Robotics Device Manager needs a Modern Robotics LegacyModule");
+      } else {
+         return (ModernRoboticsUsbLegacyModule)var1;
+      }
+   }
 
-            for(int iDevice = 0; iDevice < numberOfDevices; ++iDevice) {
-                SerialNumber serialNumber = this.robotUsbManager.getDeviceSerialNumberByIndex(iDevice);
+   private void a(RobotUsbDevice var1, String var2, SerialNumber var3) throws RobotCoreException {
+      String var4 = var2 + " [" + var3 + "] is returning garbage data via the USB bus";
+      var1.close();
+      this.a(var4);
+   }
 
-                RobotUsbDevice robotUsbDevice = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
-                mapSerialNumberToDeviceType.put(serialNumber, ModernRoboticsUsbUtil.getDeviceType(ModernRoboticsUsbUtil.getUsbDeviceHeader(robotUsbDevice)));
-                robotUsbDevice.close();
-            }
-        } catch (RobotCoreException var6) {
-            RobotLog.setGlobalErrorMsgAndThrow("Error while scanning for USB devices", var6);
-        }
+   private void a(String var1) throws RobotCoreException {
+      System.err.println(var1);
+      throw new RobotCoreException(var1);
+   }
 
-        return mapSerialNumberToDeviceType;
-    }
+   public static void disableDeviceEmulation() {
+      a = HardwareDeviceManager.a.a;
+   }
 
-    public DcMotorController createUsbDcMotorController(SerialNumber serialNumber) throws RobotCoreException, InterruptedException {
-        RobotLog.v("Creating Modern Robotics USB DC Motor Controller - " + serialNumber.toString());
-        ModernRoboticsUsbDcMotorController newMotorController = null;
+   public static void enableDeviceEmulation() {
+      a = HardwareDeviceManager.a.b;
+   }
 
-        try {
-            RobotUsbDevice robotUsbDevice = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
-            byte[] header = ModernRoboticsUsbUtil.getUsbDeviceHeader(robotUsbDevice);
-            DeviceType deviceType = ModernRoboticsUsbUtil.getDeviceType(header);
-            if(deviceType != DeviceType.MODERN_ROBOTICS_USB_DC_MOTOR_CONTROLLER) {
-                this.printErrAndThrow(serialNumber.toString() + " is not a Modern Robotics USB DC Motor Controller");
-            }
+   public ColorSensor createAdafruitI2cColorSensor(DeviceInterfaceModule var1, int var2) {
+      RobotLog.v("Creating Adafruit I2C Color Sensor - Port: " + var2);
+      return new AdafruitI2cColorSensor(var1, var2);
+   }
 
-            newMotorController = new ModernRoboticsUsbDcMotorController(serialNumber, robotUsbDevice, this.eventLoopManager);
-        } catch (RobotCoreException e) {
-            RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB DC Motor Controller", e);
-        }
+   public AnalogInput createAnalogInputDevice(AnalogInputController var1, int var2) {
+      RobotLog.v("Creating Analog Input Device - Port: " + var2);
+      return new AnalogInput(var1, var2);
+   }
 
-        return newMotorController;
-    }
+   public OpticalDistanceSensor createAnalogOpticalDistanceSensor(DeviceInterfaceModule var1, int var2) {
+      RobotLog.v("Creating Modern Robotics Analog Optical Distance Sensor - Port: " + var2);
+      return new ModernRoboticsAnalogOpticalDistanceSensor(this.a(var1), var2);
+   }
 
-    public ServoController createUsbServoController(SerialNumber serialNumber) throws RobotCoreException, InterruptedException {
-        RobotLog.v("Creating Modern Robotics USB Servo Controller - " + serialNumber.toString());
-        ModernRoboticsUsbServoController var2 = null;
+   public AnalogOutput createAnalogOutputDevice(AnalogOutputController var1, int var2) {
+      RobotLog.v("Creating Analog Output Device - Port: " + var2);
+      return new AnalogOutput(var1, var2);
+   }
 
-        try {
-            RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
-            byte[] var4 = ModernRoboticsUsbUtil.getUsbDeviceHeader(var3);
-            DeviceType var5 = ModernRoboticsUsbUtil.getDeviceType(var4);
-            if(var5 != DeviceType.MODERN_ROBOTICS_USB_SERVO_CONTROLLER) {
-                this.printErrAndThrow(serialNumber.toString() + " is not a Modern Robotics USB Servo Controller");
-            }
+   public DeviceInterfaceModule createDeviceInterfaceModule(SerialNumber var1) throws RobotCoreException, InterruptedException {
+      RobotLog.v("Creating Modern Robotics USB Core Device Interface Module - " + var1.toString());
 
-            var2 = new ModernRoboticsUsbServoController(serialNumber, var3, this.eventLoopManager);
-        } catch (RobotCoreException var6) {
-            RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB Servo Controller", var6);
-        }
+      try {
+         RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.b, var1);
+         if(ModernRoboticsUsbUtil.getDeviceType(ModernRoboticsUsbUtil.getUsbDeviceHeader(var3)) != DeviceManager.DeviceType.MODERN_ROBOTICS_USB_DEVICE_INTERFACE_MODULE) {
+            this.a(var3, "Modern Robotics USB Core Device Interface Module", var1);
+         }
 
-        return var2;
-    }
+         ModernRoboticsUsbDeviceInterfaceModule var4 = new ModernRoboticsUsbDeviceInterfaceModule(var1, var3, this.c);
+         return var4;
+      } catch (RobotCoreException var5) {
+         RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB Core Device Interface Module", var5);
+         return null;
+      }
+   }
 
-    public DeviceInterfaceModule createDeviceInterfaceModule(SerialNumber serialNumber) throws RobotCoreException, InterruptedException {
-        RobotLog.v("Creating Modern Robotics USB Core Device Interface Module - " + serialNumber.toString());
-        ModernRoboticsUsbDeviceInterfaceModule var2 = null;
+   public DigitalChannel createDigitalChannelDevice(DigitalChannelController var1, int var2) {
+      RobotLog.v("Creating Digital Channel Device - Port: " + var2);
+      return new DigitalChannel(var1, var2);
+   }
 
-        try {
-            RobotUsbDevice robotUsbDevice = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
-            byte[] var4 = ModernRoboticsUsbUtil.getUsbDeviceHeader(robotUsbDevice);
-            DeviceType var5 = ModernRoboticsUsbUtil.getDeviceType(var4);
-            if(var5 != DeviceType.MODERN_ROBOTICS_USB_DEVICE_INTERFACE_MODULE) {
-                this.printErrAndThrow(serialNumber.toString() + " is not a Modern Robotics USB Core Device Interface Module");
-            }
+   public TouchSensor createDigitalTouchSensor(DeviceInterfaceModule var1, int var2) {
+      RobotLog.v("Creating Modern Robotics Digital Touch Sensor - Port: " + var2);
+      return new ModernRoboticsDigitalTouchSensor(this.a(var1), var2);
+   }
 
-            var2 = new ModernRoboticsUsbDeviceInterfaceModule(serialNumber, robotUsbDevice, this.eventLoopManager);
-        } catch (RobotCoreException var6) {
-            RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB Core Device Interface Module", var6);
-        }
+   public I2cDevice createI2cDevice(I2cController var1, int var2) {
+      RobotLog.v("Creating I2C Device - Port: " + var2);
+      return new I2cDevice(var1, var2);
+   }
 
-        return var2;
-    }
+   public IrSeekerSensor createI2cIrSeekerSensorV3(DeviceInterfaceModule var1, int var2) {
+      RobotLog.v("Creating Modern Robotics I2C IR Seeker Sensor V3 - Port: " + var2);
+      return new ModernRoboticsI2cIrSeekerSensorV3(this.a(var1), var2);
+   }
 
-    public LegacyModule createUsbLegacyModule(SerialNumber serialNumber) throws RobotCoreException, InterruptedException {
-        RobotLog.v("Creating Modern Robotics USB Legacy Module - " + serialNumber.toString());
-        ModernRoboticsUsbLegacyModule legacyModule = null;
+   public LED createLED(DigitalChannelController var1, int var2) {
+      RobotLog.v("Creating LED - Port: " + var2);
+      return new LED(var1, var2);
+   }
 
-        try {
-            RobotUsbDevice robotUsbDevice = ModernRoboticsUsbUtil.openUsbDevice(this.robotUsbManager, serialNumber);
+   public ColorSensor createModernRoboticsI2cColorSensor(DeviceInterfaceModule var1, int var2) {
+      RobotLog.v("Creating Modern Robotics I2C Color Sensor - Port: " + var2);
+      return new ModernRoboticsI2cColorSensor(var1, var2);
+   }
 
-            byte[] usbDeviceHeader = ModernRoboticsUsbUtil.getUsbDeviceHeader(robotUsbDevice);
-            DeviceType deviceType = ModernRoboticsUsbUtil.getDeviceType(usbDeviceHeader);
-            if(deviceType != DeviceType.MODERN_ROBOTICS_USB_LEGACY_MODULE) {
-                this.printErrAndThrow(serialNumber.toString() + " is not a Modern Robotics USB Legacy Module");
-            }
+   public GyroSensor createModernRoboticsI2cGyroSensor(DeviceInterfaceModule var1, int var2) {
+      RobotLog.v("Creating Modern Robotics I2C Gyro Sensor - Port: " + var2);
+      return new ModernRoboticsI2cGyro(var1, var2);
+   }
 
-            legacyModule = new ModernRoboticsUsbLegacyModule(serialNumber, robotUsbDevice, this.eventLoopManager);
-        } catch (RobotCoreException var6) {
-            RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB Legacy Module", var6);
-        }
+   public AccelerationSensor createNxtAccelerationSensor(LegacyModule var1, int var2) {
+      RobotLog.v("Creating HiTechnic NXT Acceleration Sensor - Port: " + var2);
+      return new HiTechnicNxtAccelerationSensor(this.a(var1), var2);
+   }
 
-        return legacyModule;
-    }
+   public ColorSensor createNxtColorSensor(LegacyModule var1, int var2) {
+      RobotLog.v("Creating HiTechnic NXT Color Sensor - Port: " + var2);
+      return new HiTechnicNxtColorSensor(var1, var2);
+   }
 
-    public DcMotorController createNxtDcMotorController(LegacyModule legacyModule, int physicalPort) {
-        RobotLog.v("Creating HiTechnic NXT DC Motor Controller - Port: " + physicalPort);
-        return new HiTechnicNxtDcMotorController(this.a(legacyModule), physicalPort);
-    }
+   public CompassSensor createNxtCompassSensor(LegacyModule var1, int var2) {
+      RobotLog.v("Creating HiTechnic NXT Compass Sensor - Port: " + var2);
+      return new HiTechnicNxtCompassSensor(this.a(var1), var2);
+   }
 
-    public ServoController createNxtServoController(LegacyModule legacyModule, int physicalPort) {
-        RobotLog.v("Creating HiTechnic NXT Servo Controller - Port: " + physicalPort);
-        return new HiTechnicNxtServoController(this.a(legacyModule), physicalPort);
-    }
+   public DcMotorController createNxtDcMotorController(LegacyModule var1, int var2) {
+      RobotLog.v("Creating HiTechnic NXT DC Motor Controller - Port: " + var2);
+      return new HiTechnicNxtDcMotorController(this.a(var1), var2);
+   }
 
-    public CompassSensor createNxtCompassSensor(LegacyModule legacyModule, int physicalPort) {
-        RobotLog.v("Creating HiTechnic NXT Compass Sensor - Port: " + physicalPort);
-        return new HiTechnicNxtCompassSensor(this.a(legacyModule), physicalPort);
-    }
+   public GyroSensor createNxtGyroSensor(LegacyModule var1, int var2) {
+      RobotLog.v("Creating HiTechnic NXT Gyro Sensor - Port: " + var2);
+      return new HiTechnicNxtGyroSensor(this.a(var1), var2);
+   }
 
-    public TouchSensor createDigitalTouchSensor(DeviceInterfaceModule deviceInterfaceModule, int physicalPort) {
-        RobotLog.v("Creating Modern Robotics Digital Touch Sensor - Port: " + physicalPort);
-        return new ModernRoboticsDigitalTouchSensor(this.a(deviceInterfaceModule), physicalPort);
-    }
+   public IrSeekerSensor createNxtIrSeekerSensor(LegacyModule var1, int var2) {
+      RobotLog.v("Creating HiTechnic NXT IR Seeker Sensor - Port: " + var2);
+      return new HiTechnicNxtIrSeekerSensor(this.a(var1), var2);
+   }
 
-    public AccelerationSensor createNxtAccelerationSensor(LegacyModule legacyModule, int physicalPort) {
-        RobotLog.v("Creating HiTechnic NXT Acceleration Sensor - Port: " + physicalPort);
-        return new HiTechnicNxtAccelerationSensor(this.a(legacyModule), physicalPort);
-    }
+   public LightSensor createNxtLightSensor(LegacyModule var1, int var2) {
+      RobotLog.v("Creating HiTechnic NXT Light Sensor - Port: " + var2);
+      return new HiTechnicNxtLightSensor(this.a(var1), var2);
+   }
 
-    public LightSensor createNxtLightSensor(LegacyModule legacyModule, int physicalPort) {
-        RobotLog.v("Creating HiTechnic NXT Light Sensor - Port: " + physicalPort);
-        return new HiTechnicNxtLightSensor(this.a(legacyModule), physicalPort);
-    }
+   public ServoController createNxtServoController(LegacyModule var1, int var2) {
+      RobotLog.v("Creating HiTechnic NXT Servo Controller - Port: " + var2);
+      return new HiTechnicNxtServoController(this.a(var1), var2);
+   }
 
-    public GyroSensor createNxtGyroSensor(LegacyModule legacyModule, int physicalPort) {
-        RobotLog.v("Creating HiTechnic NXT Gyro Sensor - Port: " + physicalPort);
-        return new HiTechnicNxtGyroSensor(this.a(legacyModule), physicalPort);
-    }
+   public TouchSensor createNxtTouchSensor(LegacyModule var1, int var2) {
+      RobotLog.v("Creating HiTechnic NXT Touch Sensor - Port: " + var2);
+      return new HiTechnicNxtTouchSensor(this.a(var1), var2);
+   }
 
-    public IrSeekerSensor createNxtIrSeekerSensor(LegacyModule legacyModule, int physicalPort) {
-        RobotLog.v("Creating HiTechnic NXT IR Seeker Sensor - Port: " + physicalPort);
-        return new HiTechnicNxtIrSeekerSensor(this.a(legacyModule), physicalPort);
-    }
+   public TouchSensorMultiplexer createNxtTouchSensorMultiplexer(LegacyModule var1, int var2) {
+      RobotLog.v("Creating HiTechnic NXT Touch Sensor Multiplexer - Port: " + var2);
+      return new HiTechnicNxtTouchSensorMultiplexer(this.a(var1), var2);
+   }
 
-    public IrSeekerSensor createI2cIrSeekerSensorV3(DeviceInterfaceModule deviceInterfaceModule, int physicalPort) {
-        RobotLog.v("Creating Modern Robotics I2C IR Seeker Sensor V3 - Port: " + physicalPort);
-        return new ModernRoboticsI2cIrSeekerSensorV3(this.a(deviceInterfaceModule), physicalPort);
-    }
+   public UltrasonicSensor createNxtUltrasonicSensor(LegacyModule var1, int var2) {
+      RobotLog.v("Creating HiTechnic NXT Ultrasonic Sensor - Port: " + var2);
+      return new HiTechnicNxtUltrasonicSensor(this.a(var1), var2);
+   }
 
-    public UltrasonicSensor createNxtUltrasonicSensor(LegacyModule legacyModule, int physicalPort) {
-        RobotLog.v("Creating HiTechnic NXT Ultrasonic Sensor - Port: " + physicalPort);
-        return new HiTechnicNxtUltrasonicSensor(this.a(legacyModule), physicalPort);
-    }
+   public PWMOutput createPwmOutputDevice(DeviceInterfaceModule var1, int var2) {
+      RobotLog.v("Creating PWM Output Device - Port: " + var2);
+      return new PWMOutput(var1, var2);
+   }
 
-    public OpticalDistanceSensor createAnalogOpticalDistanceSensor(DeviceInterfaceModule deviceInterfaceModule, int physicalPort) {
-        RobotLog.v("Creating Modern Robotics Analog Optical Distance Sensor - Port: " + physicalPort);
-        return new ModernRoboticsAnalogOpticalDistanceSensor(this.a(deviceInterfaceModule), physicalPort);
-    }
+   public DcMotorController createUsbDcMotorController(SerialNumber var1) throws RobotCoreException, InterruptedException {
+      RobotLog.v("Creating Modern Robotics USB DC Motor Controller - " + var1.toString());
 
-    public TouchSensor createNxtTouchSensor(LegacyModule legacyModule, int physicalPort) {
-        RobotLog.v("Creating HiTechnic NXT Touch Sensor - Port: " + physicalPort);
-        return new HiTechnicNxtTouchSensor(this.a(legacyModule), physicalPort);
-    }
+      try {
+         RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.b, var1);
+         if(ModernRoboticsUsbUtil.getDeviceType(ModernRoboticsUsbUtil.getUsbDeviceHeader(var3)) != DeviceManager.DeviceType.MODERN_ROBOTICS_USB_DC_MOTOR_CONTROLLER) {
+            this.a(var3, "Modern Robotics USB DC Motor Controller", var1);
+         }
 
-    public TouchSensorMultiplexer createNxtTouchSensorMultiplexer(LegacyModule legacyModule, int port) {
-        RobotLog.v("Creating HiTechnic NXT Touch Sensor Multiplexer - Port: " + port);
-        return new HiTechnicNxtTouchSensorMultiplexer(this.a(legacyModule), port);
-    }
+         ModernRoboticsUsbDcMotorController var4 = new ModernRoboticsUsbDcMotorController(var1, var3, this.c);
+         return var4;
+      } catch (RobotCoreException var5) {
+         RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB DC Motor Controller", var5);
+         return null;
+      }
+   }
 
-    public AnalogInput createAnalogInputDevice(AnalogInputController controller, int channel) {
-        RobotLog.v("Creating Analog Input Device - Port: " + channel);
-        return new AnalogInput(controller, channel);
-    }
+   public LegacyModule createUsbLegacyModule(SerialNumber var1) throws RobotCoreException, InterruptedException {
+      RobotLog.v("Creating Modern Robotics USB Legacy Module - " + var1.toString());
 
-    public AnalogOutput createAnalogOutputDevice(AnalogOutputController controller, int channel) {
-        RobotLog.v("Creating Analog Output Device - Port: " + channel);
-        return new AnalogOutput(controller, channel);
-    }
+      try {
+         RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.b, var1);
+         if(ModernRoboticsUsbUtil.getDeviceType(ModernRoboticsUsbUtil.getUsbDeviceHeader(var3)) != DeviceManager.DeviceType.MODERN_ROBOTICS_USB_LEGACY_MODULE) {
+            this.a(var3, "Modern Robotics USB Legacy Module", var1);
+         }
 
-    public DigitalChannel createDigitalChannelDevice(DigitalChannelController controller, int channel) {
-        RobotLog.v("Creating Digital Channel Device - Port: " + channel);
-        return new DigitalChannel(controller, channel);
-    }
+         ModernRoboticsUsbLegacyModule var4 = new ModernRoboticsUsbLegacyModule(var1, var3, this.c);
+         return var4;
+      } catch (RobotCoreException var5) {
+         RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB Legacy Module", var5);
+         return null;
+      }
+   }
 
-    public PWMOutput createPwmOutputDevice(DeviceInterfaceModule controller, int channel) {
-        RobotLog.v("Creating PWM Output Device - Port: " + channel);
-        return new PWMOutput(controller, channel);
-    }
+   public ServoController createUsbServoController(SerialNumber var1) throws RobotCoreException, InterruptedException {
+      RobotLog.v("Creating Modern Robotics USB Servo Controller - " + var1.toString());
 
-    public I2cDevice createI2cDevice(I2cController controller, int channel) {
-        RobotLog.v("Creating I2C Device - Port: " + channel);
-        return new I2cDevice(controller, channel);
-    }
+      try {
+         RobotUsbDevice var3 = ModernRoboticsUsbUtil.openUsbDevice(this.b, var1);
+         if(ModernRoboticsUsbUtil.getDeviceType(ModernRoboticsUsbUtil.getUsbDeviceHeader(var3)) != DeviceManager.DeviceType.MODERN_ROBOTICS_USB_SERVO_CONTROLLER) {
+            this.a(var3, "Modern Robotics USB Servo Controller", var1);
+         }
 
-    public ColorSensor createAdafruitI2cColorSensor(DeviceInterfaceModule controller, int channel) {
-        RobotLog.v("Creating Adafruit I2C Color Sensor - Port: " + channel);
-        return new AdafruitI2cColorSensor(controller, channel);
-    }
+         ModernRoboticsUsbServoController var4 = new ModernRoboticsUsbServoController(var1, var3, this.c);
+         return var4;
+      } catch (RobotCoreException var5) {
+         RobotLog.setGlobalErrorMsgAndThrow("Unable to open Modern Robotics USB Servo Controller", var5);
+         return null;
+      }
+   }
 
-    public ColorSensor createNxtColorSensor(LegacyModule controller, int channel) {
-        RobotLog.v("Creating HiTechnic NXT Color Sensor - Port: " + channel);
-        return new HiTechnicNxtColorSensor(controller, channel);
-    }
+   public Map<SerialNumber, DeviceManager.DeviceType> scanForUsbDevices() throws RobotCoreException {
+      // $FF: Couldn't be decompiled
+   }
 
-    public ColorSensor createModernRoboticsI2cColorSensor(DeviceInterfaceModule controller, int channel) {
-        RobotLog.v("Creating Modern Robotics I2C Color Sensor - Port: " + channel);
-        return new ModernRoboticsI2cColorSensor(controller, channel);
-    }
+   private static enum a {
+      a,
+      b;
 
-    public LED createLED(DigitalChannelController controller, int channel) {
-        RobotLog.v("Creating LED - Port: " + channel);
-        return new LED(controller, channel);
-    }
-
-    public static void enableDeviceEmulation() {
-        enumA = HardwareDeviceManager.enumA.b;
-    }
-
-    public static void disableDeviceEmulation() {
-        enumA = HardwareDeviceManager.enumA.a;
-    }
-
-    private ModernRoboticsUsbLegacyModule a(LegacyModule var1) {
-        if(!(var1 instanceof ModernRoboticsUsbLegacyModule)) {
-            throw new IllegalArgumentException("Modern Robotics Device Manager needs a Modern Robotics LegacyModule");
-        } else {
-            return (ModernRoboticsUsbLegacyModule)var1;
-        }
-    }
-
-    private ModernRoboticsUsbDeviceInterfaceModule a(DeviceInterfaceModule var1) {
-        if(!(var1 instanceof ModernRoboticsUsbDeviceInterfaceModule)) {
-            throw new IllegalArgumentException("Modern Robotics Device Manager needs a Modern Robotics Device Interface Module");
-        } else {
-            return (ModernRoboticsUsbDeviceInterfaceModule)var1;
-        }
-    }
-
-    private void printErrAndThrow(String message) throws RobotCoreException {
-        System.err.println(message);
-        throw new RobotCoreException(message);
-    }
-
-    static {
-        enumA = HardwareDeviceManager.enumA.a;
-    }
-
-    private static enum EnumA
-        {
-        a,
-        b;
-
-        private EnumA() {
-        }
-    }
+      static {
+         HardwareDeviceManager.a[] var0 = new HardwareDeviceManager.a[]{a, b};
+      }
+   }
 }

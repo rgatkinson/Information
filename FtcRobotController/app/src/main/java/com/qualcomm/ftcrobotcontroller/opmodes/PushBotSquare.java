@@ -12,8 +12,8 @@ public class PushBotSquare extends LinearOpMode {
       this.leftMotor = (DcMotor)this.hardwareMap.dcMotor.get("left_drive");
       this.rightMotor = (DcMotor)this.hardwareMap.dcMotor.get("right_drive");
       this.rightMotor.setDirection(DcMotor.Direction.REVERSE);
-      this.leftMotor.setChannelMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
-      this.rightMotor.setChannelMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+      this.leftMotor.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+      this.rightMotor.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
       this.waitForStart();
 
       for(int var1 = 0; var1 < 4; ++var1) {

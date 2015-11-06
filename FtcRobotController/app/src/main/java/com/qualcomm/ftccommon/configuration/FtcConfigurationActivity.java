@@ -20,6 +20,10 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.ftccommon.R;
+import com.qualcomm.ftccommon.configuration.EditDeviceInterfaceModuleActivity;
+import com.qualcomm.ftccommon.configuration.EditLegacyModuleControllerActivity;
+import com.qualcomm.ftccommon.configuration.EditMotorControllerActivity;
+import com.qualcomm.ftccommon.configuration.EditServoControllerActivity;
 import com.qualcomm.hardware.HardwareDeviceManager;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
@@ -59,9 +63,9 @@ public class FtcConfigurationActivity extends Activity {
       }
    };
    private Thread d;
-   private Map<SerialNumber, ControllerConfiguration> mapSerialNumberToControllerConfig = new HashMap();
+   private Map<SerialNumber, ControllerConfiguration> e = new HashMap();
    private Context f;
-   private DeviceManager deviceManager;
+   private DeviceManager g;
    private Button h;
    private String i = "No current file!";
    private Utility j;
@@ -96,12 +100,12 @@ public class FtcConfigurationActivity extends Activity {
    }
 
    private void a(ArrayList<ControllerConfiguration> var1) {
-      this.mapSerialNumberToControllerConfig = new HashMap();
+      this.e = new HashMap();
       Iterator var2 = var1.iterator();
 
       while(var2.hasNext()) {
          ControllerConfiguration var3 = (ControllerConfiguration)var2.next();
-         this.mapSerialNumberToControllerConfig.put(var3.getSerialNumber(), var3);
+         this.e.put(var3.getSerialNumber(), var3);
       }
 
    }
@@ -113,8 +117,8 @@ public class FtcConfigurationActivity extends Activity {
       while(var2.hasNext()) {
          Entry var3 = (Entry)var2.next();
          SerialNumber var4 = (SerialNumber)var3.getKey();
-         if(this.mapSerialNumberToControllerConfig.containsKey(var4)) {
-            var1.put(var4, this.mapSerialNumberToControllerConfig.get(var4));
+         if(this.e.containsKey(var4)) {
+            var1.put(var4, this.e.get(var4));
          } else {
             switch(null.a[((DeviceManager.DeviceType)var3.getValue()).ordinal()]) {
             case 1:
@@ -174,7 +178,7 @@ public class FtcConfigurationActivity extends Activity {
    }
 
    private void e() {
-      if(this.mapSerialNumberToControllerConfig.size() == 0) {
+      if(this.e.size() == 0) {
          this.j.setOrangeText("Scan to find devices.", "In order to find devices: \n    1. Attach a robot \n    2. Press the \'Scan\' button", R.id.empty_devicelist, R.layout.orange_warning, R.id.orangetext0, R.id.orangetext1);
          this.g();
       } else {
@@ -185,7 +189,7 @@ public class FtcConfigurationActivity extends Activity {
    }
 
    private void f() {
-      if(this.mapSerialNumberToControllerConfig.size() == 0) {
+      if(this.e.size() == 0) {
          this.j.setOrangeText("No devices found!", "In order to find devices: \n    1. Attach a robot \n    2. Press the \'Scan\' button", R.id.empty_devicelist, R.layout.orange_warning, R.id.orangetext0, R.id.orangetext1);
          this.g();
       } else {
@@ -203,7 +207,7 @@ public class FtcConfigurationActivity extends Activity {
 
    private void h() {
       ListView var1 = (ListView)this.findViewById(R.id.controllersList);
-      var1.setAdapter(new DeviceInfoAdapter(this, 17367044, this.mapSerialNumberToControllerConfig));
+      var1.setAdapter(new DeviceInfoAdapter(this, 17367044, this.e));
       var1.setOnItemClickListener(new OnItemClickListener() {
          public void onItemClick(AdapterView<?> var1, View var2, int var3, long var4) {
             ControllerConfiguration var6 = (ControllerConfiguration)var1.getItemAtPosition(var3);
@@ -272,7 +276,7 @@ public class FtcConfigurationActivity extends Activity {
          if(var4 != null) {
             ControllerConfiguration var5 = (ControllerConfiguration)var4;
             this.scannedDevices.put(var5.getSerialNumber(), var5.configTypeToDeviceType(var5.getType()));
-            this.mapSerialNumberToControllerConfig.put(var5.getSerialNumber(), var5);
+            this.e.put(var5.getSerialNumber(), var5);
             this.h();
             this.i();
          } else {
@@ -283,7 +287,7 @@ public class FtcConfigurationActivity extends Activity {
 
    public void onBackPressed() {
       if(this.i.toLowerCase().contains("Unsaved".toLowerCase())) {
-         if(!this.j.writeXML(this.mapSerialNumberToControllerConfig)) {
+         if(!this.j.writeXML(this.e)) {
             final EditText var1 = new EditText(this);
             var1.setText(this.j.prepareFilename(this.i));
             Builder var2 = this.j.buildBuilder("Unsaved changes", "Please save your file before exiting the Hardware Wizard! \n If you click \'Cancel\' your changes will be lost.");
@@ -333,7 +337,7 @@ public class FtcConfigurationActivity extends Activity {
       this.a();
 
       try {
-         this.deviceManager = new HardwareDeviceManager(this.f, (EventLoopManager)null);
+         this.g = new HardwareDeviceManager(this.f, (EventLoopManager)null);
       } catch (RobotCoreException var3) {
          this.j.complainToast("Failed to open the Device Manager", this.f);
          DbgLog.error("Failed to open deviceManager: " + var3.toString());
@@ -361,14 +365,13 @@ public class FtcConfigurationActivity extends Activity {
          this.d();
       }
 
-      // Interesting: this kicks off a thread, but deviceManager.scanForUsbDevices() isn't thread-safe.
       this.h.setOnClickListener(new android.view.View.OnClickListener() {
          public void onClick(View var1) {
             FtcConfigurationActivity.this.d = new Thread(new Runnable() {
                public void run() {
                   try {
                      DbgLog.msg("Scanning USB bus");
-                     FtcConfigurationActivity.this.scannedDevices = FtcConfigurationActivity.this.deviceManager.scanForUsbDevices();
+                     FtcConfigurationActivity.this.scannedDevices = FtcConfigurationActivity.this.g.scanForUsbDevices();
                   } catch (RobotCoreException var2) {
                      DbgLog.error("Device scan failed: " + var2.toString());
                   }
@@ -380,7 +383,7 @@ public class FtcConfigurationActivity extends Activity {
                         FtcConfigurationActivity.this.i();
                         FtcConfigurationActivity.this.j.updateHeader(FtcConfigurationActivity.this.i, R.string.pref_hardware_config_filename, R.id.active_filename, R.id.included_header);
                         FtcConfigurationActivity.this.scannedEntries = FtcConfigurationActivity.this.scannedDevices.entrySet();
-                        FtcConfigurationActivity.this.mapSerialNumberToControllerConfig = FtcConfigurationActivity.this.b();
+                        FtcConfigurationActivity.this.e = FtcConfigurationActivity.this.b();
                         FtcConfigurationActivity.this.h();
                         FtcConfigurationActivity.this.f();
                      }
@@ -393,7 +396,7 @@ public class FtcConfigurationActivity extends Activity {
    }
 
    public void saveConfiguration(View var1) {
-      if(!this.j.writeXML(this.mapSerialNumberToControllerConfig)) {
+      if(!this.j.writeXML(this.e)) {
          final EditText var2 = new EditText(this);
          var2.setText(this.j.prepareFilename(this.i));
          Builder var3 = this.j.buildBuilder("Enter file name", "Please enter the file name");

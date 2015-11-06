@@ -34,8 +34,8 @@ public class NxtTeleOp extends OpMode {
    public void init_loop() {
       this.devMode = DcMotorController.DeviceMode.WRITE_ONLY;
       this.motorRight.setDirection(DcMotor.Direction.REVERSE);
-      this.motorLeft.setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
-      this.motorRight.setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
+      this.motorLeft.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
+      this.motorRight.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
       this.wristPosition = 0.6D;
       this.clawPosition = 0.5D;
    }
@@ -43,13 +43,13 @@ public class NxtTeleOp extends OpMode {
    public void loop() {
       if(this.allowedToWrite()) {
          if(this.gamepad1.dpad_left) {
-            this.motorLeft.setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
-            this.motorRight.setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
+            this.motorLeft.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
+            this.motorRight.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
          }
 
          if(this.gamepad1.dpad_right) {
-            this.motorLeft.setChannelMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
-            this.motorRight.setChannelMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+            this.motorLeft.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+            this.motorRight.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
          }
 
          float var1 = -this.gamepad1.left_stick_y;
@@ -109,7 +109,7 @@ public class NxtTeleOp extends OpMode {
          this.telemetry.addData("Text", "free flow text");
          this.telemetry.addData("left motor", this.motorLeft.getPower());
          this.telemetry.addData("right motor", this.motorRight.getPower());
-         this.telemetry.addData("RunMode: ", this.motorLeft.getChannelMode().toString());
+         this.telemetry.addData("RunMode: ", this.motorLeft.getMode().toString());
          this.wheelController.setMotorControllerDeviceMode(DcMotorController.DeviceMode.WRITE_ONLY);
          this.numOpLoops = 0;
       }

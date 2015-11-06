@@ -87,6 +87,19 @@ public class Gamepad implements RobocolParsable {
         this.c = callback;
     }
 
+    public void copy(Gamepad gamepad) throws RobotCoreException {
+        this.fromByteArray(gamepad.toByteArray());
+    }
+
+    public void reset() {
+        try {
+            this.copy(new Gamepad());
+        } catch (RobotCoreException var2) {
+            RobotLog.e("Gamepad library in an invalid state");
+            throw new IllegalStateException("Gamepad library in an invalid state");
+        }
+    }
+
     public void setJoystickDeadzone(float deadzone) {
         if(deadzone >= 0.0F && deadzone <= 1.0F) {
             this.joystickDeadzone = deadzone;

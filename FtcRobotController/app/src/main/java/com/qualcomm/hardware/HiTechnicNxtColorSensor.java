@@ -98,6 +98,10 @@ public class HiTechnicNxtColorSensor extends ColorSensor implements I2cControlle
       return "NXT Color Sensor";
    }
 
+   public int getI2cAddress() {
+      throw new UnsupportedOperationException("getI2cAddress is not supported.");
+   }
+
    public int getVersion() {
       return 2;
    }
@@ -124,6 +128,10 @@ public class HiTechnicNxtColorSensor extends ColorSensor implements I2cControlle
 
    public int red() {
       return this.a(6);
+   }
+
+   public void setI2cAddress(int var1) {
+      throw new UnsupportedOperationException("setI2cAddress is not supported.");
    }
 
    private static enum a {

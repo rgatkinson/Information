@@ -5,6 +5,10 @@
 
 package com.qualcomm.hardware;
 
+import com.qualcomm.hardware.ReadWriteRunnable;
+import com.qualcomm.hardware.ReadWriteRunnableSegment;
+import com.qualcomm.hardware.ReadWriteRunnable.Callback;
+import com.qualcomm.hardware.ReadWriteRunnable.EmptyCallback;
 import com.qualcomm.modernrobotics.ReadWriteRunnableUsbHandler;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
@@ -30,17 +34,17 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
     protected int monitorLength;
     protected volatile boolean running = false;
     protected volatile boolean shutdownComplete = false;
-    private volatile boolean writeNeeded = false;
+    private volatile boolean a = false;
     protected Callback callback;
     protected final boolean DEBUG_LOGGING;
 
-    public ReadWriteRunnableStandard(SerialNumber serialNumber, RobotUsbDevice robotUsbDevice, int monitorLength, int startAddress, boolean debug) {
+    public ReadWriteRunnableStandard(SerialNumber serialNumber, RobotUsbDevice device, int monitorLength, int startAddress, boolean debug) {
         this.serialNumber = serialNumber;
         this.startAddress = startAddress;
         this.monitorLength = monitorLength;
         this.DEBUG_LOGGING = debug;
         this.callback = new EmptyCallback();
-        this.usbHandler = new ReadWriteRunnableUsbHandler(robotUsbDevice);
+        this.usbHandler = new ReadWriteRunnableUsbHandler(device);
     }
 
     public void setCallback(Callback callback) {
@@ -59,27 +63,30 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
     }
 
     public boolean writeNeeded() {
-        return this.writeNeeded;
+        return this.a;
     }
 
     public void setWriteNeeded(boolean set) {
-        this.writeNeeded = set;
+        this.a = set;
     }
 
     public void write(int address, byte[] data) {
+        byte[] var3 = this.localDeviceWriteCache;
         synchronized(this.localDeviceWriteCache) {
             System.arraycopy(data, 0, this.localDeviceWriteCache, address, data.length);
-            this.writeNeeded = true;
+            this.a = true;
         }
     }
 
     public byte[] readFromWriteCache(int address, int size) {
+        byte[] var3 = this.localDeviceWriteCache;
         synchronized(this.localDeviceWriteCache) {
             return Arrays.copyOfRange(this.localDeviceWriteCache, address, address + size);
         }
     }
 
     public byte[] read(int address, int size) {
+        byte[] var3 = this.localDeviceReadCache;
         synchronized(this.localDeviceReadCache) {
             return Arrays.copyOfRange(this.localDeviceReadCache, address, address + size);
         }
@@ -90,9 +97,9 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
             this.blockUntilReady();
             this.startBlockingWork();
         } catch (InterruptedException var6) {
-            ;
+            RobotLog.w("Exception while closing USB device: " + var6.getMessage());
         } catch (RobotCoreException var7) {
-            ;
+            RobotLog.w("Exception while closing USB device: " + var7.getMessage());
         } finally {
             this.running = false;
 
@@ -100,7 +107,6 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
                 Thread.yield();
             }
 
-            this.usbHandler.close();
         }
 
     }
@@ -128,9 +134,9 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
     }
 
     public void run() {
-        boolean isFirstReadWriteCycle = true;
-        int ibFirst = 0;
-        byte[] monitorData = new byte[this.monitorLength + this.startAddress];
+        boolean var1 = true;
+        int var2 = 0;
+        byte[] var3 = new byte[this.monitorLength + this.startAddress];
         ElapsedTime var4 = new ElapsedTime();
         String var5 = "Device " + this.serialNumber.toString();
         this.running = true;
@@ -145,30 +151,30 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
                     var4.reset();
                 }
 
-                ReadWriteRunnableSegment segment;
-                byte[] usbData;
+                ReadWriteRunnableSegment var6;
+                byte[] var7;
                 try {
-                    this.usbHandler.read(ibFirst, monitorData);
+                    this.usbHandler.read(var2, var3);
 
                     while(!this.segmentReadQueue.isEmpty()) {
-                        segment = (ReadWriteRunnableSegment)this.segments.get(this.segmentReadQueue.remove());
-                        usbData = new byte[segment.getReadBuffer().length];
-                        this.usbHandler.read(segment.getAddress(), usbData);
+                        var6 = (ReadWriteRunnableSegment)this.segments.get(this.segmentReadQueue.remove());
+                        var7 = new byte[var6.getReadBuffer().length];
+                        this.usbHandler.read(var6.getAddress(), var7);
 
                         try {
-                            segment.getReadLock().lock();
-                            System.arraycopy(usbData, 0, segment.getReadBuffer(), 0, segment.getReadBuffer().length);
+                            var6.getReadLock().lock();
+                            System.arraycopy(var7, 0, var6.getReadBuffer(), 0, var6.getReadBuffer().length);
                         } finally {
-                            segment.getReadLock().unlock();
+                            var6.getReadLock().unlock();
                         }
                     }
-                } catch (RobotCoreException var34) {
-                    RobotLog.w(String.format("could not read from device %s: %s", new Object[]{this.serialNumber, var34.getMessage()}));
+                } catch (RobotCoreException var47) {
+                    RobotLog.w(String.format("could not read from device %s: %s", new Object[]{this.serialNumber, var47.getMessage()}));
                 }
 
-                byte[] var39 = this.localDeviceReadCache;
+                byte[] var53 = this.localDeviceReadCache;
                 synchronized(this.localDeviceReadCache) {
-                    System.arraycopy(monitorData, 0, this.localDeviceReadCache, ibFirst, monitorData.length);
+                    System.arraycopy(var3, 0, this.localDeviceReadCache, var2, var3.length);
                 }
 
                 if(this.DEBUG_LOGGING) {
@@ -177,35 +183,35 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
 
                 this.callback.readComplete();
                 this.waitForSyncdEvents();
-                if (isFirstReadWriteCycle) {
-                    ibFirst = this.startAddress;
-                    monitorData = new byte[this.monitorLength];
-                    isFirstReadWriteCycle = false;
+                if(var1) {
+                    var2 = this.startAddress;
+                    var3 = new byte[this.monitorLength];
+                    var1 = false;
                 }
 
-                var39 = this.localDeviceWriteCache;
+                var53 = this.localDeviceWriteCache;
                 synchronized(this.localDeviceWriteCache) {
-                    System.arraycopy(this.localDeviceWriteCache, ibFirst, monitorData, 0, monitorData.length);
+                    System.arraycopy(this.localDeviceWriteCache, var2, var3, 0, var3.length);
                 }
 
                 try {
-                    if (this.writeNeeded()) {
-                        this.usbHandler.write(ibFirst, monitorData);
+                    if(this.writeNeeded()) {
+                        this.usbHandler.write(var2, var3);
                         this.setWriteNeeded(false);
                     }
 
-                    for(; !this.segmentWriteQueue.isEmpty(); this.usbHandler.write(segment.getAddress(), usbData)) {
-                        segment = (ReadWriteRunnableSegment)this.segments.get(this.segmentWriteQueue.remove());
+                    for(; !this.segmentWriteQueue.isEmpty(); this.usbHandler.write(var6.getAddress(), var7)) {
+                        var6 = (ReadWriteRunnableSegment)this.segments.get(this.segmentWriteQueue.remove());
 
                         try {
-                            segment.getWriteLock().lock();
-                            usbData = Arrays.copyOf(segment.getWriteBuffer(), segment.getWriteBuffer().length);
+                            var6.getWriteLock().lock();
+                            var7 = Arrays.copyOf(var6.getWriteBuffer(), var6.getWriteBuffer().length);
                         } finally {
-                            segment.getWriteLock().unlock();
+                            var6.getWriteLock().unlock();
                         }
                     }
-                } catch (RobotCoreException var35) {
-                    RobotLog.w(String.format("could not write to device %s: %s", this.serialNumber, var35.getMessage()));
+                } catch (RobotCoreException var48) {
+                    RobotLog.w(String.format("could not write to device %s: %s", new Object[]{this.serialNumber, var48.getMessage()}));
                 }
 
                 if(this.DEBUG_LOGGING) {
@@ -215,20 +221,22 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
                 this.callback.writeComplete();
                 this.usbHandler.throwIfUsbErrorCountIsTooHigh();
             }
-        } catch (NullPointerException var36) {
+        } catch (NullPointerException var49) {
             RobotLog.w(String.format("could not write to device %s: FTDI Null Pointer Exception", new Object[]{this.serialNumber}));
-            RobotLog.logStacktrace(var36);
+            RobotLog.logStacktrace(var49);
             RobotLog.setGlobalErrorMsg("There was a problem communicating with a Modern Robotics USB device");
-        } catch (InterruptedException var37) {
+        } catch (InterruptedException var50) {
             RobotLog.w(String.format("could not write to device %s: Interrupted Exception", new Object[]{this.serialNumber}));
-        } catch (RobotCoreException var38) {
-            RobotLog.w(var38.getMessage());
+        } catch (RobotCoreException var51) {
+            RobotLog.w(var51.getMessage());
             RobotLog.setGlobalErrorMsg(String.format("There was a problem communicating with a Modern Robotics USB device %s", new Object[]{this.serialNumber}));
+        } finally {
+            this.usbHandler.close();
+            this.running = false;
+            this.shutdownComplete = true;
         }
 
         RobotLog.v(String.format("stopped read/write loop for device %s", new Object[]{this.serialNumber}));
-        this.running = false;
-        this.shutdownComplete = true;
     }
 
     protected void waitForSyncdEvents() throws RobotCoreException, InterruptedException {

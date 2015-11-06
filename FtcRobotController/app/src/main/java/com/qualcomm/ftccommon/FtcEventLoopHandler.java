@@ -3,12 +3,12 @@ package com.qualcomm.ftccommon;
 import android.content.Context;
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.ftccommon.UpdateUI;
+import com.qualcomm.hardware.HardwareFactory;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.HardwareFactory;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.LegacyModule;
 import com.qualcomm.robotcore.hardware.ServoController;
@@ -96,6 +96,10 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
       this.a = var1;
    }
 
+   public void resetGamepads() {
+      this.a.resetGamepads();
+   }
+
    public void restartRobot() {
       this.b.endBatteryMonitoring();
       this.f.restartRobot();
@@ -121,14 +125,14 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
 
    }
 
-   public void sendTelemetryData(Telemetry telemetry) {
+   public void sendTelemetryData(Telemetry var1) {
       if(this.d.time() > this.e) {
          this.d.reset();
-         if(telemetry.hasData()) {
-            this.a.sendTelemetryData(telemetry);
+         if(var1.hasData()) {
+            this.a.sendTelemetryData(var1);
          }
 
-         telemetry.clearData();
+         var1.clearData();
       }
 
    }

@@ -5,6 +5,8 @@
 
 package com.qualcomm.hardware;
 
+import com.qualcomm.hardware.ReadWriteRunnableStandard;
+import com.qualcomm.hardware.ReadWriteRunnable.BlockingState;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -20,24 +22,20 @@ public class ReadWriteRunnableBlocking extends ReadWriteRunnableStandard {
     protected final Condition blockingCondition;
     protected final Condition waitingCondition;
     protected BlockingState blockingState;
-    private volatile boolean writeNeeded;
+    private volatile boolean a;
 
     public ReadWriteRunnableBlocking(SerialNumber serialNumber, RobotUsbDevice device, int monitorLength, int startAddress, boolean debug) {
         super(serialNumber, device, monitorLength, startAddress, debug);
         this.blockingCondition = this.blockingLock.newCondition();
         this.waitingCondition = this.waitingLock.newCondition();
         this.blockingState = BlockingState.BLOCKING;
-        this.writeNeeded = false;
+        this.a = false;
     }
 
-    // called just before OpMode loop()
-    // called on the EventLoopManager.EventLoopRunnable thread
-    // net effect: waits until ReadWriteRunnable thread calls waitForSyncdEvents(), then returns
     public void blockUntilReady() throws RobotCoreException, InterruptedException {
         try {
             this.blockingLock.lock();
 
-            // wait until BlockingState.WAITING
             while(this.blockingState == BlockingState.BLOCKING) {
                 this.blockingCondition.await(100L, TimeUnit.MILLISECONDS);
                 if(this.shutdownComplete) {
@@ -52,11 +50,7 @@ public class ReadWriteRunnableBlocking extends ReadWriteRunnableStandard {
 
     }
 
-    // called just after OpMode loop()
-    // called on the EventLoopManager.EventLoopRunnable thread
     public void startBlockingWork() {
-
-        // set BlockingState.BLOCKING
         try {
             this.waitingLock.lock();
             this.blockingState = BlockingState.BLOCKING;
@@ -67,13 +61,23 @@ public class ReadWriteRunnableBlocking extends ReadWriteRunnableStandard {
 
     }
 
-    // called immediately after readComplete() callback
-    // called on the ReadWriteRunnable thread
-    // net effect: ReadWriteRunnable thread is parked here while OpMode loop() runs
-    protected void waitForSyncdEvents() throws RobotCoreException, InterruptedException {
+    public void write(int address, byte[] data) {
+        byte[] var3 = this.localDeviceWriteCache;
+        synchronized(this.localDeviceWriteCache) {
+            System.arraycopy(data, 0, this.localDeviceWriteCache, address, data.length);
+            this.a = true;
+        }
+    }
 
-        // set BlockingState.WAITING
-        // signal blockingCondition
+    public boolean writeNeeded() {
+        return this.a;
+    }
+
+    public void setWriteNeeded(boolean set) {
+        this.a = set;
+    }
+
+    protected void waitForSyncdEvents() throws RobotCoreException, InterruptedException {
         try {
             this.blockingLock.lock();
             this.blockingState = BlockingState.WAITING;
@@ -82,9 +86,9 @@ public class ReadWriteRunnableBlocking extends ReadWriteRunnableStandard {
             this.blockingLock.unlock();
         }
 
-        // await BlockingState.BLOCKING
         try {
             this.waitingLock.lock();
+
             while(this.blockingState == BlockingState.WAITING) {
                 this.waitingCondition.await();
                 if(this.shutdownComplete) {
@@ -97,20 +101,4 @@ public class ReadWriteRunnableBlocking extends ReadWriteRunnableStandard {
         }
 
     }
-
-    public void write(int address, byte[] data) {
-        synchronized(this.localDeviceWriteCache) {
-            System.arraycopy(data, 0, this.localDeviceWriteCache, address, data.length);
-            this.writeNeeded = true;
-        }
-    }
-
-    public boolean writeNeeded() {
-        return this.writeNeeded;
-    }
-
-    public void setWriteNeeded(boolean set) {
-        this.writeNeeded = set;
-    }
-
 }

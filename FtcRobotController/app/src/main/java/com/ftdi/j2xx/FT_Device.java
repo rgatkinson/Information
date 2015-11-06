@@ -13,7 +13,23 @@ import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbRequest;
 import android.util.Log;
-
+import com.ftdi.j2xx.FT_EEPROM;
+import com.ftdi.j2xx.a;
+import com.ftdi.j2xx.b;
+import com.ftdi.j2xx.c;
+import com.ftdi.j2xx.d;
+import com.ftdi.j2xx.e;
+import com.ftdi.j2xx.f;
+import com.ftdi.j2xx.g;
+import com.ftdi.j2xx.h;
+import com.ftdi.j2xx.i;
+import com.ftdi.j2xx.j;
+import com.ftdi.j2xx.k;
+import com.ftdi.j2xx.l;
+import com.ftdi.j2xx.o;
+import com.ftdi.j2xx.p;
+import com.ftdi.j2xx.q;
+import com.ftdi.j2xx.r;
 import com.ftdi.j2xx.D2xxManager.D2xxException;
 import com.ftdi.j2xx.D2xxManager.DriverParameters;
 import com.ftdi.j2xx.D2xxManager.FtDeviceInfoListNode;
@@ -24,85 +40,79 @@ import java.nio.ByteOrder;
 public class FT_Device {
     long a;
     Boolean b;
-    UsbDevice usbDevice;
-    UsbInterface usbInterface;
+    UsbDevice c;
+    UsbInterface d;
     UsbEndpoint e;
     UsbEndpoint f;
-    private UsbRequest usbRequest;
-    private UsbDeviceConnection usbDeviceConnection;
-    private BulkInRunnable bulkInRunnable;
-    private Thread threadProcessRequest;
-    private Thread threadBulkIn;
-    FtDeviceInfoListNode ftDeviceInfoListNode;
-    private ProcessInCtrl processInCtrl;
+    private UsbRequest k;
+    private UsbDeviceConnection l;
+    private a m;
+    private Thread n;
+    private Thread o;
+    FtDeviceInfoListNode g;
+    private o p;
     private k q;
     private byte r;
     r h;
     q i;
-    private DriverParameters driverParameters;
+    private DriverParameters s;
     private int t = 0;
-    Context parentContext;
+    Context j;
     private int u;
 
     public FT_Device(Context parentContext, UsbManager usbManager, UsbDevice dev, UsbInterface itf) {
         byte[] var6 = new byte[255];
-        this.parentContext = parentContext;
-        this.driverParameters = new DriverParameters();
+        this.j = parentContext;
+        this.s = new DriverParameters();
 
         try {
-            this.usbDevice = dev;
-            this.usbInterface = itf;
+            this.c = dev;
+            this.d = itf;
             this.e = null;
             this.f = null;
             this.u = 0;
             this.h = new r();
             this.i = new q();
-            this.ftDeviceInfoListNode = new FtDeviceInfoListNode();
-            this.usbRequest = new UsbRequest();
-
-            this.setUsbDeviceConnection(usbManager.openDevice(this.usbDevice));
-
-            if(this.getUsbDeviceConnection() == null) {
+            this.g = new FtDeviceInfoListNode();
+            this.k = new UsbRequest();
+            this.a(usbManager.openDevice(this.c));
+            if(this.c() == null) {
                 Log.e("FTDI_Device::", "Failed to open the device!");
                 throw new D2xxException("Failed to open the device!");
-
             } else {
-                this.getUsbDeviceConnection().claimInterface(this.usbInterface, false);
-                byte[] descriptors = this.getUsbDeviceConnection().getRawDescriptors();
-                int deviceId = this.usbDevice.getDeviceId();
-                this.t = this.usbInterface.getId() + 1;
-                this.ftDeviceInfoListNode.location = deviceId << 4 | this.t & 15;
-                ByteBuffer buffer = ByteBuffer.allocate(2);
-                buffer.order(ByteOrder.LITTLE_ENDIAN);
-                buffer.put(descriptors[12]);
-                buffer.put(descriptors[13]);
-                this.ftDeviceInfoListNode.bcdDevice = buffer.getShort(0);
-                this.ftDeviceInfoListNode.iSerialNumber = descriptors[16];
-
-                this.ftDeviceInfoListNode.serialNumber = this.getUsbDeviceConnection().getSerial();
-
-                this.ftDeviceInfoListNode.id = this.usbDevice.getVendorId() << 16 | this.usbDevice.getProductId();
-                this.ftDeviceInfoListNode.breakOnParam = 8;
-                this.getUsbDeviceConnection().controlTransfer(-128, 6, 768 | descriptors[15], 0, var6, 255, 0);
-                this.ftDeviceInfoListNode.description = this.a(var6);
-
-                switch(this.ftDeviceInfoListNode.bcdDevice & 65280) {
+                this.c().claimInterface(this.d, false);
+                byte[] var5 = this.c().getRawDescriptors();
+                int var7 = this.c.getDeviceId();
+                this.t = this.d.getId() + 1;
+                this.g.location = var7 << 4 | this.t & 15;
+                ByteBuffer var8 = ByteBuffer.allocate(2);
+                var8.order(ByteOrder.LITTLE_ENDIAN);
+                var8.put(var5[12]);
+                var8.put(var5[13]);
+                this.g.bcdDevice = var8.getShort(0);
+                this.g.iSerialNumber = var5[16];
+                this.g.serialNumber = this.c().getSerial();
+                this.g.id = this.c.getVendorId() << 16 | this.c.getProductId();
+                this.g.breakOnParam = 8;
+                this.c().controlTransfer(-128, 6, 768 | var5[15], 0, var6, 255, 0);
+                this.g.description = this.a(var6);
+                switch(this.g.bcdDevice & 65280) {
                 case 512:
-                    if(this.ftDeviceInfoListNode.iSerialNumber == 0) {
+                    if(this.g.iSerialNumber == 0) {
                         this.q = new f(this);
-                        this.ftDeviceInfoListNode.type = 0;
+                        this.g.type = 0;
                     } else {
-                        this.ftDeviceInfoListNode.type = 1;
+                        this.g.type = 1;
                         this.q = new e(this);
                     }
                     break;
                 case 1024:
                     this.q = new f(this);
-                    this.ftDeviceInfoListNode.type = 0;
+                    this.g.type = 0;
                     break;
                 case 1280:
                     this.q = new d(this);
-                    this.ftDeviceInfoListNode.type = 4;
+                    this.g.type = 4;
                     this.n();
                     break;
                 case 1536:
@@ -110,99 +120,98 @@ public class FT_Device {
                     short var9 = (short)(this.q.a((short)0) & 1);
                     this.q = null;
                     if(var9 == 0) {
-                        this.ftDeviceInfoListNode.type = 5;
+                        this.g.type = 5;
                         this.q = new h(this);
                     } else {
-                        this.ftDeviceInfoListNode.type = 5;
+                        this.g.type = 5;
                         this.q = new i(this);
                     }
                     break;
                 case 1792:
-                    this.ftDeviceInfoListNode.type = 6;
+                    this.g.type = 6;
                     this.n();
                     this.q = new c(this);
                     break;
                 case 2048:
-                    this.ftDeviceInfoListNode.type = 7;
+                    this.g.type = 7;
                     this.n();
                     this.q = new j(this);
                     break;
                 case 2304:
-                    this.ftDeviceInfoListNode.type = 8;
+                    this.g.type = 8;
                     this.q = new g(this);
                     break;
                 case 4096:
-                    this.ftDeviceInfoListNode.type = 9;
+                    this.g.type = 9;
                     this.q = new l(this);
                     break;
                 case 5888:
-                    this.ftDeviceInfoListNode.type = 12;
-                    this.ftDeviceInfoListNode.flags = 2;
+                    this.g.type = 12;
+                    this.g.flags = 2;
                     break;
                 case 6144:
-                    this.ftDeviceInfoListNode.type = 10;
+                    this.g.type = 10;
                     if(this.t == 1) {
-                        this.ftDeviceInfoListNode.flags = 2;
+                        this.g.flags = 2;
                     } else {
-                        this.ftDeviceInfoListNode.flags = 0;
+                        this.g.flags = 0;
                     }
                     break;
                 case 6400:
-                    this.ftDeviceInfoListNode.type = 11;
+                    this.g.type = 11;
                     if(this.t == 4) {
-                        int var10 = this.usbDevice.getInterface(this.t - 1).getEndpoint(0).getMaxPacketSize();
+                        int var10 = this.c.getInterface(this.t - 1).getEndpoint(0).getMaxPacketSize();
                         Log.e("dev", "mInterfaceID : " + this.t + "   iMaxPacketSize : " + var10);
                         if(var10 == 8) {
-                            this.ftDeviceInfoListNode.flags = 0;
+                            this.g.flags = 0;
                         } else {
-                            this.ftDeviceInfoListNode.flags = 2;
+                            this.g.flags = 2;
                         }
                     } else {
-                        this.ftDeviceInfoListNode.flags = 2;
+                        this.g.flags = 2;
                     }
                     break;
                 default:
-                    this.ftDeviceInfoListNode.type = 3;
+                    this.g.type = 3;
                     this.q = new k(this);
                 }
 
-                switch(this.ftDeviceInfoListNode.bcdDevice & 65280) {
+                switch(this.g.bcdDevice & 65280) {
                 case 5888:
                 case 6144:
                 case 6400:
-
-                    if (this.ftDeviceInfoListNode.serialNumber == null) {
+                    if(this.g.serialNumber == null) {
                         byte[] var13 = new byte[16];
-                        this.getUsbDeviceConnection().controlTransfer(-64, 144, 0, 27, var13, 16, 0);
+                        this.c().controlTransfer(-64, 144, 0, 27, var13, 16, 0);
                         String var14 = "";
 
                         for(int var11 = 0; var11 < 8; ++var11) {
                             var14 = var14 + (char)var13[var11 * 2];
                         }
 
-                        this.ftDeviceInfoListNode.serialNumber = new String(var14);
+                        this.g.serialNumber = new String(var14);
                     }
                 default:
-                    switch(this.ftDeviceInfoListNode.bcdDevice & 65280) {
+                    switch(this.g.bcdDevice & 65280) {
                     case 6144:
                     case 6400:
                         if(this.t == 1) {
-                            this.ftDeviceInfoListNode.description = this.ftDeviceInfoListNode.description + " A";
-                            this.ftDeviceInfoListNode.serialNumber = this.ftDeviceInfoListNode.serialNumber + "A";
+                            this.g.description = this.g.description + " A";
+                            this.g.serialNumber = this.g.serialNumber + "A";
                         } else if(this.t == 2) {
-                            this.ftDeviceInfoListNode.description = this.ftDeviceInfoListNode.description + " B";
-                            this.ftDeviceInfoListNode.serialNumber = this.ftDeviceInfoListNode.serialNumber + "B";
+                            this.g.description = this.g.description + " B";
+                            this.g.serialNumber = this.g.serialNumber + "B";
                         } else if(this.t == 3) {
-                            this.ftDeviceInfoListNode.description = this.ftDeviceInfoListNode.description + " C";
-                            this.ftDeviceInfoListNode.serialNumber = this.ftDeviceInfoListNode.serialNumber + "C";
+                            this.g.description = this.g.description + " C";
+                            this.g.serialNumber = this.g.serialNumber + "C";
                         } else if(this.t == 4) {
-                            this.ftDeviceInfoListNode.description = this.ftDeviceInfoListNode.description + " D";
-                            this.ftDeviceInfoListNode.serialNumber = this.ftDeviceInfoListNode.serialNumber + "D";
+                            this.g.description = this.g.description + " D";
+                            this.g.serialNumber = this.g.serialNumber + "D";
                         }
                     default:
-                        this.getUsbDeviceConnection().releaseInterface(this.usbInterface);
-                        this.getUsbDeviceConnection().close();
-                        this.setUsbDeviceConnection((UsbDeviceConnection) null);
+                        this.c().releaseInterface(this.d);
+                        this.c().close();
+                        this.a((UsbDeviceConnection)null);
                         this.p();
                     }
                 }
@@ -228,125 +237,125 @@ public class FT_Device {
     }
 
     private final boolean h() {
-        return (this.ftDeviceInfoListNode.bcdDevice & '\uff00') == 4096;
+        return (this.g.bcdDevice & '\uff00') == 4096;
     }
 
     private final boolean i() {
-        return (this.ftDeviceInfoListNode.bcdDevice & '\uff00') == 2304;
+        return (this.g.bcdDevice & '\uff00') == 2304;
     }
 
     final boolean b() {
-        return (this.ftDeviceInfoListNode.bcdDevice & '\uff00') == 2048;
+        return (this.g.bcdDevice & '\uff00') == 2048;
     }
 
     private final boolean j() {
-        return (this.ftDeviceInfoListNode.bcdDevice & '\uff00') == 1792;
+        return (this.g.bcdDevice & '\uff00') == 1792;
     }
 
     private final boolean k() {
-        return (this.ftDeviceInfoListNode.bcdDevice & '\uff00') == 1536;
+        return (this.g.bcdDevice & '\uff00') == 1536;
     }
 
     private final boolean l() {
-        return (this.ftDeviceInfoListNode.bcdDevice & '\uff00') == 1280;
+        return (this.g.bcdDevice & '\uff00') == 1280;
     }
 
     private final boolean m() {
-        return (this.ftDeviceInfoListNode.bcdDevice & '\uff00') == 1024 || (this.ftDeviceInfoListNode.bcdDevice & '\uff00') == 512 && this.ftDeviceInfoListNode.iSerialNumber == 0;
+        return (this.g.bcdDevice & '\uff00') == 1024 || (this.g.bcdDevice & '\uff00') == 512 && this.g.iSerialNumber == 0;
     }
 
     private final String a(byte[] var1) throws UnsupportedEncodingException {
         return new String(var1, 2, var1[0] - 2, "UTF-16LE");
     }
 
-    UsbDeviceConnection getUsbDeviceConnection() {
-        return this.usbDeviceConnection;
+    UsbDeviceConnection c() {
+        return this.l;
     }
 
-    void setUsbDeviceConnection(UsbDeviceConnection usbDeviceConnection) {
-        this.usbDeviceConnection = usbDeviceConnection;
+    void a(UsbDeviceConnection var1) {
+        this.l = var1;
     }
 
-    synchronized boolean setParentContext(Context parentContext) {
-        boolean result = false;
-        if(parentContext != null) {
-            this.parentContext = parentContext;
-            result = true;
+    synchronized boolean a(Context var1) {
+        boolean var2 = false;
+        if(var1 != null) {
+            this.j = var1;
+            var2 = true;
         }
 
-        return result;
+        return var2;
     }
 
     protected void setDriverParameters(DriverParameters params) {
-        this.driverParameters.setMaxBufferSize(params.getMaxBufferSize());
-        this.driverParameters.setMaxTransferSize(params.getMaxTransferSize());
-        this.driverParameters.setBufferNumber(params.getBufferNumber());
-        this.driverParameters.setReadTimeout(params.getReadTimeout());
+        this.s.setMaxBufferSize(params.getMaxBufferSize());
+        this.s.setMaxTransferSize(params.getMaxTransferSize());
+        this.s.setBufferNumber(params.getBufferNumber());
+        this.s.setReadTimeout(params.getReadTimeout());
     }
 
-    DriverParameters getDriverParameters() {
-        return this.driverParameters;
+    DriverParameters d() {
+        return this.s;
     }
 
     public int getReadTimeout() {
-        return this.driverParameters.getReadTimeout();
+        return this.s.getReadTimeout();
     }
 
     private void n() {
         if(this.t == 1) {
-            this.ftDeviceInfoListNode.serialNumber = this.ftDeviceInfoListNode.serialNumber + "A";
-            this.ftDeviceInfoListNode.description = this.ftDeviceInfoListNode.description + " A";
+            this.g.serialNumber = this.g.serialNumber + "A";
+            this.g.description = this.g.description + " A";
         } else if(this.t == 2) {
-            this.ftDeviceInfoListNode.serialNumber = this.ftDeviceInfoListNode.serialNumber + "B";
-            this.ftDeviceInfoListNode.description = this.ftDeviceInfoListNode.description + " B";
+            this.g.serialNumber = this.g.serialNumber + "B";
+            this.g.description = this.g.description + " B";
         } else if(this.t == 3) {
-            this.ftDeviceInfoListNode.serialNumber = this.ftDeviceInfoListNode.serialNumber + "C";
-            this.ftDeviceInfoListNode.description = this.ftDeviceInfoListNode.description + " C";
+            this.g.serialNumber = this.g.serialNumber + "C";
+            this.g.description = this.g.description + " C";
         } else if(this.t == 4) {
-            this.ftDeviceInfoListNode.serialNumber = this.ftDeviceInfoListNode.serialNumber + "D";
-            this.ftDeviceInfoListNode.description = this.ftDeviceInfoListNode.description + " D";
+            this.g.serialNumber = this.g.serialNumber + "D";
+            this.g.description = this.g.description + " D";
         }
 
     }
 
-    synchronized boolean open(UsbManager usbManager) {
-        boolean result = false;
-        if (this.isOpen()) {
-            return result;
-        } else if(usbManager == null) {
+    synchronized boolean a(UsbManager var1) {
+        boolean var2 = false;
+        if(this.isOpen()) {
+            return var2;
+        } else if(var1 == null) {
             Log.e("FTDI_Device::", "UsbManager cannot be null.");
-            return result;
-        } else if(this.getUsbDeviceConnection() != null) {
+            return var2;
+        } else if(this.c() != null) {
             Log.e("FTDI_Device::", "There should not have an UsbConnection.");
-            return result;
+            return var2;
         } else {
-            this.setUsbDeviceConnection(usbManager.openDevice(this.usbDevice));
-            if(this.getUsbDeviceConnection() == null) {
+            this.a(var1.openDevice(this.c));
+            if(this.c() == null) {
                 Log.e("FTDI_Device::", "UsbConnection cannot be null.");
-                return result;
-            } else if(!this.getUsbDeviceConnection().claimInterface(this.usbInterface, true)) {
+                return var2;
+            } else if(!this.c().claimInterface(this.d, true)) {
                 Log.e("FTDI_Device::", "ClaimInteface returned false.");
-                return result;
+                return var2;
             } else {
                 Log.d("FTDI_Device::", "open SUCCESS");
                 if(!this.q()) {
                     Log.e("FTDI_Device::", "Failed to find endpoints.");
-                    return result;
+                    return var2;
                 } else {
-                    this.usbRequest.initialize(this.usbDeviceConnection, this.e);
+                    this.k.initialize(this.l, this.e);
                     Log.d("D2XX::", "**********************Device Opened**********************");
-                    this.processInCtrl = new ProcessInCtrl(this);
-                    this.bulkInRunnable = new BulkInRunnable(this, this.processInCtrl, this.getUsbDeviceConnection(), this.f);
-                    this.threadBulkIn = new Thread(this.bulkInRunnable);
-                    this.threadBulkIn.setName("bulkInThread");
-                    this.threadProcessRequest = new Thread(new ProcessRequestRunnable(this.processInCtrl));
-                    this.threadProcessRequest.setName("processRequestThread");
+                    this.p = new o(this);
+                    this.m = new a(this, this.p, this.c(), this.f);
+                    this.o = new Thread(this.m);
+                    this.o.setName("bulkInThread");
+                    this.n = new Thread(new p(this.p));
+                    this.n.setName("processRequestThread");
                     this.a(true, true);
-                    this.threadBulkIn.start();
-                    this.threadProcessRequest.start();
+                    this.o.start();
+                    this.n.start();
                     this.o();
-                    result = true;
-                    return result;
+                    var2 = true;
+                    return var2;
                 }
             }
         }
@@ -358,46 +367,46 @@ public class FT_Device {
 
     private synchronized void o() {
         this.b = Boolean.valueOf(true);
-        this.ftDeviceInfoListNode.flags |= 1;
+        this.g.flags |= 1;
     }
 
     private synchronized void p() {
         this.b = Boolean.valueOf(false);
-        this.ftDeviceInfoListNode.flags &= 2;
+        this.g.flags &= 2;
     }
 
     public synchronized void close() {
-        if(this.threadProcessRequest != null) {
-            this.threadProcessRequest.interrupt();
+        if(this.n != null) {
+            this.n.interrupt();
         }
 
-        if(this.threadBulkIn != null) {
-            this.threadBulkIn.interrupt();
+        if(this.o != null) {
+            this.o.interrupt();
         }
 
-        if(this.usbDeviceConnection != null) {
-            this.usbDeviceConnection.releaseInterface(this.usbInterface);
-            this.usbDeviceConnection.close();
-            this.usbDeviceConnection = null;
+        if(this.l != null) {
+            this.l.releaseInterface(this.d);
+            this.l.close();
+            this.l = null;
         }
 
-        if(this.processInCtrl != null) {
-            this.processInCtrl.close();
+        if(this.p != null) {
+            this.p.g();
         }
 
-        this.threadProcessRequest = null;
-        this.threadBulkIn = null;
-        this.bulkInRunnable = null;
-        this.processInCtrl = null;
+        this.n = null;
+        this.o = null;
+        this.m = null;
+        this.p = null;
         this.p();
     }
 
     protected UsbDevice getUsbDevice() {
-        return this.usbDevice;
+        return this.c;
     }
 
     public FtDeviceInfoListNode getDeviceInfo() {
-        return this.ftDeviceInfoListNode;
+        return this.g;
     }
 
     public int read(byte[] data, int length, long wait_ms) {
@@ -406,20 +415,20 @@ public class FT_Device {
             return -1;
         } else if(length <= 0) {
             return -2;
-        } else if(this.processInCtrl == null) {
+        } else if(this.p == null) {
             return -3;
         } else {
-            int cbRead = this.processInCtrl.readBulkInData(data, length, wait_ms);
-            return cbRead;
+            int var6 = this.p.a(data, length, wait_ms);
+            return var6;
         }
     }
 
     public int read(byte[] data, int length) {
-        return this.read(data, length, (long) this.driverParameters.getReadTimeout());
+        return this.read(data, length, (long)this.s.getReadTimeout());
     }
 
     public int read(byte[] data) {
-        return this.read(data, data.length, (long) this.driverParameters.getReadTimeout());
+        return this.read(data, data.length, (long)this.s.getReadTimeout());
     }
 
     public int write(byte[] data, int length) {
@@ -427,40 +436,40 @@ public class FT_Device {
     }
 
     public int write(byte[] data, int length, boolean wait) {
-        int cbWritten = -1;
+        int var6 = -1;
         if(!this.isOpen()) {
-            return cbWritten;
+            return var6;
         } else if(length < 0) {
-            return cbWritten;
+            return var6;
         } else {
-            UsbRequest usbRequest = this.usbRequest;    // reuses instance var: so: only one outstanding write at a time
+            UsbRequest var4 = this.k;
             if(wait) {
-                usbRequest.setClientData(this);
+                var4.setClientData(this);
             }
 
             if(length == 0) {
-                byte[] avoidZeroLengthData = new byte[1];
-                if(usbRequest.queue(ByteBuffer.wrap(avoidZeroLengthData), length)) {
-                    cbWritten = length;
+                byte[] var7 = new byte[1];
+                if(var4.queue(ByteBuffer.wrap(var7), length)) {
+                    var6 = length;
                 }
-            } else if(usbRequest.queue(ByteBuffer.wrap(data), length)) {
-                cbWritten = length;
+            } else if(var4.queue(ByteBuffer.wrap(data), length)) {
+                var6 = length;
             }
 
             Object var5;
-            if (wait) {
+            if(wait) {
                 do {
-                    usbRequest = this.usbDeviceConnection.requestWait();
-                    if(usbRequest == null) {
+                    var4 = this.l.requestWait();
+                    if(var4 == null) {
                         Log.e("FTDI_Device::", "UsbConnection.requestWait() == null");
                         return -99;
                     }
 
-                    var5 = usbRequest.getClientData();
+                    var5 = var4.getClientData();
                 } while(var5 != this);
             }
 
-            return cbWritten;
+            return var6;
         }
     }
 
@@ -471,30 +480,30 @@ public class FT_Device {
     public short getModemStatus() {
         if(!this.isOpen()) {
             return (short)-1;
-        } else if(this.processInCtrl == null) {
+        } else if(this.p == null) {
             return (short)-2;
         } else {
             this.a &= -3L;
-            return (short)(this.ftDeviceInfoListNode.modemStatus & 255);
+            return (short)(this.g.modemStatus & 255);
         }
     }
 
     public short getLineStatus() {
-        return !this.isOpen()?-1:(this.processInCtrl == null?-2:this.ftDeviceInfoListNode.lineStatus);
+        return !this.isOpen()?-1:(this.p == null?-2:this.g.lineStatus);
     }
 
     public int getQueueStatus() {
-        return !this.isOpen()?-1:(this.processInCtrl == null?-2:this.processInCtrl.cbAvailable());
+        return !this.isOpen()?-1:(this.p == null?-2:this.p.c());
     }
 
     public boolean readBufferFull() {
-        return this.processInCtrl.isBufferFull();
+        return this.p.a();
     }
 
     public long getEventStatus() {
         if(!this.isOpen()) {
             return -1L;
-        } else if(this.processInCtrl == null) {
+        } else if(this.p == null) {
             return -2L;
         } else {
             long var1 = this.a;
@@ -568,7 +577,7 @@ public class FT_Device {
             }
 
             if(var2 == 1) {
-                int var6 = this.getUsbDeviceConnection().controlTransfer(64, 3, var3[0], var3[1], (byte[])null, 0, 0);
+                int var6 = this.c().controlTransfer(64, 3, var3[0], var3[1], (byte[])null, 0, 0);
                 if(var6 == 0) {
                     var5 = true;
                 }
@@ -587,8 +596,8 @@ public class FT_Device {
         } else {
             short var7 = (short)(dataBits | parity << 8);
             var7 = (short)(var7 | stopBits << 11);
-            this.ftDeviceInfoListNode.breakOnParam = var7;
-            int var8 = this.getUsbDeviceConnection().controlTransfer(64, 4, var7, this.t, (byte[])null, 0, 0);
+            this.g.breakOnParam = var7;
+            int var8 = this.c().controlTransfer(64, 4, var7, this.t, (byte[])null, 0, 0);
             if(var8 == 0) {
                 var6 = true;
             }
@@ -607,12 +616,12 @@ public class FT_Device {
 
     private boolean a(int var1) {
         boolean var2 = false;
-        int var4 = this.ftDeviceInfoListNode.breakOnParam;
+        int var4 = this.g.breakOnParam;
         var4 |= var1;
         if(!this.isOpen()) {
             return var2;
         } else {
-            int var3 = this.getUsbDeviceConnection().controlTransfer(64, 4, var4, this.t, (byte[])null, 0, 0);
+            int var3 = this.c().controlTransfer(64, 4, var4, this.t, (byte[])null, 0, 0);
             if(var3 == 0) {
                 var2 = true;
             }
@@ -633,7 +642,7 @@ public class FT_Device {
                 var6 = (short)(var6 | xon & 255);
             }
 
-            int var8 = this.getUsbDeviceConnection().controlTransfer(64, 2, var6, this.t | flowControl, (byte[])null, 0, 0);
+            int var8 = this.c().controlTransfer(64, 2, var6, this.t | flowControl, (byte[])null, 0, 0);
             if(var8 == 0) {
                 var4 = true;
                 if(flowControl == 256) {
@@ -653,7 +662,7 @@ public class FT_Device {
         if(!this.isOpen()) {
             return var1;
         } else {
-            int var2 = this.getUsbDeviceConnection().controlTransfer(64, 1, var3, this.t, (byte[])null, 0, 0);
+            int var2 = this.c().controlTransfer(64, 1, var3, this.t, (byte[])null, 0, 0);
             if(var2 == 0) {
                 var1 = true;
             }
@@ -668,7 +677,7 @@ public class FT_Device {
         if(!this.isOpen()) {
             return var1;
         } else {
-            int var2 = this.getUsbDeviceConnection().controlTransfer(64, 1, var3, this.t, (byte[])null, 0, 0);
+            int var2 = this.c().controlTransfer(64, 1, var3, this.t, (byte[])null, 0, 0);
             if(var2 == 0) {
                 var1 = true;
             }
@@ -683,7 +692,7 @@ public class FT_Device {
         if(!this.isOpen()) {
             return var1;
         } else {
-            int var2 = this.getUsbDeviceConnection().controlTransfer(64, 1, var3, this.t, (byte[])null, 0, 0);
+            int var2 = this.c().controlTransfer(64, 1, var3, this.t, (byte[])null, 0, 0);
             if(var2 == 0) {
                 var1 = true;
             }
@@ -698,7 +707,7 @@ public class FT_Device {
         if(!this.isOpen()) {
             return var1;
         } else {
-            int var2 = this.getUsbDeviceConnection().controlTransfer(64, 1, var3, this.t, (byte[])null, 0, 0);
+            int var2 = this.c().controlTransfer(64, 1, var3, this.t, (byte[])null, 0, 0);
             if(var2 == 0) {
                 var1 = true;
             }
@@ -722,7 +731,7 @@ public class FT_Device {
                 var6 |= 256;
             }
 
-            int var5 = this.getUsbDeviceConnection().controlTransfer(64, 6, var6, this.t, (byte[])null, 0, 0);
+            int var5 = this.c().controlTransfer(64, 6, var6, this.t, (byte[])null, 0, 0);
             if(var5 != 0) {
                 return var7;
             } else {
@@ -731,7 +740,7 @@ public class FT_Device {
                     var6 |= 256;
                 }
 
-                var5 = this.getUsbDeviceConnection().controlTransfer(64, 7, var6, this.t, (byte[])null, 0, 0);
+                var5 = this.c().controlTransfer(64, 7, var6, this.t, (byte[])null, 0, 0);
                 if(var5 == 0) {
                     this.h = var8;
                     var7 = true;
@@ -743,7 +752,7 @@ public class FT_Device {
     }
 
     public boolean setBitMode(byte mask, byte bitMode) {
-        int var5 = this.ftDeviceInfoListNode.type;
+        int var5 = this.g.type;
         boolean var6 = false;
         if(!this.isOpen()) {
             return var6;
@@ -759,7 +768,7 @@ public class FT_Device {
                     return var6;
                 }
 
-                if(bitMode == 2 & this.usbInterface.getId() != 0) {
+                if(bitMode == 2 & this.d.getId() != 0) {
                     return var6;
                 }
             } else if(var5 == 5 && bitMode != 0) {
@@ -771,7 +780,7 @@ public class FT_Device {
                     return var6;
                 }
 
-                if((bitMode & 72) > 0 & this.usbInterface.getId() != 0) {
+                if((bitMode & 72) > 0 & this.d.getId() != 0) {
                     return var6;
                 }
             } else if(var5 == 7 && bitMode != 0) {
@@ -779,7 +788,7 @@ public class FT_Device {
                     return var6;
                 }
 
-                if(bitMode == 2 & this.usbInterface.getId() != 0 & this.usbInterface.getId() != 1) {
+                if(bitMode == 2 & this.d.getId() != 0 & this.d.getId() != 1) {
                     return var6;
                 }
             } else if(var5 == 8 && bitMode != 0 && bitMode > 64) {
@@ -788,7 +797,7 @@ public class FT_Device {
 
             int var3 = bitMode << 8;
             var3 |= mask & 255;
-            int var4 = this.getUsbDeviceConnection().controlTransfer(64, 11, var3, this.t, (byte[])null, 0, 0);
+            int var4 = this.c().controlTransfer(64, 11, var3, this.t, (byte[])null, 0, 0);
             if(var4 == 0) {
                 var6 = true;
             }
@@ -805,7 +814,7 @@ public class FT_Device {
         } else if(!this.g()) {
             return (byte)-2;
         } else {
-            int var3 = this.getUsbDeviceConnection().controlTransfer(-64, 12, 0, this.t, var2, var2.length, 0);
+            int var3 = this.c().controlTransfer(-64, 12, 0, this.t, var2, var2.length, 0);
             return var3 == var2.length?var2[0]:-3;
         }
     }
@@ -816,7 +825,7 @@ public class FT_Device {
         if(!this.isOpen()) {
             return var2;
         } else {
-            int var3 = this.getUsbDeviceConnection().controlTransfer(64, 0, 0, 0, (byte[])null, 0, 0);
+            int var3 = this.c().controlTransfer(64, 0, 0, 0, (byte[])null, 0, 0);
             if(var3 == 0) {
                 var2 = true;
             }
@@ -830,7 +839,7 @@ public class FT_Device {
         if(!this.isOpen()) {
             return -1;
         } else {
-            int var4 = this.getUsbDeviceConnection().controlTransfer(64, request, wValue, this.t, (byte[])null, 0, 0);
+            int var4 = this.c().controlTransfer(64, request, wValue, this.t, (byte[])null, 0, 0);
             return var4;
         }
     }
@@ -854,7 +863,7 @@ public class FT_Device {
                 return -1;
             }
 
-            int var6 = this.getUsbDeviceConnection().controlTransfer(64, request, wValue, this.t, buf, datalen, 0);
+            int var6 = this.c().controlTransfer(64, request, wValue, this.t, buf, datalen, 0);
             return var6;
         }
     }
@@ -874,15 +883,15 @@ public class FT_Device {
             Log.e("FTDI_Device::", "VendorCmdGet: length of buffer is smaller than data length to get");
             return -1;
         } else {
-            int var6 = this.getUsbDeviceConnection().controlTransfer(-64, request, wValue, this.t, buf, datalen, 0);
+            int var6 = this.c().controlTransfer(-64, request, wValue, this.t, buf, datalen, 0);
             return var6;
         }
     }
 
     public void stopInTask() {
         try {
-            if(!this.bulkInRunnable.isStopped()) {
-                this.bulkInRunnable.stop();
+            if(!this.m.c()) {
+                this.m.a();
             }
         } catch (InterruptedException var2) {
             Log.d("FTDI_Device::", "stopInTask called!");
@@ -892,11 +901,11 @@ public class FT_Device {
     }
 
     public void restartInTask() {
-        this.bulkInRunnable.restart();
+        this.m.b();
     }
 
     public boolean stoppedInTask() {
-        return this.bulkInRunnable.isStopped();
+        return this.m.c();
     }
 
     public boolean purge(byte flags) {
@@ -926,19 +935,19 @@ public class FT_Device {
                 var7 = 1;
 
                 for(int var6 = 0; var6 < 6; ++var6) {
-                    var4 = this.getUsbDeviceConnection().controlTransfer(64, 0, var7, this.t, (byte[])null, 0, 0);
+                    var4 = this.c().controlTransfer(64, 0, var7, this.t, (byte[])null, 0, 0);
                 }
 
                 if(var4 > 0) {
                     return var3;
                 }
 
-                this.processInCtrl.e();
+                this.p.e();
             }
 
             if(var2) {
                 var7 = 2;
-                var4 = this.getUsbDeviceConnection().controlTransfer(64, 0, var7, this.t, (byte[])null, 0, 0);
+                var4 = this.c().controlTransfer(64, 0, var7, this.t, (byte[])null, 0, 0);
                 if(var4 == 0) {
                     var3 = true;
                 }
@@ -954,7 +963,7 @@ public class FT_Device {
         if(!this.isOpen()) {
             return var4;
         } else {
-            int var3 = this.getUsbDeviceConnection().controlTransfer(64, 9, var2, this.t, (byte[])null, 0, 0);
+            int var3 = this.c().controlTransfer(64, 9, var2, this.t, (byte[])null, 0, 0);
             if(var3 == 0) {
                 this.r = latency;
                 var4 = true;
@@ -972,7 +981,7 @@ public class FT_Device {
         if(!this.isOpen()) {
             return (byte)-1;
         } else {
-            int var3 = this.getUsbDeviceConnection().controlTransfer(-64, 10, 0, this.t, var1, var1.length, 0);
+            int var3 = this.c().controlTransfer(-64, 10, 0, this.t, var1, var1.length, 0);
             return var3 == var1.length?var1[0]:0;
         }
     }
@@ -993,14 +1002,14 @@ public class FT_Device {
     }
 
     private boolean q() {
-        for(int var1 = 0; var1 < this.usbInterface.getEndpointCount(); ++var1) {
-            Log.i("FTDI_Device::", "EP: " + String.format("0x%02X", new Object[]{Integer.valueOf(this.usbInterface.getEndpoint(var1).getAddress())}));
-            if(this.usbInterface.getEndpoint(var1).getType() == 2) {
-                if(this.usbInterface.getEndpoint(var1).getDirection() == 128) {
-                    this.f = this.usbInterface.getEndpoint(var1);
+        for(int var1 = 0; var1 < this.d.getEndpointCount(); ++var1) {
+            Log.i("FTDI_Device::", "EP: " + String.format("0x%02X", new Object[]{Integer.valueOf(this.d.getEndpoint(var1).getAddress())}));
+            if(this.d.getEndpoint(var1).getType() == 2) {
+                if(this.d.getEndpoint(var1).getDirection() == 128) {
+                    this.f = this.d.getEndpoint(var1);
                     this.u = this.f.getMaxPacketSize();
                 } else {
-                    this.e = this.usbInterface.getEndpoint(var1);
+                    this.e = this.d.getEndpoint(var1);
                 }
             } else {
                 Log.i("FTDI_Device::", "Not Bulk Endpoint");

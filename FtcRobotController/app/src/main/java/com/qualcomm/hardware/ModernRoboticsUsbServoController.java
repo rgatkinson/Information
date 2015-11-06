@@ -1,5 +1,7 @@
 package com.qualcomm.hardware;
 
+import com.qualcomm.hardware.ModernRoboticsUsbDevice;
+import com.qualcomm.hardware.ReadWriteRunnableBlocking;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.ServoController;
@@ -27,14 +29,15 @@ public class ModernRoboticsUsbServoController extends ModernRoboticsUsbDevice im
    public static final int SERVO_POSITION_MAX = 255;
    public static final byte START_ADDRESS = 64;
 
-   protected ModernRoboticsUsbServoController(SerialNumber serialNumber, RobotUsbDevice robotUsbDevice, EventLoopManager eventLoopManager) throws RobotCoreException, InterruptedException {
-      super(serialNumber, eventLoopManager, new ReadWriteRunnableBlocking(serialNumber, robotUsbDevice, MONITOR_LENGTH, START_ADDRESS, false));
+   protected ModernRoboticsUsbServoController(SerialNumber var1, RobotUsbDevice var2, EventLoopManager var3) throws RobotCoreException, InterruptedException {
+      super(var1, var3, new ReadWriteRunnableBlocking(var1, var2, 9, 64, false));
       this.pwmDisable();
    }
 
-   private void validateServo(int servo) {
-      if(servo < 1 || servo > ADDRESS_CHANNEL_MAP.length) {
-         throw new IllegalArgumentException(String.format("Channel %d is invalid; valid channels are 1..%d", servo, MAX_SERVOS));
+   private void a(int var1) {
+      if(var1 < 1 || var1 > ADDRESS_CHANNEL_MAP.length) {
+         Object[] var2 = new Object[]{Integer.valueOf(var1), Integer.valueOf(6)};
+         throw new IllegalArgumentException(String.format("Channel %d is invalid; valid channels are 1..%d", var2));
       }
    }
 
@@ -52,28 +55,26 @@ public class ModernRoboticsUsbServoController extends ModernRoboticsUsbDevice im
    }
 
    public ServoController.PwmStatus getPwmStatus() {
-      return this.read(ADDRESS_PWM, 1)[0] == PWM_DISABLE
-              ? ServoController.PwmStatus.DISABLED
-              : ServoController.PwmStatus.ENABLED;
+      return this.read(72, 1)[0] == -1?ServoController.PwmStatus.DISABLED:ServoController.PwmStatus.ENABLED;
    }
 
-   public double getServoPosition(int servo) {
-      this.validateServo(servo);
-      return TypeConversion.unsignedByteToDouble(this.read(ADDRESS_CHANNEL_MAP[servo], 1)[0]) / ((double)SERVO_POSITION_MAX);
+   public double getServoPosition(int var1) {
+      this.a(var1);
+      return TypeConversion.unsignedByteToDouble(this.read(ADDRESS_CHANNEL_MAP[var1], 1)[0]) / 255.0D;
    }
 
    public void pwmDisable() {
-      this.write(ADDRESS_PWM, (byte)PWM_DISABLE);
+      this.write(72, (byte)-1);
    }
 
    public void pwmEnable() {
-      this.write(ADDRESS_PWM, (byte)PWM_ENABLE);
+      this.write(72, (byte)0);
    }
 
-   public void setServoPosition(int servo, double position) {
-      this.validateServo(servo);
-      Range.throwIfRangeIsInvalid(position, 0.0D, 1.0D);
-      this.write(ADDRESS_CHANNEL_MAP[servo], SERVO_POSITION_MAX * position);
+   public void setServoPosition(int var1, double var2) {
+      this.a(var1);
+      Range.throwIfRangeIsInvalid(var2, 0.0D, 1.0D);
+      this.write(ADDRESS_CHANNEL_MAP[var1], 255.0D * var2);
       this.pwmEnable();
    }
 }

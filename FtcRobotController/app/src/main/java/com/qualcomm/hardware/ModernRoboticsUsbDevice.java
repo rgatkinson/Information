@@ -18,14 +18,14 @@ public abstract class ModernRoboticsUsbDevice implements ReadWriteRunnable.Callb
    protected ExecutorService readWriteService = Executors.newSingleThreadExecutor();
    protected SerialNumber serialNumber;
 
-   public ModernRoboticsUsbDevice(SerialNumber serialNumber, EventLoopManager eventLoopManager, ReadWriteRunnable readWriteRunnable) throws RobotCoreException, InterruptedException {
-      this.serialNumber = serialNumber;
-      this.readWriteRunnable = readWriteRunnable;
-      RobotLog.v("Starting up device " + serialNumber.toString());
-      this.readWriteService.execute(readWriteRunnable);
-      readWriteRunnable.blockUntilReady();
-      readWriteRunnable.setCallback(this);
-      eventLoopManager.registerSyncdDevice(readWriteRunnable);
+   public ModernRoboticsUsbDevice(SerialNumber var1, EventLoopManager var2, ReadWriteRunnable var3) throws RobotCoreException, InterruptedException {
+      this.serialNumber = var1;
+      this.readWriteRunnable = var3;
+      RobotLog.v("Starting up device " + var1.toString());
+      this.readWriteService.execute(var3);
+      var3.blockUntilReady();
+      var3.setCallback(this);
+      var2.registerSyncdDevice(var3);
    }
 
    public void close() {
@@ -44,12 +44,12 @@ public abstract class ModernRoboticsUsbDevice implements ReadWriteRunnable.Callb
       return this.read(0);
    }
 
-   public byte read(int register) {
-      return this.read(register, 1)[0];
+   public byte read(int var1) {
+      return this.read(var1, 1)[0];
    }
 
-   public byte[] read(int register, int count) {
-      return this.readWriteRunnable.read(register, count);
+   public byte[] read(int var1, int var2) {
+      return this.readWriteRunnable.read(var1, var2);
    }
 
    public void readComplete() throws InterruptedException {
@@ -63,13 +63,13 @@ public abstract class ModernRoboticsUsbDevice implements ReadWriteRunnable.Callb
       return this.readWriteRunnable.readFromWriteCache(var1, var2);
    }
 
-   public void write(int register, byte datum) {
-      this.write(register, new byte[]{datum});
+   public void write(int var1, byte var2) {
+      this.write(var1, new byte[]{var2});
    }
 
-   public void write(int register, double doubleToBeByte) {
-      byte[] var4 = new byte[]{(byte)((int)doubleToBeByte)};
-      this.write(register, var4);
+   public void write(int var1, double var2) {
+      byte[] var4 = new byte[]{(byte)((int)var2)};
+      this.write(var1, var4);
    }
 
    public void write(int var1, int var2) {

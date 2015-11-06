@@ -5,6 +5,8 @@
 
 package com.qualcomm.robotcore.eventloop;
 
+import com.qualcomm.robotcore.eventloop.EventLoop;
+import com.qualcomm.robotcore.eventloop.SyncdDevice;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -31,89 +33,90 @@ public class EventLoopManager {
     public static final String SYSTEM_TELEMETRY = "SYSTEM_TELEMETRY";
     public static final String ROBOT_BATTERY_LEVEL_KEY = "Robot Battery Level";
     public static final String RC_BATTERY_LEVEL_KEY = "RobotController Battery Level";
-    private static final EventLoop nullEventLoop = new NullEventLoop((EventLoopManager.SyntheticClass_1)null);
+    private static final EventLoop a = new EventLoopManager.a((EventLoopManager.SyntheticClass_1)null);
     public RobotState state;
     private Thread b;
-    private Thread scheduledSendsThread;
-    private final RobocolDatagramSocket socket;
-    private boolean isShutDown;
-    private ElapsedTime elapsed;
-    private EventLoop eventLoop;
-    private final Gamepad[] gamepads;
-    private Heartbeat heartbeat;
-    private EventLoopManager.EventLoopMonitor eventLoopMonitor;
-    private final Set<SyncdDevice> syncdDevices;
-    private final Command[] commands;
+    private Thread c;
+    private final RobocolDatagramSocket d;
+    private boolean e;
+    private ElapsedTime f;
+    private EventLoop g;
+    private final Gamepad[] h;
+    private Heartbeat i;
+    private EventLoopManager.EventLoopMonitor j;
+    private final Set<SyncdDevice> k;
+    private final Command[] l;
     private int m;
     private final Set<Command> n;
-    private InetAddress inetAddress;
+    private InetAddress o;
 
     public void handleDroppedConnection() {
-        OpModeManager var1 = this.eventLoop.getOpModeManager();
+        OpModeManager var1 = this.g.getOpModeManager();
         String var2 = "Lost connection while running op mode: " + var1.getActiveOpModeName();
+        this.resetGamepads();
         var1.initActiveOpMode("Stop Robot");
-        this.reportRobotState(RobotState.DROPPED_CONNECTION);
+        this.a(RobotState.DROPPED_CONNECTION);
         RobotLog.i(var2);
     }
 
     public EventLoopManager(RobocolDatagramSocket socket) {
         this.state = RobotState.NOT_STARTED;
         this.b = new Thread();
-        this.scheduledSendsThread = new Thread();
-        this.isShutDown = false;
-        this.elapsed = new ElapsedTime();
-        this.eventLoop = nullEventLoop;
-        this.gamepads = new Gamepad[]{new Gamepad(), new Gamepad()};
-        this.heartbeat = new Heartbeat(Token.EMPTY);
-        this.eventLoopMonitor = null;
-        this.syncdDevices = new CopyOnWriteArraySet();
-        this.commands = new Command[8];
+        this.c = new Thread();
+        this.e = false;
+        this.f = new ElapsedTime();
+        this.g = a;
+        this.h = new Gamepad[]{new Gamepad(), new Gamepad()};
+        this.i = new Heartbeat(Token.EMPTY);
+        this.j = null;
+        this.k = new CopyOnWriteArraySet();
+        this.l = new Command[8];
         this.m = 0;
         this.n = new CopyOnWriteArraySet();
-        this.socket = socket;
-        this.reportRobotState(RobotState.NOT_STARTED);
+        this.d = socket;
+        this.a(RobotState.NOT_STARTED);
     }
 
     public void setMonitor(EventLoopManager.EventLoopMonitor monitor) {
-        this.eventLoopMonitor = monitor;
+        this.j = monitor;
     }
 
     public void start(EventLoop eventLoop) throws RobotCoreException {
-        this.isShutDown = false;
-        this.scheduledSendsThread = new Thread(new EventLoopManager.d((EventLoopManager.SyntheticClass_1)null), "Scheduled Sends");
-        this.scheduledSendsThread.start();
-        (new Thread(new EventLoopManager.c((EventLoopManager.SyntheticClass_1)null))).start();
+        this.e = false;
         this.setEventLoop(eventLoop);
+        this.c = new Thread(new EventLoopManager.d((EventLoopManager.SyntheticClass_1)null), "Scheduled Sends");
+        this.c.start();
+        (new Thread(new EventLoopManager.c((EventLoopManager.SyntheticClass_1)null))).start();
     }
 
     public void shutdown() {
-        this.socket.close();
-        this.scheduledSendsThread.interrupt();
-        this.isShutDown = true;
+        this.d.close();
+        this.c.interrupt();
+        this.e = true;
         this.b();
     }
 
     public void registerSyncdDevice(SyncdDevice device) {
-        this.syncdDevices.add(device);
+        this.k.add(device);
     }
 
     public void unregisterSyncdDevice(SyncdDevice device) {
-        this.syncdDevices.remove(device);
+        this.k.remove(device);
     }
 
     public void setEventLoop(EventLoop eventLoop) throws RobotCoreException {
         if(eventLoop == null) {
-            eventLoop = nullEventLoop;
+            eventLoop = a;
             RobotLog.d("Event loop cannot be null, using empty event loop");
         }
 
         this.b();
-        this.eventLoop = eventLoop;
+        this.g = eventLoop;
         this.a();
     }
 
     public EventLoop getEventLoop() {
-        return this.eventLoop;
+        return this.g;
     }
 
     public Gamepad getGamepad() {
@@ -122,20 +125,31 @@ public class EventLoopManager {
 
     public Gamepad getGamepad(int port) {
         Range.throwIfRangeIsInvalid((double)port, 0.0D, 1.0D);
-        return this.gamepads[port];
+        return this.h[port];
     }
 
     public Gamepad[] getGamepads() {
-        return this.gamepads;
+        return this.h;
+    }
+
+    public void resetGamepads() {
+        Gamepad[] var1 = this.h;
+        int var2 = var1.length;
+
+        for(int var3 = 0; var3 < var2; ++var3) {
+            Gamepad var4 = var1[var3];
+            var4.reset();
+        }
+
     }
 
     public Heartbeat getHeartbeat() {
-        return this.heartbeat;
+        return this.i;
     }
 
     public void sendTelemetryData(Telemetry telemetry) {
         try {
-            this.socket.send(new RobocolDatagram(telemetry.toByteArray()));
+            this.d.send(new RobocolDatagram(telemetry.toByteArray()));
         } catch (RobotCoreException var3) {
             RobotLog.w("Failed to send telemetry data");
             RobotLog.logStacktrace(var3);
@@ -150,9 +164,9 @@ public class EventLoopManager {
 
     private void a() throws RobotCoreException {
         try {
-            this.reportRobotState(RobotState.INIT);
-            this.eventLoop.init(this);
-            Iterator var1 = this.syncdDevices.iterator();
+            this.a(RobotState.INIT);
+            this.g.init(this);
+            Iterator var1 = this.k.iterator();
 
             while(var1.hasNext()) {
                 SyncdDevice var2 = (SyncdDevice)var1.next();
@@ -161,7 +175,7 @@ public class EventLoopManager {
         } catch (Exception var3) {
             RobotLog.w("Caught exception during looper init: " + var3.toString());
             RobotLog.logStacktrace(var3);
-            this.reportRobotState(RobotState.EMERGENCY_STOP);
+            this.a(RobotState.EMERGENCY_STOP);
             if(RobotLog.hasGlobalErrorMsg()) {
                 this.buildAndSendTelemetry("SYSTEM_TELEMETRY", RobotLog.getGlobalErrorMsg());
             }
@@ -169,9 +183,9 @@ public class EventLoopManager {
             throw new RobotCoreException("Robot failed to start: " + var3.getMessage());
         }
 
-        this.elapsed = new ElapsedTime(0L);
-        this.reportRobotState(RobotState.RUNNING);
-        this.b = new Thread(new EventLoopRunnable((EventLoopManager.SyntheticClass_1)null), "Event Loop");
+        this.f = new ElapsedTime(0L);
+        this.a(RobotState.RUNNING);
+        this.b = new Thread(new EventLoopManager.b((EventLoopManager.SyntheticClass_1)null), "Event Loop");
         this.b.start();
     }
 
@@ -184,34 +198,34 @@ public class EventLoopManager {
             ;
         }
 
-        this.reportRobotState(RobotState.STOPPED);
-        this.eventLoop = nullEventLoop;
-        this.syncdDevices.clear();
+        this.a(RobotState.STOPPED);
+        this.g = a;
+        this.k.clear();
     }
 
-    private void reportRobotState(RobotState var1) {
+    private void a(RobotState var1) {
         this.state = var1;
         RobotLog.v("EventLoopManager state is " + var1.toString());
-        if(this.eventLoopMonitor != null) {
-            this.eventLoopMonitor.onStateChange(var1);
+        if(this.j != null) {
+            this.j.onStateChange(var1);
         }
 
     }
 
-    private void onGamePadPacket(RobocolDatagram datagram) throws RobotCoreException {
+    private void a(RobocolDatagram var1) throws RobotCoreException {
         Gamepad var2 = new Gamepad();
-        var2.fromByteArray(datagram.getData());
+        var2.fromByteArray(var1.getData());
         if(var2.user >= 1 && var2.user <= 2) {
             int var3 = var2.user - 1;
-            this.gamepads[var3] = var2;
-            if(this.gamepads[0].id == this.gamepads[1].id) {
+            this.h[var3].copy(var2);
+            if(this.h[0].id == this.h[1].id) {
                 RobotLog.v("Gamepad moved position, removing stale gamepad");
                 if(var3 == 0) {
-                    this.gamepads[1] = new Gamepad();
+                    this.h[1].copy(new Gamepad());
                 }
 
                 if(var3 == 1) {
-                    this.gamepads[0] = new Gamepad();
+                    this.h[0].copy(new Gamepad());
                 }
             }
 
@@ -220,68 +234,65 @@ public class EventLoopManager {
         }
     }
 
-    private void onHeartbeatPacket(RobocolDatagram datagram) throws RobotCoreException {
+    private void b(RobocolDatagram var1) throws RobotCoreException {
         Heartbeat var2 = new Heartbeat(Token.EMPTY);
-        var2.fromByteArray(datagram.getData());
+        var2.fromByteArray(var1.getData());
         var2.setRobotState(this.state);
-        datagram.setData(var2.toByteArray());
-        this.socket.send(datagram);
-        this.elapsed.reset();
-        this.heartbeat = var2;
+        var1.setData(var2.toByteArray());
+        this.d.send(var1);
+        this.f.reset();
+        this.i = var2;
     }
 
-    private void onPeerDiscoveryPacket(RobocolDatagram datagram) throws RobotCoreException {
-
-        if (!datagram.getAddress().equals(this.inetAddress)) {
-
-            if (this.state == RobotState.DROPPED_CONNECTION) {
-                this.reportRobotState(RobotState.RUNNING);
+    private void c(RobocolDatagram var1) throws RobotCoreException {
+        if(!var1.getAddress().equals(this.o)) {
+            if(this.state == RobotState.DROPPED_CONNECTION) {
+                this.a(RobotState.RUNNING);
             }
 
-            if (this.eventLoop != nullEventLoop) {
-                this.inetAddress = datagram.getAddress();
-                RobotLog.i("new remote peer discovered: " + this.inetAddress.getHostAddress());
+            if(this.g != a) {
+                this.o = var1.getAddress();
+                RobotLog.i("new remote peer discovered: " + this.o.getHostAddress());
 
                 try {
-                    this.socket.connect(this.inetAddress);
+                    this.d.connect(this.o);
                 } catch (SocketException var4) {
                     RobotLog.e("Unable to connect to peer:" + var4.toString());
                 }
 
-                PeerDiscovery peerDiscovery = new PeerDiscovery(PeerType.PEER);
+                PeerDiscovery var2 = new PeerDiscovery(PeerType.PEER);
                 RobotLog.v("Sending peer discovery packet");
-                RobocolDatagram outboundDatagram = new RobocolDatagram(peerDiscovery);
-
-                if(this.socket.getInetAddress() == null) {
-                    outboundDatagram.setAddress(this.inetAddress);
+                RobocolDatagram var3 = new RobocolDatagram(var2);
+                if(this.d.getInetAddress() == null) {
+                    var3.setAddress(this.o);
                 }
 
-                this.socket.send(outboundDatagram);
+                this.d.send(var3);
             }
         }
     }
 
-    private void onCommandPacket(RobocolDatagram datagram) throws RobotCoreException {
-        Command command = new Command(datagram.getData());
-        if(command.isAcknowledged()) {
-            this.n.remove(command);
+    private void d(RobocolDatagram var1) throws RobotCoreException {
+        Command var2 = new Command(var1.getData());
+        if(var2.isAcknowledged()) {
+            this.n.remove(var2);
         } else {
-            command.acknowledge();
-            this.socket.send(new RobocolDatagram(command));
-            Command[] var3 = this.commands;
+            var2.acknowledge();
+            this.d.send(new RobocolDatagram(var2));
+            Command[] var3 = this.l;
             int var4 = var3.length;
 
             for(int var5 = 0; var5 < var4; ++var5) {
                 Command var6 = var3[var5];
-                if(var6 != null && var6.equals(command)) {
+                if(var6 != null && var6.equals(var2)) {
                     return;
                 }
             }
 
-            this.commands[this.m++ % this.commands.length] = command;
+            this.l[this.m++ % this.l.length] = var2;
 
             try {
-                this.eventLoop.processCommand(command);
+                this.g.processCommand(var2);
             } catch (Exception var7) {
                 RobotLog.e("Event loop threw an exception while processing a command");
                 RobotLog.logStacktrace(var7);
@@ -290,11 +301,10 @@ public class EventLoopManager {
         }
     }
 
-    private void onTelemetryPacket() {
-    // ignore: those are for us to them, not them to us
+    private void c() {
     }
 
-    private void onUnknownPacket(RobocolDatagram var1) {
+    private void e(RobocolDatagram var1) {
         RobotLog.w("RobotCore event loop received unknown event type: " + var1.getMsgType().name());
     }
 
@@ -317,8 +327,8 @@ public class EventLoopManager {
         }
     }
 
-    private static class NullEventLoop implements EventLoop {
-        private NullEventLoop() {
+    private static class a implements EventLoop {
+        private a() {
         }
 
         public void init(EventLoopManager eventProcessor) {
@@ -339,8 +349,8 @@ public class EventLoopManager {
         }
     }
 
-    private class EventLoopRunnable implements Runnable {
-        private EventLoopRunnable() {
+    private class b implements Runnable {
+        private b() {
         }
 
         public void run() {
@@ -361,15 +371,15 @@ public class EventLoopManager {
                         EventLoopManager.this.buildAndSendTelemetry("SYSTEM_TELEMETRY", RobotLog.getGlobalErrorMsg());
                     }
 
-                    if(EventLoopManager.this.elapsed.startTime() == 0.0D) {
+                    if(EventLoopManager.this.f.startTime() == 0.0D) {
                         Thread.sleep(500L);
-                    } else if(EventLoopManager.this.elapsed.time() > 2.0D) {
+                    } else if(EventLoopManager.this.f.time() > 2.0D) {
                         EventLoopManager.this.handleDroppedConnection();
-                        EventLoopManager.this.inetAddress = null;
-                        EventLoopManager.this.elapsed = new ElapsedTime(0L);
+                        EventLoopManager.this.o = null;
+                        EventLoopManager.this.f = new ElapsedTime(0L);
                     }
 
-                    Iterator var6 = EventLoopManager.this.syncdDevices.iterator();
+                    Iterator var6 = EventLoopManager.this.k.iterator();
 
                     SyncdDevice var7;
                     while(var6.hasNext()) {
@@ -381,18 +391,18 @@ public class EventLoopManager {
 
                     try {
                         var16 = true;
-                        EventLoopManager.this.eventLoop.loop();
+                        EventLoopManager.this.g.loop();
                         var16 = false;
-                    } catch (Exception var17) {
+                    } catch (Exception var18) {
                         RobotLog.e("Event loop threw an exception");
-                        RobotLog.logStacktrace(var17);
-                        String var22 = var17.getMessage();
+                        RobotLog.logStacktrace(var18);
+                        String var22 = var18.getClass().getSimpleName() + (var18.getMessage() != null?" - " + var18.getMessage():"");
                         RobotLog.setGlobalErrorMsg("User code threw an uncaught exception: " + var22);
                         EventLoopManager.this.buildAndSendTelemetry("SYSTEM_TELEMETRY", RobotLog.getGlobalErrorMsg());
                         throw new RobotCoreException("EventLoop Exception in loop()");
                     } finally {
                         if(var16) {
-                            Iterator var9 = EventLoopManager.this.syncdDevices.iterator();
+                            Iterator var9 = EventLoopManager.this.k.iterator();
 
                             while(var9.hasNext()) {
                                 SyncdDevice var10 = (SyncdDevice)var9.next();
@@ -402,7 +412,7 @@ public class EventLoopManager {
                         }
                     }
 
-                    var6 = EventLoopManager.this.syncdDevices.iterator();
+                    var6 = EventLoopManager.this.k.iterator();
 
                     while(var6.hasNext()) {
                         var7 = (SyncdDevice)var6.next();
@@ -411,18 +421,18 @@ public class EventLoopManager {
                 }
             } catch (InterruptedException var20) {
                 RobotLog.v("EventLoopRunnable interrupted");
-                EventLoopManager.this.reportRobotState(RobotState.STOPPED);
+                EventLoopManager.this.a(RobotState.STOPPED);
             } catch (RobotCoreException var21) {
                 RobotLog.v("RobotCoreException in EventLoopManager: " + var21.getMessage());
-                EventLoopManager.this.reportRobotState(RobotState.EMERGENCY_STOP);
+                EventLoopManager.this.a(RobotState.EMERGENCY_STOP);
                 EventLoopManager.this.buildAndSendTelemetry("SYSTEM_TELEMETRY", RobotLog.getGlobalErrorMsg());
             }
 
             try {
-                EventLoopManager.this.eventLoop.teardown();
-            } catch (Exception var18) {
-                RobotLog.w("Caught exception during looper teardown: " + var18.toString());
-                RobotLog.logStacktrace(var18);
+                EventLoopManager.this.g.teardown();
+            } catch (Exception var17) {
+                RobotLog.w("Caught exception during looper teardown: " + var17.toString());
+                RobotLog.logStacktrace(var17);
                 if(RobotLog.hasGlobalErrorMsg()) {
                     EventLoopManager.this.buildAndSendTelemetry("SYSTEM_TELEMETRY", RobotLog.getGlobalErrorMsg());
                 }
@@ -441,8 +451,8 @@ public class EventLoopManager {
 
         public void run() {
             while(true) {
-                RobocolDatagram var1 = EventLoopManager.this.socket.recv();
-                if(EventLoopManager.this.isShutDown || EventLoopManager.this.socket.isClosed()) {
+                RobocolDatagram var1 = EventLoopManager.this.d.recv();
+                if(EventLoopManager.this.e || EventLoopManager.this.d.isClosed()) {
                     return;
                 }
 
@@ -456,22 +466,22 @@ public class EventLoopManager {
                     try {
                         switch(EventLoopManager.SyntheticClass_1.a[var1.getMsgType().ordinal()]) {
                         case 1:
-                            EventLoopManager.this.onGamePadPacket(var1);
+                            EventLoopManager.this.a(var1);
                             break;
                         case 2:
-                            EventLoopManager.this.onHeartbeatPacket(var1);
+                            EventLoopManager.this.b(var1);
                             break;
                         case 3:
-                            EventLoopManager.this.onPeerDiscoveryPacket(var1);
+                            EventLoopManager.this.c(var1);
                             break;
                         case 4:
-                            EventLoopManager.this.onCommandPacket(var1);
+                            EventLoopManager.this.d(var1);
                             break;
                         case 5:
-                            EventLoopManager.this.onTelemetryPacket();
+                            EventLoopManager.this.c();
                             break;
                         default:
-                            EventLoopManager.this.onUnknownPacket(var1);
+                            EventLoopManager.this.e(var1);
                         }
                     } catch (RobotCoreException var3) {
                         RobotLog.w("RobotCore event loop cannot process event: " + var3.toString());
@@ -503,7 +513,7 @@ public class EventLoopManager {
                     } else {
                         try {
                             RobotLog.v("Sending command: " + var2.getName() + ", attempt " + var2.getAttempts());
-                            EventLoopManager.this.socket.send(new RobocolDatagram(var2.toByteArray()));
+                            EventLoopManager.this.d.send(new RobocolDatagram(var2.toByteArray()));
                         } catch (RobotCoreException var5) {
                             RobotLog.w("Failed to send command " + var2.getName());
                             RobotLog.logStacktrace(var5);

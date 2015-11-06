@@ -6,6 +6,8 @@
 package com.qualcomm.robotcore.robocol;
 
 import com.qualcomm.robotcore.exception.RobotCoreException;
+import com.qualcomm.robotcore.robocol.RobocolParsable;
+import com.qualcomm.robotcore.robocol.RobocolParsable.MsgType;
 import com.qualcomm.robotcore.util.TypeConversion;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -16,10 +18,10 @@ import java.util.Map.Entry;
 
 public class Telemetry implements RobocolParsable {
     public static final String DEFAULT_TAG = "TELEMETRY_DATA";
-    private static final Charset utfCharSet = Charset.forName("UTF-8");
-    private final Map<String, String> stringValues = new HashMap();
-    private final Map<String, Float> numericValues = new HashMap();
-    private String tag = "";
+    private static final Charset a = Charset.forName("UTF-8");
+    private final Map<String, String> b = new HashMap();
+    private final Map<String, Float> c = new HashMap();
+    private String d = "";
     private long e = 0L;
 
     public Telemetry() {
@@ -34,45 +36,45 @@ public class Telemetry implements RobocolParsable {
     }
 
     public synchronized void setTag(String tag) {
-        this.tag = tag;
+        this.d = tag;
     }
 
     public synchronized String getTag() {
-        return this.tag.length() == 0?"TELEMETRY_DATA":this.tag;
+        return this.d.length() == 0?"TELEMETRY_DATA":this.d;
     }
 
     public synchronized void addData(String key, String msg) {
-        this.stringValues.put(key, msg);
+        this.b.put(key, msg);
     }
 
     public synchronized void addData(String key, Object msg) {
-        this.stringValues.put(key, msg.toString());
+        this.b.put(key, msg.toString());
     }
 
     public synchronized void addData(String key, float msg) {
-        this.numericValues.put(key, Float.valueOf(msg));
+        this.c.put(key, Float.valueOf(msg));
     }
 
     public synchronized void addData(String key, double msg) {
-        this.numericValues.put(key, Float.valueOf((float) msg));
+        this.c.put(key, Float.valueOf((float)msg));
     }
 
     public synchronized Map<String, String> getDataStrings() {
-        return this.stringValues;
+        return this.b;
     }
 
     public synchronized Map<String, Float> getDataNumbers() {
-        return this.numericValues;
+        return this.c;
     }
 
     public synchronized boolean hasData() {
-        return !this.stringValues.isEmpty() || !this.numericValues.isEmpty();
+        return !this.b.isEmpty() || !this.c.isEmpty();
     }
 
     public synchronized void clearData() {
         this.e = 0L;
-        this.stringValues.clear();
-        this.numericValues.clear();
+        this.b.clear();
+        this.c.clear();
     }
 
     public MsgType getRobocolMsgType() {
@@ -81,9 +83,9 @@ public class Telemetry implements RobocolParsable {
 
     public synchronized byte[] toByteArray() throws RobotCoreException {
         this.e = System.currentTimeMillis();
-        if(this.stringValues.size() > 256) {
+        if(this.b.size() > 256) {
             throw new RobotCoreException("Cannot have more than 256 string data points");
-        } else if(this.numericValues.size() > 256) {
+        } else if(this.c.size() > 256) {
             throw new RobotCoreException("Cannot have more than 256 number data points");
         } else {
             int var1 = this.a() + 8;
@@ -95,27 +97,27 @@ public class Telemetry implements RobocolParsable {
                 var3.put(this.getRobocolMsgType().asByte());
                 var3.putShort((short)var1);
                 var3.putLong(this.e);
-                if(this.tag.length() == 0) {
+                if(this.d.length() == 0) {
                     var3.put((byte)0);
                 } else {
-                    byte[] var4 = this.tag.getBytes(utfCharSet);
+                    byte[] var4 = this.d.getBytes(a);
                     if(var4.length > 256) {
-                        throw new RobotCoreException(String.format("Telemetry tag cannot exceed 256 bytes [%s]", new Object[]{this.tag}));
+                        throw new RobotCoreException(String.format("Telemetry tag cannot exceed 256 bytes [%s]", new Object[]{this.d}));
                     }
 
                     var3.put((byte)var4.length);
                     var3.put(var4);
                 }
 
-                var3.put((byte)this.stringValues.size());
-                Iterator var8 = this.stringValues.entrySet().iterator();
+                var3.put((byte)this.b.size());
+                Iterator var8 = this.b.entrySet().iterator();
 
                 Entry var5;
                 byte[] var6;
                 while(var8.hasNext()) {
                     var5 = (Entry)var8.next();
-                    var6 = ((String)var5.getKey()).getBytes(utfCharSet);
-                    byte[] var7 = ((String)var5.getValue()).getBytes(utfCharSet);
+                    var6 = ((String)var5.getKey()).getBytes(a);
+                    byte[] var7 = ((String)var5.getValue()).getBytes(a);
                     if(var6.length > 256 || var7.length > 256) {
                         throw new RobotCoreException(String.format("Telemetry elements cannot exceed 256 bytes [%s:%s]", new Object[]{var5.getKey(), var5.getValue()}));
                     }
@@ -126,12 +128,12 @@ public class Telemetry implements RobocolParsable {
                     var3.put(var7);
                 }
 
-                var3.put((byte)this.numericValues.size());
-                var8 = this.numericValues.entrySet().iterator();
+                var3.put((byte)this.c.size());
+                var8 = this.c.entrySet().iterator();
 
                 while(var8.hasNext()) {
                     var5 = (Entry)var8.next();
-                    var6 = ((String)var5.getKey()).getBytes(utfCharSet);
+                    var6 = ((String)var5.getKey()).getBytes(a);
                     float var9 = ((Float)var5.getValue()).floatValue();
                     if(var6.length > 256) {
                         throw new RobotCoreException(String.format("Telemetry elements cannot exceed 256 bytes [%s:%f]", new Object[]{var5.getKey(), Float.valueOf(var9)}));
@@ -153,11 +155,11 @@ public class Telemetry implements RobocolParsable {
         this.e = var2.getLong();
         int var3 = TypeConversion.unsignedByteToInt(var2.get());
         if(var3 == 0) {
-            this.tag = "";
+            this.d = "";
         } else {
             byte[] var4 = new byte[var3];
             var2.get(var4);
-            this.tag = new String(var4, utfCharSet);
+            this.d = new String(var4, a);
         }
 
         byte var12 = var2.get();
@@ -170,9 +172,9 @@ public class Telemetry implements RobocolParsable {
             int var8 = TypeConversion.unsignedByteToInt(var2.get());
             byte[] var9 = new byte[var8];
             var2.get(var9);
-            String var10 = new String(var7, utfCharSet);
-            String var11 = new String(var9, utfCharSet);
-            this.stringValues.put(var10, var11);
+            String var10 = new String(var7, a);
+            String var11 = new String(var9, a);
+            this.b.put(var10, var11);
         }
 
         byte var13 = var2.get();
@@ -181,30 +183,30 @@ public class Telemetry implements RobocolParsable {
             int var14 = TypeConversion.unsignedByteToInt(var2.get());
             byte[] var15 = new byte[var14];
             var2.get(var15);
-            String var16 = new String(var15, utfCharSet);
+            String var16 = new String(var15, a);
             float var17 = var2.getFloat();
-            this.numericValues.put(var16, Float.valueOf(var17));
+            this.c.put(var16, Float.valueOf(var17));
         }
 
     }
 
     private int a() {
         byte var1 = 0;
-        int var4 = var1 + 1 + this.tag.getBytes(utfCharSet).length;
+        int var4 = var1 + 1 + this.d.getBytes(a).length;
         ++var4;
 
         Iterator var2;
         Entry var3;
-        for(var2 = this.stringValues.entrySet().iterator(); var2.hasNext(); var4 += 1 + ((String)var3.getValue()).getBytes(utfCharSet).length) {
+        for(var2 = this.b.entrySet().iterator(); var2.hasNext(); var4 += 1 + ((String)var3.getValue()).getBytes(a).length) {
             var3 = (Entry)var2.next();
-            var4 += 1 + ((String)var3.getKey()).getBytes(utfCharSet).length;
+            var4 += 1 + ((String)var3.getKey()).getBytes(a).length;
         }
 
         ++var4;
 
-        for(var2 = this.numericValues.entrySet().iterator(); var2.hasNext(); var4 += 4) {
+        for(var2 = this.c.entrySet().iterator(); var2.hasNext(); var4 += 4) {
             var3 = (Entry)var2.next();
-            var4 += 1 + ((String)var3.getKey()).getBytes(utfCharSet).length;
+            var4 += 1 + ((String)var3.getKey()).getBytes(a).length;
         }
 
         return var4;
