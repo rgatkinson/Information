@@ -5,8 +5,6 @@
 
 package com.qualcomm.robotcore.eventloop.opmode;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -25,30 +23,30 @@ import java.util.Map.Entry;
 
 public class OpModeManager {
     public static final String DEFAULT_OP_MODE_NAME = "Stop Robot";
-    public static final OpMode DEFAULT_OP_MODE = new OpModeManager.a();
+    public static final OpMode DEFAULT_OP_MODE = new StopRobotOpMode();
     private Map<String, Class<?>> a = new LinkedHashMap();
     private Map<String, OpMode> b = new LinkedHashMap();
-    private String c = "Stop Robot";
-    private OpMode d;
-    private String e;
-    private HardwareMap f;
-    private HardwareMap g;
-    private OpModeManager.b h;
+    private String activeOpModeName = "Stop Robot";
+    private OpMode activeOpMode;
+    private String pendingOpModeName;
+    private HardwareMap hardwareMap;
+    private HardwareMap unusedHardwareMap;
+    private ANENUM h;
     private boolean i;
     private boolean j;
     private boolean k;
 
     public OpModeManager(HardwareMap hardwareMap) {
-        this.d = DEFAULT_OP_MODE;
-        this.e = "Stop Robot";
-        this.f = new HardwareMap();
-        this.g = new HardwareMap();
-        this.h = OpModeManager.b.a;
+        this.activeOpMode = DEFAULT_OP_MODE;
+        this.pendingOpModeName = "Stop Robot";
+        this.hardwareMap = new HardwareMap();
+        this.unusedHardwareMap = new HardwareMap();
+        this.h = OpModeManager.ANENUM.a;
         this.i = false;
         this.j = false;
         this.k = false;
-        this.f = hardwareMap;
-        this.register("Stop Robot", OpModeManager.a.class);
+        this.hardwareMap = hardwareMap;
+        this.register("Stop Robot", StopRobotOpMode.class);
         this.initActiveOpMode("Stop Robot");
     }
 
@@ -57,11 +55,11 @@ public class OpModeManager {
     }
 
     public void setHardwareMap(HardwareMap hardwareMap) {
-        this.f = hardwareMap;
+        this.hardwareMap = hardwareMap;
     }
 
     public HardwareMap getHardwareMap() {
-        return this.f;
+        return this.hardwareMap;
     }
 
     public Set<String> getOpModes() {
@@ -72,57 +70,57 @@ public class OpModeManager {
     }
 
     public String getActiveOpModeName() {
-        return this.c;
+        return this.activeOpModeName;
     }
 
     public OpMode getActiveOpMode() {
-        return this.d;
+        return this.activeOpMode;
     }
 
     public void initActiveOpMode(String name) {
-        this.e = name;
+        this.pendingOpModeName = name;
         this.i = true;
         this.j = true;
-        this.h = OpModeManager.b.a;
+        this.h = OpModeManager.ANENUM.a;
     }
 
     public void startActiveOpMode() {
-        this.h = OpModeManager.b.b;
+        this.h = OpModeManager.ANENUM.b;
         this.k = true;
     }
 
     public void stopActiveOpMode() {
-        this.d.stop();
+        this.activeOpMode.stop();
         this.initActiveOpMode("Stop Robot");
     }
 
     public void runActiveOpMode(Gamepad[] gamepads) {
-        this.d.time = this.d.getRuntime();
-        this.d.gamepad1 = gamepads[0];
-        this.d.gamepad2 = gamepads[1];
-        if(this.i) {
-            this.d.stop();
+        this.activeOpMode.time = this.activeOpMode.getRuntime();
+        this.activeOpMode.gamepad1 = gamepads[0];
+        this.activeOpMode.gamepad2 = gamepads[1];
+        if (this.i) {
+            this.activeOpMode.stop();
             this.a();
-            this.h = OpModeManager.b.a;
+            this.h = OpModeManager.ANENUM.a;
             this.j = true;
         }
 
-        if(this.h == OpModeManager.b.a) {
+        if(this.h == OpModeManager.ANENUM.a) {
             if(this.j) {
-                this.d.hardwareMap = this.f;
-                this.d.resetStartTime();
-                this.d.init();
+                this.activeOpMode.hardwareMap = this.hardwareMap;
+                this.activeOpMode.resetStartTime();
+                this.activeOpMode.init();
                 this.j = false;
             }
 
-            this.d.init_loop();
+            this.activeOpMode.init_loop();
         } else {
             if(this.k) {
-                this.d.start();
+                this.activeOpMode.start();
                 this.k = false;
             }
 
-            this.d.loop();
+            this.activeOpMode.loop();
         }
 
     }
@@ -164,16 +162,16 @@ public class OpModeManager {
     }
 
     private void a() {
-        RobotLog.i("Attempting to switch to op mode " + this.e);
+        RobotLog.i("Attempting to switch to op mode " + this.pendingOpModeName);
 
         try {
-            if(this.b.containsKey(this.e)) {
-                this.d = (OpMode)this.b.get(this.e);
+            if(this.b.containsKey(this.pendingOpModeName)) {
+                this.activeOpMode = (OpMode)this.b.get(this.pendingOpModeName);
             } else {
-                this.d = (OpMode)((Class)this.a.get(this.e)).newInstance();
+                this.activeOpMode = (OpMode)((Class)this.a.get(this.pendingOpModeName)).newInstance();
             }
 
-            this.c = this.e;
+            this.activeOpModeName = this.pendingOpModeName;
         } catch (InstantiationException var2) {
             this.a((Exception)var2);
         } catch (IllegalAccessException var3) {
@@ -188,34 +186,34 @@ public class OpModeManager {
     }
 
     private void a(Exception var1) {
-        RobotLog.e("Unable to start op mode " + this.c);
+        RobotLog.e("Unable to start op mode " + this.activeOpModeName);
         RobotLog.logStacktrace(var1);
-        this.c = "Stop Robot";
-        this.d = DEFAULT_OP_MODE;
+        this.activeOpModeName = "Stop Robot";
+        this.activeOpMode = DEFAULT_OP_MODE;
     }
 
-    private static class a extends OpMode {
-        public a() {
+    private static class StopRobotOpMode extends OpMode {
+        public StopRobotOpMode() {
         }
 
         public void init() {
-            this.a();
+            this.StopRobot();
         }
 
         public void init_loop() {
-            this.a();
+            this.StopRobot();
             this.telemetry.addData("Status", "Robot is stopped");
         }
 
         public void loop() {
-            this.a();
+            this.StopRobot();
             this.telemetry.addData("Status", "Robot is stopped");
         }
 
         public void stop() {
         }
 
-        private void a() {
+        private void StopRobot() {
             Iterator var1 = this.hardwareMap.servoController.iterator();
 
             while(var1.hasNext()) {
@@ -248,11 +246,12 @@ public class OpModeManager {
         }
     }
 
-    private static enum b {
+    private static enum ANENUM
+        {
         a,
         b;
 
-        private b() {
+        private ANENUM() {
         }
     }
 }

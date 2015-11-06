@@ -1,8 +1,7 @@
 package com.qualcomm.ftccommon;
 
 import android.content.Context;
-import com.qualcomm.ftccommon.DbgLog;
-import com.qualcomm.ftccommon.UpdateUI;
+
 import com.qualcomm.hardware.HardwareFactory;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
@@ -25,29 +24,29 @@ import java.util.Map.Entry;
 
 public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
    public static final String NO_VOLTAGE_SENSOR = "no voltage sensor found";
-   EventLoopManager a;
-   BatteryChecker b;
-   Context c;
-   ElapsedTime d = new ElapsedTime();
-   double e = 0.25D;
-   UpdateUI.Callback f;
-   HardwareFactory g;
-   HardwareMap h = new HardwareMap();
+   EventLoopManager eventLoopManager;
+   BatteryChecker batteryChecker;
+   Context context;
+   ElapsedTime elapsed = new ElapsedTime();
+   double msTelemetryTransmissionThreshold = 0.25D;
+   UpdateUI.Callback callback;
+   HardwareFactory hardwareFactory;
+   HardwareMap hardwareMap = new HardwareMap();
 
    public FtcEventLoopHandler(HardwareFactory var1, UpdateUI.Callback var2, Context var3) {
-      this.g = var1;
-      this.f = var2;
-      this.c = var3;
-      this.b = new BatteryChecker(var3, this, 180000L);
-      this.b.startBatteryMonitoring();
+      this.hardwareFactory = var1;
+      this.callback = var2;
+      this.context = var3;
+      this.batteryChecker = new BatteryChecker(var3, this, 180000L);
+      this.batteryChecker.startBatteryMonitoring();
    }
 
-   private void a() {
-      this.sendTelemetry("RobotController Battery Level", String.valueOf(this.b.getBatteryLevel()));
+   private void sendRCBatteryLevel() {
+      this.sendTelemetry("RobotController Battery Level", String.valueOf(this.batteryChecker.getBatteryLevel()));
    }
 
-   private void b() {
-      Iterator var1 = this.h.voltageSensor.iterator();
+   private void sendRobotBatteryLevel() {
+      Iterator var1 = this.hardwareMap.voltageSensor.iterator();
 
       double var2;
       double var6;
@@ -61,7 +60,7 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
       }
 
       String var4;
-      if(this.h.voltageSensor.size() == 0) {
+      if(this.hardwareMap.voltageSensor.size() == 0) {
          var4 = "no voltage sensor found";
       } else {
          var4 = String.valueOf((new BigDecimal(var2)).setScale(2, RoundingMode.HALF_UP).doubleValue());
@@ -71,21 +70,21 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
    }
 
    public void displayGamePadInfo(String var1) {
-      Gamepad[] var2 = this.a.getGamepads();
-      this.f.updateUi(var1, var2);
+      Gamepad[] var2 = this.eventLoopManager.getGamepads();
+      this.callback.updateUi(var1, var2);
    }
 
    public Gamepad[] getGamepads() {
-      return this.a.getGamepads();
+      return this.eventLoopManager.getGamepads();
    }
 
    public HardwareMap getHardwareMap() throws RobotCoreException, InterruptedException {
-      this.h = this.g.createHardwareMap(this.a);
-      return this.h;
+      this.hardwareMap = this.hardwareFactory.createHardwareMap(this.eventLoopManager);
+      return this.hardwareMap;
    }
 
    public String getOpMode(String var1) {
-      if(this.a.state != RobotState.RUNNING) {
+      if(this.eventLoopManager.state != RobotState.RUNNING) {
          var1 = "Stop Robot";
       }
 
@@ -93,52 +92,53 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
    }
 
    public void init(EventLoopManager var1) {
-      this.a = var1;
+      this.eventLoopManager = var1;
    }
 
    public void resetGamepads() {
-      this.a.resetGamepads();
+      this.eventLoopManager.resetGamepads();
    }
 
    public void restartRobot() {
-      this.b.endBatteryMonitoring();
-      this.f.restartRobot();
+      this.batteryChecker.endBatteryMonitoring();
+      this.callback.restartRobot();
    }
 
    public void sendBatteryInfo() {
-      this.a();
-      this.b();
+      this.sendRCBatteryLevel();
+      this.sendRobotBatteryLevel();
    }
 
    public void sendCommand(Command var1) {
-      this.a.sendCommand(var1);
+      this.eventLoopManager.sendCommand(var1);
    }
 
    public void sendTelemetry(String var1, String var2) {
       Telemetry var3 = new Telemetry();
       var3.setTag(var1);
       var3.addData(var1, var2);
-      if(this.a != null) {
-         this.a.sendTelemetryData(var3);
+      if(this.eventLoopManager != null) {
+         this.eventLoopManager.sendTelemetryData(var3);
          var3.clearData();
       }
 
    }
 
-   public void sendTelemetryData(Telemetry var1) {
-      if(this.d.time() > this.e) {
-         this.d.reset();
-         if(var1.hasData()) {
-            this.a.sendTelemetryData(var1);
+   /** send the *user's* telemetry data */
+   public void sendTelemetryData(Telemetry telemetry) {
+      if(this.elapsed.time() > this.msTelemetryTransmissionThreshold) {
+         this.elapsed.reset();
+         if(telemetry.hasData()) {
+            this.eventLoopManager.sendTelemetryData(telemetry);
          }
 
-         var1.clearData();
+         telemetry.clearData();
       }
 
    }
 
    public void shutdownCoreInterfaceDeviceModules() {
-      Iterator var1 = this.h.deviceInterfaceModule.entrySet().iterator();
+      Iterator var1 = this.hardwareMap.deviceInterfaceModule.entrySet().iterator();
 
       while(var1.hasNext()) {
          Entry var2 = (Entry)var1.next();
@@ -151,7 +151,7 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
    }
 
    public void shutdownLegacyModules() {
-      Iterator var1 = this.h.legacyModule.entrySet().iterator();
+      Iterator var1 = this.hardwareMap.legacyModule.entrySet().iterator();
 
       while(var1.hasNext()) {
          Entry var2 = (Entry)var1.next();
@@ -164,7 +164,7 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
    }
 
    public void shutdownMotorControllers() {
-      Iterator var1 = this.h.dcMotorController.entrySet().iterator();
+      Iterator var1 = this.hardwareMap.dcMotorController.entrySet().iterator();
 
       while(var1.hasNext()) {
          Entry var2 = (Entry)var1.next();
@@ -177,7 +177,7 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
    }
 
    public void shutdownServoControllers() {
-      Iterator var1 = this.h.servoController.entrySet().iterator();
+      Iterator var1 = this.hardwareMap.servoController.entrySet().iterator();
 
       while(var1.hasNext()) {
          Entry var2 = (Entry)var1.next();
