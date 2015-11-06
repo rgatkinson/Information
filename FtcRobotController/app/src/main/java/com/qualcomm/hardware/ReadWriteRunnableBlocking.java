@@ -38,7 +38,7 @@ public class ReadWriteRunnableBlocking extends ReadWriteRunnableStandard {
 
             while(this.blockingState == BlockingState.BLOCKING) {
                 this.blockingCondition.await(100L, TimeUnit.MILLISECONDS);
-                if(this.shutdownComplete) {
+                if (this.shutdownComplete) {
                     RobotLog.w("sync device block requested, but device is shut down - " + this.serialNumber);
                     RobotLog.setGlobalErrorMsg("There were problems communicating with a Modern Robotics USB device for an extended period of time.");
                     throw new RobotCoreException("cannot block, device is shut down");

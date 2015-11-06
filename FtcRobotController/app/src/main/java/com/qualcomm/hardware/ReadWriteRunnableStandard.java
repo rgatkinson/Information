@@ -52,7 +52,7 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
     }
 
     public void blockUntilReady() throws RobotCoreException, InterruptedException {
-        if(this.shutdownComplete) {
+        if (this.shutdownComplete) {
             RobotLog.w("sync device block requested, but device is shut down - " + this.serialNumber);
             RobotLog.setGlobalErrorMsg("There were problems communicating with a Modern Robotics USB device for an extended period of time.");
             throw new RobotCoreException("cannot block, device is shut down");

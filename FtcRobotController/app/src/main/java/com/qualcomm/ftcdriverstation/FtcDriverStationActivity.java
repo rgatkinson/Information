@@ -226,25 +226,25 @@ public class FtcDriverStationActivity extends Activity implements WifiDirectAssi
       this.setTextView(this.textTelemetry, "");
    }
 
-   protected void commandEvent(RobocolDatagram var1) {
+   protected void commandEvent(RobocolDatagram datagram) {
       try {
-         Command var2 = new Command(var1.getData());
-         if(var2.isAcknowledged()) {
-            this.pendingCommands.remove(var2);
+         Command command = new Command(datagram.getData());
+         if(command.isAcknowledged()) {
+            this.pendingCommands.remove(command);
          } else {
-            DbgLog.msg(" processing command: " + var2.getName());
-            var2.acknowledge();
-            this.pendingCommands.add(var2);
-            String var5 = var2.getName();
-            String var6 = var2.getExtra();
-            if(var5.equals("CMD_REQUEST_OP_MODE_LIST_RESP")) {
-               this.handleCommandRequestOpModeListResp(var6);
-            } else if(var5.equals("CMD_INIT_OP_MODE_RESP")) {
-               this.handleCommandInitOpModeResp(var6);
-            } else if(var5.equals("CMD_RUN_OP_MODE_RESP")) {
-               this.handleCommandStartOpModeResp(var6);
+            DbgLog.msg(" processing command: " + command.getName());
+            command.acknowledge();
+            this.pendingCommands.add(command);
+            String commandName = command.getName();
+            String extra = command.getExtra();
+            if(commandName.equals("CMD_REQUEST_OP_MODE_LIST_RESP")) {
+               this.handleCommandRequestOpModeListResp(extra);
+            } else if(commandName.equals("CMD_INIT_OP_MODE_RESP")) {
+               this.handleCommandInitOpModeResp(extra);
+            } else if(commandName.equals("CMD_RUN_OP_MODE_RESP")) {
+               this.handleCommandStartOpModeResp(extra);
             } else {
-               DbgLog.msg("Unable to process command " + var5);
+               DbgLog.msg("Unable to process command " + commandName);
             }
          }
       } catch (RobotCoreException var7) {
@@ -300,13 +300,13 @@ public class FtcDriverStationActivity extends Activity implements WifiDirectAssi
       this.uiWaitingForOpModeSelection();
    }
 
-   protected void handleCommandStartOpModeResp(String var1) {
-      DbgLog.msg("Robot Controller starting op mode: " + var1);
-      if(!var1.equals("Stop Robot")) {
+   protected void handleCommandStartOpModeResp(String opModeStarted) {
+      DbgLog.msg("Robot Controller starting op mode: " + opModeStarted);
+      if(!opModeStarted.equals("Stop Robot")) {
          this.uiWaitingForStopEvent();
       }
 
-      if(this.opModeUseTimer && !var1.equals("Stop Robot")) {
+      if(this.opModeUseTimer && !opModeStarted.equals("Stop Robot")) {
          this.opModeCountDown.start();
       }
 
@@ -650,9 +650,9 @@ public class FtcDriverStationActivity extends Activity implements WifiDirectAssi
       }
    }
 
-   protected void peerDiscoveryEvent(RobocolDatagram var1) {
-      if(!var1.getAddress().equals(this.remoteAddr)) {
-         this.remoteAddr = var1.getAddress();
+   protected void peerDiscoveryEvent(RobocolDatagram robocolDatagram) {
+      if(!robocolDatagram.getAddress().equals(this.remoteAddr)) {
+         this.remoteAddr = robocolDatagram.getAddress();
          DbgLog.msg("new remote peer discovered: " + this.remoteAddr.getHostAddress());
 
          try {

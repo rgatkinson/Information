@@ -6,8 +6,6 @@
 package com.qualcomm.robotcore.robocol;
 
 import com.qualcomm.robotcore.exception.RobotCoreException;
-import com.qualcomm.robotcore.robocol.RobocolParsable;
-import com.qualcomm.robotcore.robocol.RobocolParsable.MsgType;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.TypeConversion;
 import java.nio.BufferOverflowException;
@@ -18,8 +16,8 @@ import java.util.Comparator;
 public class Command implements RobocolParsable, Comparable<Command>, Comparator<Command> {
     public static final int MAX_COMMAND_LENGTH = 256;
     private static final Charset h = Charset.forName("UTF-8");
-    String a;
-    String b;
+    String name;
+    String extra;
     byte[] c;
     byte[] d;
     long e;
@@ -33,15 +31,15 @@ public class Command implements RobocolParsable, Comparable<Command>, Comparator
     public Command(String name, String extra) {
         this.f = false;
         this.g = 0;
-        this.a = name;
-        this.b = extra;
-        this.c = TypeConversion.stringToUtf8(this.a);
-        this.d = TypeConversion.stringToUtf8(this.b);
+        this.name = name;
+        this.extra = extra;
+        this.c = TypeConversion.stringToUtf8(this.name);
+        this.d = TypeConversion.stringToUtf8(this.extra);
         this.e = generateTimestamp();
-        if(this.c.length > 256) {
-            throw new IllegalArgumentException(String.format("command name length is too long (MAX: %d)", new Object[]{Integer.valueOf(256)}));
-        } else if(this.d.length > 256) {
-            throw new IllegalArgumentException(String.format("command extra data length is too long (MAX: %d)", new Object[]{Integer.valueOf(256)}));
+        if(this.c.length > MAX_COMMAND_LENGTH) {
+            throw new IllegalArgumentException(String.format("command name length is too long (MAX: %d)", new Object[]{Integer.valueOf(MAX_COMMAND_LENGTH)}));
+        } else if(this.d.length > MAX_COMMAND_LENGTH) {
+            throw new IllegalArgumentException(String.format("command extra data length is too long (MAX: %d)", new Object[]{Integer.valueOf(MAX_COMMAND_LENGTH)}));
         }
     }
 
@@ -60,11 +58,11 @@ public class Command implements RobocolParsable, Comparable<Command>, Comparator
     }
 
     public String getName() {
-        return this.a;
+        return this.name;
     }
 
     public String getExtra() {
-        return this.b;
+        return this.extra;
     }
 
     public byte getAttempts() {
@@ -110,21 +108,21 @@ public class Command implements RobocolParsable, Comparable<Command>, Comparator
         int var3 = TypeConversion.unsignedByteToInt(var2.get());
         this.c = new byte[var3];
         var2.get(this.c);
-        this.a = TypeConversion.utf8ToString(this.c);
+        this.name = TypeConversion.utf8ToString(this.c);
         var3 = TypeConversion.unsignedByteToInt(var2.get());
         this.d = new byte[var3];
         var2.get(this.d);
-        this.b = TypeConversion.utf8ToString(this.d);
+        this.extra = TypeConversion.utf8ToString(this.d);
     }
 
     public String toString() {
-        return String.format("command: %20d %5s %s", new Object[]{Long.valueOf(this.e), Boolean.valueOf(this.f), this.a});
+        return String.format("command: %20d %5s %s", new Object[]{Long.valueOf(this.e), Boolean.valueOf(this.f), this.name});
     }
 
     public boolean equals(Object o) {
         if(o instanceof Command) {
             Command var2 = (Command)o;
-            if(this.a.equals(var2.a) && this.e == var2.e) {
+            if(this.name.equals(var2.name) && this.e == var2.e) {
                 return true;
             }
         }
@@ -133,11 +131,11 @@ public class Command implements RobocolParsable, Comparable<Command>, Comparator
     }
 
     public int hashCode() {
-        return (int)((long)this.a.hashCode() & this.e);
+        return (int)((long)this.name.hashCode() & this.e);
     }
 
     public int compareTo(Command another) {
-        int var2 = this.a.compareTo(another.a);
+        int var2 = this.name.compareTo(another.name);
         return var2 != 0?var2:(this.e < another.e?-1:(this.e > another.e?1:0));
     }
 

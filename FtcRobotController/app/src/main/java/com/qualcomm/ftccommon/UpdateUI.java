@@ -3,19 +3,17 @@ package com.qualcomm.ftccommon;
 import android.app.Activity;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.qualcomm.ftccommon.DbgLog;
-import com.qualcomm.ftccommon.FtcRobotControllerService;
-import com.qualcomm.ftccommon.Restarter;
+
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.Dimmer;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 
 public class UpdateUI {
-   Restarter a;
-   FtcRobotControllerService b;
+   Restarter restarter;
+   FtcRobotControllerService robotControllerService;
    Activity c;
-   Dimmer d;
+   Dimmer dimmer;
    protected TextView textDeviceName;
    protected TextView textErrorMessage;
    protected TextView[] textGamepad = new TextView[2];
@@ -25,11 +23,11 @@ public class UpdateUI {
 
    public UpdateUI(Activity var1, Dimmer var2) {
       this.c = var1;
-      this.d = var2;
+      this.dimmer = var2;
    }
 
-   private void a() {
-      this.a.requestRestart();
+   private void requestRobotRestart() {
+      this.restarter.requestRestart();
    }
 
    private void a(final String var1) {
@@ -50,11 +48,11 @@ public class UpdateUI {
    }
 
    public void setControllerService(FtcRobotControllerService var1) {
-      this.b = var1;
+      this.robotControllerService = var1;
    }
 
    public void setRestarter(Restarter var1) {
-      this.a = var1;
+      this.restarter = var1;
    }
 
    public void setTextViews(TextView var1, TextView var2, TextView[] var3, TextView var4, TextView var5, TextView var6) {
@@ -83,7 +81,7 @@ public class UpdateUI {
 
                UpdateUI.this.c.runOnUiThread(new Runnable() {
                   public void run() {
-                     UpdateUI.this.a();
+                     UpdateUI.this.requestRobotRestart();
                   }
                });
             }
@@ -97,7 +95,7 @@ public class UpdateUI {
                UpdateUI.this.textRobotStatus.setText(var1);
                UpdateUI.this.textErrorMessage.setText(RobotLog.getGlobalErrorMsg());
                if(RobotLog.hasGlobalErrorMsg()) {
-                  UpdateUI.this.d.longBright();
+                  UpdateUI.this.dimmer.longBright();
                }
 
             }
@@ -133,7 +131,7 @@ public class UpdateUI {
             UpdateUI.this.a("Wifi Direct - ERROR");
             return;
          case 4:
-            WifiDirectAssistant var2 = UpdateUI.this.b.getWifiDirectAssistant();
+            WifiDirectAssistant var2 = UpdateUI.this.robotControllerService.getWifiDirectAssistant();
             UpdateUI.this.b(var2.getDeviceName());
             return;
          default:

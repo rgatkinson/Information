@@ -25,18 +25,18 @@ public class FtcEventLoop implements EventLoop {
       this.opModeRegister = var2;
    }
 
-   private void a() {
+   private void doRestartRebot() {
       this.ftcEventLoopHandler.restartRobot();
    }
 
-   private void a(String var1) {
-      String var2 = this.ftcEventLoopHandler.getOpMode(var1);
+   private void doInitOpMode(String opModeName) {
+      String opModeToInit = this.ftcEventLoopHandler.getOpMode(opModeName);
       this.ftcEventLoopHandler.resetGamepads();
-      this.opModeManager.initActiveOpMode(var2);
-      this.ftcEventLoopHandler.sendCommand(new Command("CMD_INIT_OP_MODE_RESP", var2));
+      this.opModeManager.initActiveOpMode(opModeToInit);
+      this.ftcEventLoopHandler.sendCommand(new Command("CMD_INIT_OP_MODE_RESP", opModeToInit));
    }
 
-   private void b() {
+   private void sendOpModeList() {
       String var1 = "";
       Iterator var2 = this.opModeManager.getOpModes().iterator();
 
@@ -54,7 +54,7 @@ public class FtcEventLoop implements EventLoop {
       this.ftcEventLoopHandler.sendCommand(new Command("CMD_REQUEST_OP_MODE_LIST_RESP", var1));
    }
 
-   private void c() {
+   private void doRunOpMode() {
       this.opModeManager.startActiveOpMode();
       this.ftcEventLoopHandler.sendCommand(new Command("CMD_RUN_OP_MODE_RESP", this.opModeManager.getActiveOpModeName()));
    }
@@ -81,21 +81,21 @@ public class FtcEventLoop implements EventLoop {
       this.ftcEventLoopHandler.sendTelemetryData(this.opModeManager.getActiveOpMode().telemetry);
    }
 
-   public void processCommand(Command var1) {
-      DbgLog.msg("Processing Command: " + var1.getName() + " " + var1.getExtra());
+   public void processCommand(Command command) {
+      DbgLog.msg("Processing Command: " + command.getName() + " " + command.getExtra());
       this.ftcEventLoopHandler.sendBatteryInfo();
-      String var2 = var1.getName();
-      String var3 = var1.getExtra();
-      if(var2.equals("CMD_RESTART_ROBOT")) {
-         this.a();
-      } else if(var2.equals("CMD_REQUEST_OP_MODE_LIST")) {
-         this.b();
-      } else if(var2.equals("CMD_INIT_OP_MODE")) {
-         this.a(var3);
-      } else if(var2.equals("CMD_RUN_OP_MODE")) {
-         this.c();
+      String commandName = command.getName();
+      String opModeName = command.getExtra();
+      if(commandName.equals("CMD_RESTART_ROBOT")) {
+         this.doRestartRebot();
+      } else if(commandName.equals("CMD_REQUEST_OP_MODE_LIST")) {
+         this.sendOpModeList();
+      } else if(commandName.equals("CMD_INIT_OP_MODE")) {
+         this.doInitOpMode(opModeName);
+      } else if(commandName.equals("CMD_RUN_OP_MODE")) {
+         this.doRunOpMode();
       } else {
-         DbgLog.msg("Unknown command: " + var2);
+         DbgLog.msg("Unknown command: " + commandName);
       }
    }
 

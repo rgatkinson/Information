@@ -83,12 +83,12 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
       return this.hardwareMap;
    }
 
-   public String getOpMode(String var1) {
-      if(this.eventLoopManager.state != RobotState.RUNNING) {
-         var1 = "Stop Robot";
+   public String getOpMode(String proposedOpMode) {
+      if (this.eventLoopManager.state != RobotState.RUNNING) {
+         proposedOpMode = "Stop Robot";
       }
 
-      return var1;
+      return proposedOpMode;
    }
 
    public void init(EventLoopManager var1) {
@@ -109,17 +109,17 @@ public class FtcEventLoopHandler implements BatteryChecker.BatteryWatcher {
       this.sendRobotBatteryLevel();
    }
 
-   public void sendCommand(Command var1) {
-      this.eventLoopManager.sendCommand(var1);
+   public void sendCommand(Command command) {
+      this.eventLoopManager.sendCommand(command);
    }
 
-   public void sendTelemetry(String var1, String var2) {
-      Telemetry var3 = new Telemetry();
-      var3.setTag(var1);
-      var3.addData(var1, var2);
+   public void sendTelemetry(String tag, String data) {
+      Telemetry telemetry = new Telemetry();
+      telemetry.setTag(tag);
+      telemetry.addData(tag, data);
       if(this.eventLoopManager != null) {
-         this.eventLoopManager.sendTelemetryData(var3);
-         var3.clearData();
+         this.eventLoopManager.sendTelemetryData(telemetry);
+         telemetry.clearData();
       }
 
    }

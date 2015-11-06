@@ -66,7 +66,7 @@ import javax.net.ssl.X509TrustManager;
 public class Analytics extends BroadcastReceiver {
     public static final String UUID_PATH = ".analytics_id";
     public static final String DATA_COLLECTION_PATH = ".ftcdc";
-    static String a = "https://ftcdc.qualcomm.com/DataApi";
+    static String URLAnalyticsBaseAPI = "https://ftcdc.qualcomm.com/DataApi";
     public static final String RC_COMMAND_STRING = "update_rc";
     public static final String DS_COMMAND_STRING = "update_ds";
     public static final String EXTERNAL_STORAGE_DIRECTORY_PATH = Environment.getExternalStorageDirectory() + "/";
@@ -74,18 +74,18 @@ public class Analytics extends BroadcastReceiver {
     public static final String MAX_DEVICES = "max_usb_devices";
     public static int MAX_ENTRIES_SIZE = 100;
     public static int TRIMMED_SIZE = 90;
-    private static final Charset m = Charset.forName("UTF-8");
-    static long b;
+    private static final Charset utf8CharSet = Charset.forName("UTF-8");
+    static long msStartupTime;
     static UUID c = null;
     static String d;
-    String e;
-    static String f = "";
-    Context g;
-    SharedPreferences h;
+    String commandString;
+    static String libraryVersion = "";
+    Context context;
+    SharedPreferences sharedPreferences;
     boolean i = false;
     long j = 0L;
     int k = 0;
-    static final HostnameVerifier l = new HostnameVerifier() {
+    static final HostnameVerifier hostNameVerifier = new HostnameVerifier() {
         public boolean verify(String hostname, SSLSession session) {
             return true;
         }
@@ -101,31 +101,30 @@ public class Analytics extends BroadcastReceiver {
                 this.communicateWithServer();
             }
         }
-
     }
 
     public void unregister() {
-        this.g.unregisterReceiver(this);
+        this.context.unregisterReceiver(this);
     }
 
     public void register() {
-        this.g.registerReceiver(this, new IntentFilter("android.net.wifi.STATE_CHANGE"));
+        this.context.registerReceiver(this, new IntentFilter("android.net.wifi.STATE_CHANGE"));
     }
 
     public Analytics(Context context, String commandString, HardwareMap map) {
-        this.g = context;
-        this.e = commandString;
+        this.context = context;
+        this.commandString = commandString;
 
         try {
             try {
-                this.h = PreferenceManager.getDefaultSharedPreferences(context);
-                b = System.currentTimeMillis();
-                f = Version.getLibraryVersion();
+                this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+                msStartupTime = System.currentTimeMillis();
+                libraryVersion = Version.getLibraryVersion();
                 this.handleUUID(".analytics_id");
                 int var4 = this.calculateUsbDevices(map);
-                int var5 = this.h.getInt("max_usb_devices", this.k);
+                int var5 = this.sharedPreferences.getInt("max_usb_devices", this.k);
                 if(var5 < var4) {
-                    Editor var6 = this.h.edit();
+                    Editor var6 = this.sharedPreferences.edit();
                     var6.putInt("max_usb_devices", var4);
                     var6.apply();
                 }
@@ -181,17 +180,16 @@ public class Analytics extends BroadcastReceiver {
     }
 
     protected void handleData() throws IOException, ClassNotFoundException {
-        String var1 = EXTERNAL_STORAGE_DIRECTORY_PATH + ".ftcdc";
-        File var2 = new File(var1);
-        if(!var2.exists()) {
-            this.createInitialFile(var1);
+        String fileName = EXTERNAL_STORAGE_DIRECTORY_PATH + ".ftcdc";
+        File file = new File(fileName);
+        if(!file.exists()) {
+            this.createInitialFile(fileName);
         } else {
-            ArrayList var3 = this.updateExistingFile(var1, getDateFromTime(b));
-            if(var3.size() >= MAX_ENTRIES_SIZE) {
-                this.trimEntries(var3);
+            ArrayList infos = this.updateExistingFile(fileName, getDateFromTime(msStartupTime));
+            if(infos.size() >= MAX_ENTRIES_SIZE) {
+                this.trimEntries(infos);
             }
-
-            this.writeObjectsToFile(var1, var3);
+            this.writeObjectsToFile(fileName, infos);
         }
 
     }
@@ -201,16 +199,15 @@ public class Analytics extends BroadcastReceiver {
     }
 
     protected ArrayList<Analytics.DataInfo> updateExistingFile(String filepath, String date) throws ClassNotFoundException, IOException {
-        ArrayList var3 = this.readObjectsFromFile(filepath);
-        Analytics.DataInfo var4 = (Analytics.DataInfo)var3.get(var3.size() - 1);
-        if(var4.a.equalsIgnoreCase(date)) {
-            ++var4.numUsages;
+        ArrayList infos = this.readObjectsFromFile(filepath);
+        Analytics.DataInfo lastInfo = (Analytics.DataInfo)infos.get(infos.size() - 1);
+        if(lastInfo.date.equalsIgnoreCase(date)) {
+            ++lastInfo.numUsages;
         } else {
             Analytics.DataInfo var5 = new Analytics.DataInfo(date, 1);
-            var3.add(var5);
+            infos.add(var5);
         }
-
-        return var3;
+        return infos;
     }
 
     protected ArrayList<Analytics.DataInfo> readObjectsFromFile(String filepath) throws IOException, ClassNotFoundException {
@@ -233,15 +230,15 @@ public class Analytics extends BroadcastReceiver {
     }
 
     protected void createInitialFile(String filepath) throws IOException {
-        Analytics.DataInfo var2 = new Analytics.DataInfo(getDateFromTime(b), 1);
-        ArrayList var3 = new ArrayList();
-        var3.add(var2);
-        this.writeObjectsToFile(filepath, var3);
+        Analytics.DataInfo info = new Analytics.DataInfo(getDateFromTime(msStartupTime), 1);
+        ArrayList infos = new ArrayList();
+        infos.add(info);
+        this.writeObjectsToFile(filepath, infos);
     }
 
     private void a() {
         RobotLog.i("Analytics is starting with a clean slate.");
-        Editor var1 = this.h.edit();
+        Editor var1 = this.sharedPreferences.edit();
         var1.putLong("last_upload_date", this.j);
         var1.apply();
         var1.putInt("max_usb_devices", 0);
@@ -254,8 +251,8 @@ public class Analytics extends BroadcastReceiver {
     }
 
     public void communicateWithServer() {
-        String[] var1 = new String[]{a};
-        (new Analytics.a(null)).execute((Object[])var1);
+        String[] var1 = new String[]{URLAnalyticsBaseAPI};
+        (new AsyncAnalyticsTask(null)).execute((Object[])var1);
     }
 
     public static void setApplicationName(String name) {
@@ -330,7 +327,6 @@ public class Analytics extends BroadcastReceiver {
             }
 
         }
-
     }
 
     public static String getDateFromTime(long time) {
@@ -344,8 +340,8 @@ public class Analytics extends BroadcastReceiver {
     }
 
     public String updateStats(String user, ArrayList<Analytics.DataInfo> dateInfo, String commandString) {
-        int var4 = this.h.getInt("max_usb_devices", this.k);
-        String var5 = this.a("cmd", "=", commandString) + "&" + this.a("uuid", "=", user) + "&" + this.a("device_hw", "=", Build.MANUFACTURER) + "&" + this.a("device_ver", "=", Build.MODEL) + "&" + this.a("chip_type", "=", this.b()) + "&" + this.a("sw_ver", "=", f) + "&" + this.a("max_dev", "=", String.valueOf(var4)) + "&";
+        int var4 = this.sharedPreferences.getInt("max_usb_devices", this.k);
+        String var5 = this.encode("cmd", "=", commandString) + "&" + this.encode("uuid", "=", user) + "&" + this.encode("device_hw", "=", Build.MANUFACTURER) + "&" + this.encode("device_ver", "=", Build.MODEL) + "&" + this.encode("chip_type", "=", this.b()) + "&" + this.encode("sw_ver", "=", libraryVersion) + "&" + this.encode("max_dev", "=", String.valueOf(var4)) + "&";
         String var6 = "";
 
         for(int var7 = 0; var7 < dateInfo.size(); ++var7) {
@@ -353,19 +349,19 @@ public class Analytics extends BroadcastReceiver {
                 var6 = var6 + ",";
             }
 
-            var6 = var6 + this.a(((Analytics.DataInfo)dateInfo.get(var7)).date(), ",", String.valueOf(((Analytics.DataInfo)dateInfo.get(var7)).numUsages()));
+            var6 = var6 + this.encode(((Analytics.DataInfo) dateInfo.get(var7)).date(), ",", String.valueOf(((Analytics.DataInfo) dateInfo.get(var7)).numUsages()));
         }
 
-        var5 = var5 + this.a("dc", "=", "");
+        var5 = var5 + this.encode("dc", "=", "");
         var5 = var5 + var6;
         return var5;
     }
 
-    private String a(String var1, String var2, String var3) {
+    private String encode(String var1, String var2, String var3) {
         String var4 = "";
 
         try {
-            var4 = URLEncoder.encode(var1, m.name()) + var2 + URLEncoder.encode(var3, m.name());
+            var4 = URLEncoder.encode(var1, utf8CharSet.name()) + var2 + URLEncoder.encode(var3, utf8CharSet.name());
         } catch (UnsupportedEncodingException var6) {
             RobotLog.i("Analytics caught an UnsupportedEncodingException");
         }
@@ -416,7 +412,7 @@ public class Analytics extends BroadcastReceiver {
     }
 
     public boolean isConnected() {
-        ConnectivityManager var1 = (ConnectivityManager)this.g.getSystemService("connectivity");
+        ConnectivityManager var1 = (ConnectivityManager)this.context.getSystemService("connectivity");
         NetworkInfo var2 = var1.getActiveNetworkInfo();
         return var2 != null && var2.isConnected();
     }
@@ -435,25 +431,25 @@ public class Analytics extends BroadcastReceiver {
                 if(url.getProtocol().toLowerCase().equals("https")) {
                     c();
                     HttpsURLConnection var6 = (HttpsURLConnection)url.openConnection();
-                    var6.setHostnameVerifier(l);
+                    var6.setHostnameVerifier(hostNameVerifier);
                     var5 = var6;
                 } else {
                     var5 = (HttpURLConnection)url.openConnection();
                 }
 
                 ((HttpURLConnection)var5).setDoOutput(true);
-                OutputStreamWriter var7 = new OutputStreamWriter(((HttpURLConnection)var5).getOutputStream());
-                var7.write(data);
-                var7.flush();
-                var7.close();
-                BufferedReader var10 = new BufferedReader(new InputStreamReader(((HttpURLConnection)var5).getInputStream()));
+                OutputStreamWriter writer = new OutputStreamWriter(((HttpURLConnection)var5).getOutputStream());
+                writer.write(data);
+                writer.flush();
+                writer.close();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(((HttpURLConnection)var5).getInputStream()));
 
                 String var8;
-                for(var4 = new String(); (var8 = var10.readLine()) != null; var4 = var4 + var8) {
+                for(var4 = new String(); (var8 = reader.readLine()) != null; var4 = var4 + var8) {
                     ;
                 }
 
-                var10.close();
+                reader.close();
                 RobotLog.i("Analytics took: " + (System.currentTimeMillis() - var2) + "ms");
             } catch (IOException var9) {
                 RobotLog.i("Analytics Failed to process command.");
@@ -486,20 +482,20 @@ public class Analytics extends BroadcastReceiver {
 
     }
 
-    private class a extends AsyncTask {
-        private a() {
+    private class AsyncAnalyticsTask extends AsyncTask {
+        private AsyncAnalyticsTask() {
         }
 
         protected Object doInBackground(Object[] params) {
             if(Analytics.this.isConnected()) {
                 try {
-                    URL var2 = null;
-                    var2 = new URL(Analytics.a);
-                    long var3 = Analytics.this.h.getLong("last_upload_date", Analytics.this.j);
-                    if(!Analytics.getDateFromTime(Analytics.b).equals(Analytics.getDateFromTime(var3))) {
+                    URL baseURL = null;
+                    baseURL = new URL(Analytics.URLAnalyticsBaseAPI);
+                    long var3 = Analytics.this.sharedPreferences.getLong("last_upload_date", Analytics.this.j);
+                    if(!Analytics.getDateFromTime(Analytics.msStartupTime).equals(Analytics.getDateFromTime(var3))) {
                         label53: {
-                            String var5 = Analytics.this.a("cmd", "=", "ping");
-                            String var6 = Analytics.ping(var2, var5);
+                            String var5 = Analytics.this.encode("cmd", "=", "ping");
+                            String var6 = Analytics.ping(baseURL, var5);
                             String var7 = "\"rc\": \"OK\"";
                             if(var6 != null && var6.contains(var7)) {
                                 RobotLog.i("Analytics ping succeeded.");
@@ -509,12 +505,12 @@ public class Analytics extends BroadcastReceiver {
                                     Analytics.this.trimEntries(var9);
                                 }
 
-                                String var10 = Analytics.this.updateStats(Analytics.c.toString(), var9, Analytics.this.e);
-                                String var11 = Analytics.call(var2, var10);
+                                String var10 = Analytics.this.updateStats(Analytics.c.toString(), var9, Analytics.this.commandString);
+                                String var11 = Analytics.call(baseURL, var10);
                                 if(var11 != null && var11.contains(var7)) {
                                     RobotLog.i("Analytics: Upload succeeded.");
-                                    Editor var12 = Analytics.this.h.edit();
-                                    var12.putLong("last_upload_date", Analytics.b);
+                                    Editor var12 = Analytics.this.sharedPreferences.edit();
+                                    var12.putLong("last_upload_date", Analytics.msStartupTime);
                                     var12.apply();
                                     var12.putInt("max_usb_devices", 0);
                                     var12.apply();
@@ -549,16 +545,16 @@ public class Analytics extends BroadcastReceiver {
     }
 
     public static class DataInfo implements Serializable {
-        private final String a;
+        private final String date;
         protected int numUsages;
 
         public DataInfo(String adate, int numUsages) {
-            this.a = adate;
+            this.date = adate;
             this.numUsages = numUsages;
         }
 
         public String date() {
-            return this.a;
+            return this.date;
         }
 
         public int numUsages() {
