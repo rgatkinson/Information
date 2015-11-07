@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.SystemClock;
@@ -41,6 +42,7 @@ import com.qualcomm.robotcore.robocol.Heartbeat;
 import com.qualcomm.robotcore.robocol.PeerDiscoveryManager;
 import com.qualcomm.robotcore.robocol.RobocolDatagram;
 import com.qualcomm.robotcore.robocol.RobocolDatagramSocket;
+import com.qualcomm.robotcore.robocol.RobocolParsable;
 import com.qualcomm.robotcore.robocol.Telemetry;
 import com.qualcomm.robotcore.robot.RobotState;
 import com.qualcomm.robotcore.util.BatteryChecker;
@@ -312,12 +314,37 @@ public class FtcDriverStationActivity extends Activity implements WifiDirectAssi
 
    }
 
-   protected void handleGamepadEvent(KeyEvent param1) {
-      // $FF: Couldn't be decompiled
+   protected void handleGamepadEvent(KeyEvent keyEvent) {
+        synchronized (this) {
+            if (!this.gamepads.containsKey(keyEvent.getDeviceId())) {
+                this.gamepads.put(keyEvent.getDeviceId(), new Gamepad());
+            }
+            final Gamepad gamepad = this.gamepads.get(keyEvent.getDeviceId());
+            gamepad.update(keyEvent);
+            this.indicateGamepad((InputEvent)keyEvent);
+            if (gamepad.start && (gamepad.a || gamepad.b)) {
+                int n = -1;
+                if (gamepad.a) {
+                    n = 1;
+                    this.setVisibility((View)this.userIcon_1_base, 0);
+                }
+                if (gamepad.b) {
+                    n = 2;
+                    this.setVisibility((View)this.userIcon_2_base, 0);
+                }
+                this.assignNewGamepad(n, keyEvent.getDeviceId());
+            }
+        }
    }
 
-   protected void handleGamepadEvent(MotionEvent param1) {
-      // $FF: Couldn't be decompiled
+   protected void handleGamepadEvent(MotionEvent motionEvent) {
+        synchronized (this) {
+            final Gamepad gamepad = this.gamepads.get(motionEvent.getDeviceId());
+            if (gamepad != null) {
+                gamepad.update(motionEvent);
+                this.indicateGamepad((InputEvent)motionEvent);
+            }
+        }
    }
 
    protected void handleOpModeInit() {
@@ -634,8 +661,67 @@ public class FtcDriverStationActivity extends Activity implements WifiDirectAssi
       RobotLog.cancelWriteLogcatToDisk(this);
    }
 
-   public void onWifiDirectEvent(WifiDirectAssistant.Event param1) {
-      // $FF: Couldn't be decompiled
+   public void onWifiDirectEvent(final WifiDirectAssistant.Event event) {
+        switch (FtcDriverStationActivity.FtcDriverStationActivity$14.$SwitchMap$com$qualcomm$robotcore$wifi$event[event.ordinal()]) {
+            case 1: {
+                if (this.wifiDirect.getConnectStatus() != WifiDirectAssistant$ConnectStatus.CONNECTED && this.wifiDirect.getConnectStatus() != WifiDirectAssistant$ConnectStatus.CONNECTING) {
+                    if (this.groupOwnerMac.equals(this.getString(2131361883))) {
+                        this.wifiDirectStatus("Not Paired");
+                    }
+                    else {
+                        this.wifiDirectStatus("Searching");
+                    }
+                    for (final WifiP2pDevice wifiP2pDevice : this.wifiDirect.getPeers()) {
+                        if (wifiP2pDevice.deviceAddress.equalsIgnoreCase(this.groupOwnerMac)) {
+                            this.wifiDirect.connect(wifiP2pDevice);
+                            return;
+                        }
+                    }
+                    break;
+                }
+                break;
+            }
+            case 2: {
+                DbgLog.error("Wifi Direct - connected as Group Owner, was expecting Peer");
+                this.wifiDirectStatus("Error: Connected as Group Owner");
+                this.startActivity(new Intent(this.getBaseContext(), (Class)ConfigWifiDirectActivity.class));
+            }
+            case 3: {
+                this.wifiDirectStatus("Connecting");
+                this.wifiDirect.cancelDiscoverPeers();
+            }
+            case 4: {
+                this.wifiDirect.cancelDiscoverPeers();
+                this.wifiDirectStatus("Connected");
+            }
+            case 5: {
+                this.wifiDirectStatus(this.wifiDirect.getGroupOwnerName());
+                this.displayDeviceName(this.wifiDirect.getDeviceName());
+                if (!this.groupOwnerMac.equalsIgnoreCase(this.wifiDirect.getGroupOwnerMacAddress())) {
+                    DbgLog.error("Wifi Direct - connected to " + this.wifiDirect.getGroupOwnerMacAddress() + ", expected " + this.groupOwnerMac);
+                    this.wifiDirectStatus("Error: Connected to wrong device");
+                    this.startActivity(new Intent(this.getBaseContext(), (Class)ConfigWifiDirectActivity.class));
+                    return;
+                }
+                synchronized (this) {
+                    if (this.wifiDirect.isConnected() && this.setupNeeded) {
+                        this.setupNeeded = false;
+                        new Thread((Runnable)new FtcDriverStationActivity.SetupRunnable(this, (FtcDriverStationActivity.FtcDriverStationActivity$1)null)).start();
+                    }
+                    return;
+                }
+            }
+            case 6: {
+                this.wifiDirectStatus("Disconnected");
+                DbgLog.msg("Wifi Direct - " + "Disconnected");
+                this.wifiDirect.discoverPeers();
+            }
+            case 7: {
+                final String string = "Error: " + this.wifiDirect.getFailureReason();
+                this.wifiDirectStatus(string);
+                DbgLog.msg("Wifi Direct - " + string);
+            }
+        }
    }
 
    public void onWindowFocusChanged(boolean var1) {
@@ -1033,8 +1119,50 @@ public class FtcDriverStationActivity extends Activity implements WifiDirectAssi
       }
 
       public void run() {
-         // $FF: Couldn't be decompiled
-      }
+         try {
+            final long uptimeMillis = SystemClock.uptimeMillis();
+            if (lastRecvPacket.time() > 2.0) {
+                if (clientConnected) {
+                    assumeClientDisconnect();
+                }
+                return;
+            }
+            else {
+                if (heartbeatSend.getElapsedTime() > 0.1) {
+                    heartbeatSend = new Heartbeat();
+                    socket.send(new RobocolDatagram((RobocolParsable)heartbeatSend));
+                }
+                for (final Map.Entry<Integer, V> entry : userToGamepadMap.entrySet()) {
+                    final int intValue = entry.getKey();
+                    final Gamepad gamepad = gamepads.get((int)entry.getValue());
+                    gamepad.user = (byte)intValue;
+                    if (uptimeMillis - gamepad.timestamp <= 1000L || !gamepad.atRest()) {
+                        socket.send(new RobocolDatagram((RobocolParsable)gamepad));
+                    }
+                }
+            }
+        }
+        catch (RobotCoreException ex) {
+            ex.printStackTrace();
+            return;
+        }
+        final Iterator<Command> iterator2 = (Iterator<Command>)pendingCommands.iterator();
+        while (iterator2.hasNext()) {
+            final Command command = iterator2.next();
+            if (command.getAttempts() > 10) {
+                showToast(String.format("Giving up on command %s after %d attempts", command.getName(), 10), 0);
+                iterator2.remove();
+            }
+            else {
+                if (!command.isAcknowledged()) {
+                    DbgLog.msg("    sending command: " + command.getName() + ", attempt: " + command.getAttempts());
+                }
+                socket.send(new RobocolDatagram((RobocolParsable)command));
+                if (!command.isAcknowledged()) {
+                    continue;
+                }
+                pendingCommands.remove(command);
+            }      }
    }
 
    private class SetupRunnable implements Runnable {
