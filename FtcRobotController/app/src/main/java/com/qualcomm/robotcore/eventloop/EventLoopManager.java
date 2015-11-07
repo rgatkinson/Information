@@ -37,7 +37,7 @@ public class EventLoopManager {
     private Thread scheduledSendsThread;
     private final RobocolDatagramSocket socket;
     private boolean receivingProhibited;
-    private ElapsedTime elapsedTime;
+    private ElapsedTime elapsedSinceHeartbeatReceived;
     private EventLoop eventLoop;
     private final Gamepad[] gamepads;
     private Heartbeat heartbeat;
@@ -62,7 +62,7 @@ public class EventLoopManager {
         this.eventLoopThread = new Thread();
         this.scheduledSendsThread = new Thread();
         this.receivingProhibited = false;
-        this.elapsedTime = new ElapsedTime();
+        this.elapsedSinceHeartbeatReceived = new ElapsedTime();
         this.eventLoop = nullEventLoop;
         this.gamepads = new Gamepad[]{new Gamepad(), new Gamepad()};
         this.heartbeat = new Heartbeat(Token.EMPTY);
@@ -183,7 +183,7 @@ public class EventLoopManager {
             throw new RobotCoreException("Robot failed to start: " + var3.getMessage());
         }
 
-        this.elapsedTime = new ElapsedTime(0L);
+        this.elapsedSinceHeartbeatReceived = new ElapsedTime(0L);
         this.reportRobotStatus(RobotState.RUNNING);
         this.eventLoopThread = new Thread(new EventLoopRunnable((EventLoopManager.SyntheticClass_1)null), "Event Loop");
         this.eventLoopThread.start();
@@ -234,14 +234,14 @@ public class EventLoopManager {
         }
     }
 
-    private void onHeartbeatDatagram(RobocolDatagram datagram) throws RobotCoreException {
-        Heartbeat var2 = new Heartbeat(Token.EMPTY);
-        var2.fromByteArray(datagram.getData());
-        var2.setRobotState(this.state);
-        datagram.setData(var2.toByteArray());
+    private void onHeartbeatDatagramReceived(RobocolDatagram datagram) throws RobotCoreException {
+        Heartbeat incomingHeartbeat = new Heartbeat(Token.EMPTY);
+        incomingHeartbeat.fromByteArray(datagram.getData());
+        incomingHeartbeat.setRobotState(this.state);
+        datagram.setData(incomingHeartbeat.toByteArray());
         this.socket.send(datagram);
-        this.elapsedTime.reset();
-        this.heartbeat = var2;
+        this.elapsedSinceHeartbeatReceived.reset();
+        this.heartbeat = incomingHeartbeat;
     }
 
     private void onConnectionDatagram(RobocolDatagram datagram) throws RobotCoreException {
@@ -357,26 +357,26 @@ public class EventLoopManager {
             RobotLog.v("EventLoopRunnable has started");
 
             try {
-                ElapsedTime elapsed = new ElapsedTime();
+                ElapsedTime elapsedEventLoop = new ElapsedTime();
                 double sMinLoopInterval = 0.001D;
                 long msLoopIntervalStep = 5L;
 
-                while(!Thread.interrupted()) {
-                    while (elapsed.time() < sMinLoopInterval) {
+                while (!Thread.interrupted()) {
+                    while (elapsedEventLoop.time() < sMinLoopInterval) {
                         Thread.sleep(msLoopIntervalStep);
                     }
 
-                    elapsed.reset();
+                    elapsedEventLoop.reset();
                     if(RobotLog.hasGlobalErrorMsg()) {
                         EventLoopManager.this.buildAndSendTelemetry("SYSTEM_TELEMETRY", RobotLog.getGlobalErrorMsg());
                     }
 
-                    if(EventLoopManager.this.elapsedTime.startTime() == 0.0D) {
+                    if(EventLoopManager.this.elapsedSinceHeartbeatReceived.startTime() == 0.0D) {
                         Thread.sleep(500L);
-                    } else if(EventLoopManager.this.elapsedTime.time() > 2.0D) {
+                    } else if(EventLoopManager.this.elapsedSinceHeartbeatReceived.time() > 2.0D) {
                         EventLoopManager.this.handleDroppedConnection();
                         EventLoopManager.this.currentPeerAddressAndPort = null;
-                        EventLoopManager.this.elapsedTime = new ElapsedTime(0L);
+                        EventLoopManager.this.elapsedSinceHeartbeatReceived = new ElapsedTime(0L);
                     }
 
                     Iterator syncdDeviceIterator = EventLoopManager.this.syncdDevices.iterator();
@@ -468,7 +468,7 @@ public class EventLoopManager {
                             EventLoopManager.this.onGamepadDatagram(datagram);
                             break;
                         case 2:
-                            EventLoopManager.this.onHeartbeatDatagram(datagram);
+                            EventLoopManager.this.onHeartbeatDatagramReceived(datagram);
                             break;
                         case 3:
                             EventLoopManager.this.onConnectionDatagram(datagram);

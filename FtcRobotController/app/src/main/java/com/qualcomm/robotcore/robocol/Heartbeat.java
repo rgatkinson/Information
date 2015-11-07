@@ -1,7 +1,6 @@
 package com.qualcomm.robotcore.robocol;
 
 import com.qualcomm.robotcore.exception.RobotCoreException;
-import com.qualcomm.robotcore.robocol.RobocolParsable;
 import com.qualcomm.robotcore.robot.RobotState;
 import com.qualcomm.robotcore.util.RobotLog;
 import java.nio.BufferOverflowException;
@@ -12,22 +11,22 @@ public class Heartbeat implements RobocolParsable {
    public static final short MAX_SEQUENCE_NUMBER = 10000;
    public static final short PAYLOAD_SIZE = 11;
    private static short a = 0;
-   private long b;
-   private short c;
-   private RobotState d;
+   private long timeStamp;
+   private short sequenceNumber;
+   private RobotState robotState;
 
    public Heartbeat() {
-      this.c = a();
-      this.b = System.nanoTime();
-      this.d = RobotState.NOT_STARTED;
+      this.sequenceNumber = a();
+      this.timeStamp = System.nanoTime();
+      this.robotState = RobotState.NOT_STARTED;
    }
 
    public Heartbeat(Heartbeat.Token var1) {
       switch(null.a[var1.ordinal()]) {
       case 1:
-         this.c = 0;
-         this.b = 0L;
-         this.d = RobotState.NOT_STARTED;
+         this.sequenceNumber = 0;
+         this.timeStamp = 0L;
+         this.robotState = RobotState.NOT_STARTED;
          return;
       default:
       }
@@ -49,19 +48,19 @@ public class Heartbeat implements RobocolParsable {
       return var1;
    }
 
-   public void fromByteArray(byte[] var1) throws RobotCoreException {
-      if(var1.length < 14) {
-         throw new RobotCoreException("Expected buffer of at least 14 bytes, received " + var1.length);
+   public void fromByteArray(byte[] bytes) throws RobotCoreException {
+      if(bytes.length < 14) {
+         throw new RobotCoreException("Expected buffer of at least 14 bytes, received " + bytes.length);
       } else {
-         ByteBuffer var2 = ByteBuffer.wrap(var1, 3, 11);
-         this.c = var2.getShort();
-         this.b = var2.getLong();
-         this.d = RobotState.fromByte(var2.get());
+         ByteBuffer buffer = ByteBuffer.wrap(bytes, 3, 11);
+         this.sequenceNumber = buffer.getShort();
+         this.timeStamp = buffer.getLong();
+         this.robotState = RobotState.fromByte(buffer.get());
       }
    }
 
    public double getElapsedTime() {
-      return (double)(System.nanoTime() - this.b) / 1.0E9D;
+      return (double)(System.nanoTime() - this.timeStamp) / 1.0E9D;
    }
 
    public RobocolParsable.MsgType getRobocolMsgType() {
@@ -69,40 +68,39 @@ public class Heartbeat implements RobocolParsable {
    }
 
    public byte getRobotState() {
-      return this.d.asByte();
+      return this.robotState.asByte();
    }
 
    public short getSequenceNumber() {
-      return this.c;
+      return this.sequenceNumber;
    }
 
    public long getTimestamp() {
-      return this.b;
+      return this.timeStamp;
    }
 
-   public void setRobotState(RobotState var1) {
-      this.d = var1;
+   public void setRobotState(RobotState state) {
+      this.robotState = state;
    }
 
    public byte[] toByteArray() throws RobotCoreException {
-      ByteBuffer var1 = ByteBuffer.allocate(14);
+      ByteBuffer buffer = ByteBuffer.allocate(14);
 
       try {
-         var1.put(this.getRobocolMsgType().asByte());
-         var1.putShort((short)11);
-         var1.putShort(this.c);
-         var1.putLong(this.b);
-         var1.put(this.d.asByte());
+         buffer.put(this.getRobocolMsgType().asByte());
+         buffer.putShort((short) 11);
+         buffer.putShort(this.sequenceNumber);
+         buffer.putLong(this.timeStamp);
+         buffer.put(this.robotState.asByte());
       } catch (BufferOverflowException var3) {
          RobotLog.logStacktrace((Exception)var3);
       }
 
-      return var1.array();
+      return buffer.array();
    }
 
    public String toString() {
-      Object[] var1 = new Object[]{Short.valueOf(this.c), Long.valueOf(this.b)};
-      return String.format("Heartbeat - seq: %4d, time: %d", var1);
+      return String.format("Heartbeat - seq: %4d, time: %d", this.sequenceNumber, this.timeStamp);
    }
 
    public static enum Token {

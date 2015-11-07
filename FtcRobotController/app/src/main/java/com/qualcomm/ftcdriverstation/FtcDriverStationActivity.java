@@ -376,26 +376,24 @@ public class FtcDriverStationActivity extends Activity implements WifiDirectAssi
       this.pendingCommands.add(new Command("CMD_INIT_OP_MODE", "Stop Robot"));
    }
 
-   protected void heartbeatEvent(RobocolDatagram var1) {
+   protected void heartbeatEvent(RobocolDatagram datagram) {
       try {
-         this.heartbeatRecv.fromByteArray(var1.getData());
-         double var3 = this.heartbeatRecv.getElapsedTime();
-         short var5 = this.heartbeatRecv.getSequenceNumber();
+         this.heartbeatRecv.fromByteArray(datagram.getData());
+         double roundTripTime = this.heartbeatRecv.getElapsedTime();
+         short sequenceNumber = this.heartbeatRecv.getSequenceNumber();
          this.robotState = RobotState.fromByte(this.heartbeatRecv.getRobotState());
-         this.pingAverage.addNumber((int)(1000.0D * var3));
+         this.pingAverage.addNumber((int)(1000.0D * roundTripTime));
          if(this.enableNetworkTrafficLogging) {
-            Object[] var7 = new Object[]{Integer.valueOf(var5), Double.valueOf(var3)};
-            DbgLog.msg(String.format("Network - num: %5d, time: %7.4f", var7));
+            DbgLog.msg(String.format("Network - num: %5d, time: %7.4f", sequenceNumber, roundTripTime));
          }
 
          if(this.lastUiUpdate.time() > 0.5D) {
             this.lastUiUpdate.reset();
-            Object[] var6 = new Object[]{Integer.valueOf(this.pingAverage.getAverage())};
-            this.pingStatus(String.format("%3dms", var6));
+            this.pingStatus(String.format("%3dms", this.pingAverage.getAverage()));
          }
 
-      } catch (RobotCoreException var8) {
-         DbgLog.logStacktrace(var8);
+      } catch (RobotCoreException e) {
+         DbgLog.logStacktrace(e);
       }
    }
 
@@ -1077,8 +1075,8 @@ public class FtcDriverStationActivity extends Activity implements WifiDirectAssi
 
       public void run() {
          while(true) {
-            RobocolDatagram var1 = FtcDriverStationActivity.this.socket.recv();
-            if(var1 == null) {
+            RobocolDatagram datagram = FtcDriverStationActivity.this.socket.recv();
+            if(datagram == null) {
                if(FtcDriverStationActivity.this.socket.isClosed()) {
                   return;
                }
@@ -1086,21 +1084,21 @@ public class FtcDriverStationActivity extends Activity implements WifiDirectAssi
                Thread.yield();
             } else {
                FtcDriverStationActivity.this.lastRecvPacket.reset();
-               switch(null.$SwitchMap$com$qualcomm$robotcore$robocol$RobocolParsable$MsgType[var1.getMsgType().ordinal()]) {
+               switch(null.$SwitchMap$com$qualcomm$robotcore$robocol$RobocolParsable$MsgType[datagram.getMsgType().ordinal()]) {
                case 1:
-                  FtcDriverStationActivity.this.peerDiscoveryEvent(var1);
+                  FtcDriverStationActivity.this.peerDiscoveryEvent(datagram);
                   break;
                case 2:
-                  FtcDriverStationActivity.this.heartbeatEvent(var1);
+                  FtcDriverStationActivity.this.heartbeatEvent(datagram);
                   break;
                case 3:
-                  FtcDriverStationActivity.this.commandEvent(var1);
+                  FtcDriverStationActivity.this.commandEvent(datagram);
                   break;
                case 4:
-                  FtcDriverStationActivity.this.telemetryEvent(var1);
+                  FtcDriverStationActivity.this.telemetryEvent(datagram);
                   break;
                default:
-                  DbgLog.msg("Unhandled message type: " + var1.getMsgType().name());
+                  DbgLog.msg("Unhandled message type: " + datagram.getMsgType().name());
                }
             }
          }
