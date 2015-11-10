@@ -147,6 +147,11 @@ public class EventLoopManager {
         return this.heartbeat;
     }
 
+    /** observation: this is may be thread-safe; it could be called concurrently (with different
+     * telemetry objects). The core remaining issue is concurrent use of socket.send(). You would
+     * have thought that that would have been thread-safe, but I forgot it's a local thing
+     * here not a system thing.
+     */
     public void sendTelemetryData(Telemetry telemetry) {
         try {
             this.socket.send(new RobocolDatagram(telemetry.toByteArray()));
