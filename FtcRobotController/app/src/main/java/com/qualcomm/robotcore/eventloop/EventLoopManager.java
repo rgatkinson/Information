@@ -44,7 +44,7 @@ public class EventLoopManager {
     private EventLoopManager.EventLoopMonitor eventLoopMonitor;
     private final Set<SyncdDevice> syncdDevices;
     private final Command[] commandsReceived;
-    private int m;
+    private int iCommandReceiveNext;
     private final Set<Command> commandsToSend;
     private InetAddress currentPeerAddressAndPort;
 
@@ -69,7 +69,7 @@ public class EventLoopManager {
         this.eventLoopMonitor = null;
         this.syncdDevices = new CopyOnWriteArraySet();
         this.commandsReceived = new Command[8];
-        this.m = 0;
+        this.iCommandReceiveNext = 0;
         this.commandsToSend = new CopyOnWriteArraySet();
         this.socket = socket;
         this.reportRobotStatus(RobotState.NOT_STARTED);
@@ -284,23 +284,26 @@ public class EventLoopManager {
         } else {
             command.acknowledge();
             this.socket.send(new RobocolDatagram(command));
-            Command[] var3 = this.commandsReceived;
-            int var4 = var3.length;
+            Command[] commands = this.commandsReceived;
+            int numCommands = commands.length;
 
-            for(int var5 = 0; var5 < var4; ++var5) {
-                Command var6 = var3[var5];
-                if(var6 != null && var6.equals(command)) {
+            // See if this is a duplicate command
+            for(int iCommand = 0; iCommand < numCommands; ++iCommand) {
+                Command existingCommand = commands[iCommand];
+                if(existingCommand != null && existingCommand.equals(command)) {
                     return;
                 }
             }
 
-            this.commandsReceived[this.m++ % this.commandsReceived.length] = command;
+            // Remember the command for subsequent duplicate detection
+            this.commandsReceived[this.iCommandReceiveNext++ % this.commandsReceived.length] = command;
 
+            // Process the silly thing
             try {
                 this.eventLoop.processCommand(command);
-            } catch (Exception var7) {
+            } catch (Exception e) {
                 RobotLog.e("Event loop threw an exception while processing a command");
-                RobotLog.logStacktrace(var7);
+                RobotLog.logStacktrace(e);
             }
 
         }

@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ReadWriteRunnableStandard implements ReadWriteRunnable {
-    protected final byte[] localDeviceReadCache = new byte[256];
+    protected final byte[] localDeviceReadCache = new byte[256];                                 // 0
     protected final byte[] localDeviceWriteCache = new byte[256];
     protected Map<Integer, ReadWriteRunnableSegment> segments = new HashMap();
     protected ConcurrentLinkedQueue<Integer> segmentReadQueue = new ConcurrentLinkedQueue();
@@ -92,6 +92,10 @@ public class ReadWriteRunnableStandard implements ReadWriteRunnable {
         }
     }
 
+    // This isn't reliable: the thread may wait for more blocking work after we've told it
+    // to stop. Exact details tbd. What we think is we need to move the this.running=false
+    // before the prodding. That way, when run() gets back to the top of its loop it
+    // won't reenter it.
     public void close() {
         try {
             this.blockUntilReady();

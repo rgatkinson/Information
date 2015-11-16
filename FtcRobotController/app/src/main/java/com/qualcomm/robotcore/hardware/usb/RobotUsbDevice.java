@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.exception.RobotCoreException;
 public interface RobotUsbDevice {
    void close();
 
-   void purge(RobotUsbDevice.Channel var1) throws RobotCoreException;
+   void purge(RobotUsbDevice.Channel channel) throws RobotCoreException;
 
    int read(byte[] var1) throws RobotCoreException;
 
