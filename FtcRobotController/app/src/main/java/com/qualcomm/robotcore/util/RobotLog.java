@@ -4,12 +4,12 @@ import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 import com.qualcomm.robotcore.exception.RobotCoreException;
-import com.qualcomm.robotcore.util.RunShellCommand;
+
 import java.io.File;
 
 public class RobotLog {
    public static final String TAG = "RobotCore";
-   private static String a = "";
+   private static String globalErrorMessage = "";
    private static boolean b = false;
 
    public static void cancelWriteLogcatToDisk(Context var0) {
@@ -36,7 +36,7 @@ public class RobotLog {
    }
 
    public static void clearGlobalErrorMsg() {
-      a = "";
+      globalErrorMessage = "";
    }
 
    public static void d(String var0) {
@@ -48,7 +48,7 @@ public class RobotLog {
    }
 
    public static String getGlobalErrorMsg() {
-      return a;
+      return globalErrorMessage;
    }
 
    public static String getLogFilename(Context var0) {
@@ -57,7 +57,7 @@ public class RobotLog {
    }
 
    public static boolean hasGlobalErrorMsg() {
-      return !a.isEmpty();
+      return !globalErrorMessage.isEmpty();
    }
 
    public static void i(String var0) {
@@ -101,9 +101,9 @@ public class RobotLog {
 
    }
 
-   public static void setGlobalErrorMsg(String var0) {
-      if(a.isEmpty()) {
-         a = a + var0;
+   public static void setGlobalErrorMsg(String message) {
+      if (globalErrorMessage.isEmpty()) {
+         globalErrorMessage = globalErrorMessage + message;
       }
 
    }
@@ -130,7 +130,7 @@ public class RobotLog {
             final String a;
 
             {
-               this.a = var2x;
+               this.a = var2;
             }
 
             public void run() {

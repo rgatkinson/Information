@@ -518,9 +518,9 @@ public class EventLoopManager {
                         try {
                             RobotLog.v("Sending command: " + command.getName() + ", attempt " + command.getAttempts());
                             EventLoopManager.this.socket.send(new RobocolDatagram(command.toByteArray()));
-                        } catch (RobotCoreException var5) {
+                        } catch (RobotCoreException e) {
                             RobotLog.w("Failed to send command " + command.getName());
-                            RobotLog.logStacktrace(var5);
+                            RobotLog.logStacktrace(e);
                         }
                     }
                 }

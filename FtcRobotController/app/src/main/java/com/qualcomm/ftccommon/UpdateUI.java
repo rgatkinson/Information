@@ -88,11 +88,11 @@ public class UpdateUI {
          }).start();
       }
 
-      public void robotUpdate(final String var1) {
-         DbgLog.msg(var1);
+      public void robotUpdate(final String robotStatus) {
+         DbgLog.msg(robotStatus);
          UpdateUI.this.c.runOnUiThread(new Runnable() {
             public void run() {
-               UpdateUI.this.textRobotStatus.setText(var1);
+               UpdateUI.this.textRobotStatus.setText(robotStatus);
                UpdateUI.this.textErrorMessage.setText(RobotLog.getGlobalErrorMsg());
                if(RobotLog.hasGlobalErrorMsg()) {
                   UpdateUI.this.dimmer.longBright();

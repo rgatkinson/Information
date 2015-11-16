@@ -37,21 +37,20 @@ public class FtcEventLoop implements EventLoop {
    }
 
    private void sendOpModeList() {
-      String var1 = "";
-      Iterator var2 = this.opModeManager.getOpModes().iterator();
-
-      while(var2.hasNext()) {
-         String var3 = (String)var2.next();
-         if(!var3.equals("Stop Robot")) {
-            if(!var1.isEmpty()) {
-               var1 = var1 + Util.ASCII_RECORD_SEPARATOR;
+      String result = "";
+      Iterator iterator = this.opModeManager.getOpModes().iterator();
+      while(iterator.hasNext()) {
+         String opModeName = (String)iterator.next();
+         if(!opModeName.equals("Stop Robot")) {
+            if(!result.isEmpty()) {
+               result = result + Util.ASCII_RECORD_SEPARATOR;
             }
 
-            var1 = var1 + var3;
+            result = result + opModeName;
          }
       }
 
-      this.ftcEventLoopHandler.sendCommand(new Command("CMD_REQUEST_OP_MODE_LIST_RESP", var1));
+      this.ftcEventLoopHandler.sendCommand(new Command("CMD_REQUEST_OP_MODE_LIST_RESP", result));
    }
 
    private void doRunOpMode() {
