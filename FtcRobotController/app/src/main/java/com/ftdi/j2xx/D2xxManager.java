@@ -345,7 +345,7 @@ public class D2xxManager {
                 var2.setDriverParameters(var3);
             }
 
-            if(var2.a(g) && var2.isOpen()) {
+            if(var2.internalOpen(g) && var2.isOpen()) {
                 var4 = true;
             }
 

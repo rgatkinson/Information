@@ -84,7 +84,7 @@ class BulkInRunnable implements Runnable {
         } catch (InterruptedException interrupt) {
             try {
                 this.processInCtrl.f();
-                this.processInCtrl.e();
+                this.processInCtrl.purgeRxMaybe();
             } catch (Exception except) {
                 Log.d("BulkIn::", "Stop BulkIn thread");
                 except.printStackTrace();

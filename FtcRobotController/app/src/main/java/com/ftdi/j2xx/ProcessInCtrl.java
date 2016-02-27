@@ -28,7 +28,7 @@ class ProcessInCtrl
     private Semaphore[] rgOtherBufferSempahores;
     private SomeKindOfBuffer[] rgBuffers;
     private ByteBuffer d;
-    private ByteBuffer[] e;
+    private ByteBuffer[] byteBuffers;
     private Pipe pipe;
     private SinkChannel sinkChannel;
     private SourceChannel sourceChannel;
@@ -54,7 +54,7 @@ class ProcessInCtrl
         this.rgBufferSempaphores = new Semaphore[this.bufferCount];
         this.rgOtherBufferSempahores = new Semaphore[this.bufferCount];
         this.rgBuffers = new SomeKindOfBuffer[this.bufferCount];
-        this.e = new ByteBuffer[256];
+        this.byteBuffers = new ByteBuffer[256];
         this.nLock = new ReentrantLock();
         this.nCondition = this.nLock.newCondition();
         this.readBufferFull = false;
@@ -182,8 +182,8 @@ class ProcessInCtrl
     }
 
     private void extractReadData(SomeKindOfBuffer someKindOfBuffer) throws InterruptedException {
-        int var4 = 0;
-        long var7 = 0L;
+        int cbTotalData = 0;
+        long cbWritten = 0L;
         short var9 = 0;
         short var10 = 0;
         boolean var11 = false;
@@ -200,13 +200,13 @@ class ProcessInCtrl
                     byteBuffer.limit(cbSomeCount);
                     var19 = var13 * this.cbMaxPacketSizeIn;
                     byteBuffer.position(var19);
-                    byte var14 = byteBuffer.get();
-                    var9 = (short)(this.ftDevice.ftDeviceInfoListNode.modemStatus ^ (short)(var14 & 240));
-                    this.ftDevice.ftDeviceInfoListNode.modemStatus = (short)(var14 & 240);
-                    byte var15 = byteBuffer.get();
-                    this.ftDevice.ftDeviceInfoListNode.lineStatus = (short)(var15 & 255);
+                    byte bNext = byteBuffer.get();
+                    var9 = (short)(this.ftDevice.ftDeviceInfoListNode.modemStatus ^ (short)(bNext & 240));
+                    this.ftDevice.ftDeviceInfoListNode.modemStatus = (short)(bNext & 240);
+                    byte bNextNext = byteBuffer.get();
+                    this.ftDevice.ftDeviceInfoListNode.lineStatus = (short)(bNextNext & 255);
                     var19 += 2;
-                    if(byteBuffer.hasRemaining()) {
+                    if (byteBuffer.hasRemaining()) {
                         var10 = (short)(this.ftDevice.ftDeviceInfoListNode.lineStatus & 30);
                     } else {
                         var10 = 0;
@@ -218,20 +218,20 @@ class ProcessInCtrl
                     byteBuffer.position(var19);
                 }
 
-                var4 += var20 - var19;
-                this.e[var13] = byteBuffer.slice();
+                cbTotalData += var20 - var19;
+                this.byteBuffers[var13] = byteBuffer.slice();
             }
 
-            if(var4 != 0) {
+            if(cbTotalData != 0) {
                 var11 = true;
 
                 try {
-                    var7 = this.sinkChannel.write(this.e, 0, var18);
-                    if(var7 != (long)var4) {
-                        Log.d("extractReadData::", "written != totalData, written= " + var7 + " totalData=" + var4);
+                    cbWritten = this.sinkChannel.write(this.byteBuffers, 0, var18);
+                    if(cbWritten != (long)cbTotalData) {
+                        Log.d("extractReadData::", "written != totalData, written= " + cbWritten + " totalData=" + cbTotalData);
                     }
 
-                    this.incCbAvailableToRead((int) var7);
+                    this.incCbAvailableToRead((int) cbWritten);
                     this.qLock.lock();
                     this.qCondition.signalAll();
                     this.qLock.unlock();
@@ -347,19 +347,19 @@ class ProcessInCtrl
         return this.driverParameters.getMaxBufferSize() - this.cbAvailableToRead() - 1;
     }
 
-    public int e() {
+    public int purgeRxMaybe() {
         int var1 = this.driverParameters.getBufferCount();
         SomeKindOfBuffer var2 = null;
         boolean var3 = false;
         ByteBuffer var4 = this.d;
         synchronized(this.d) {
-            int var8;
+            int cbRead;
             try {
                 do {
                     this.sourceChannel.configureBlocking(false);
-                    var8 = this.sourceChannel.read(this.d);
+                    cbRead = this.sourceChannel.read(this.d);
                     this.d.clear();
-                } while(var8 != 0);
+                } while(cbRead != 0);
             } catch (Exception var6) {
                 var6.printStackTrace();
             }
@@ -436,13 +436,13 @@ class ProcessInCtrl
         }
 
         for(var1 = 0; var1 < 256; ++var1) {
-            this.e[var1] = null;
+            this.byteBuffers[var1] = null;
         }
 
         this.rgBufferSempaphores = null;
         this.rgOtherBufferSempahores = null;
         this.rgBuffers = null;
-        this.e = null;
+        this.byteBuffers = null;
         this.d = null;
         if(this.readBufferFull) {
             this.nLock.lock();
