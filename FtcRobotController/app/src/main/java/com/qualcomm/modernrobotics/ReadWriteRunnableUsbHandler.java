@@ -1,6 +1,5 @@
 package com.qualcomm.modernrobotics;
 
-import com.qualcomm.modernrobotics.a;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.usb.RobotUsbDevice;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -21,15 +20,17 @@ public class ReadWriteRunnableUsbHandler {
       this.device = device;
    }
 
-   private void a(int var1, byte[] var2) throws RobotCoreException, InterruptedException {
-      this.readCmd[3] = (byte)var1;
-      this.readCmd[4] = (byte)var2.length;
+   private void internalRead(int regAddress, byte[] buffer) throws RobotCoreException, InterruptedException {
+
+      this.readCmd[3] = (byte)regAddress;
+      this.readCmd[4] = (byte)buffer.length;
       this.device.write(this.readCmd);
-      Arrays.fill(this.respHeader, (byte)0);
-      int var3 = this.device.read(this.respHeader, this.respHeader.length, 100);
-      if(!a.a(this.respHeader, var2.length)) {
+
+      Arrays.fill(this.respHeader, (byte) 0);
+      int cbHeaderRead = this.device.read(this.respHeader, this.respHeader.length, 100);
+      if(!ModernRoboticsUsbHeaderVerifier.verifyHeader(this.respHeader, buffer.length)) {
          ++this.usbSequentialReadErrorCount;
-         if(var3 == this.respHeader.length) {
+         if(cbHeaderRead == this.respHeader.length) {
             Thread.sleep(100L);
             this.a(this.readCmd, "comm error");
          } else {
@@ -37,7 +38,7 @@ public class ReadWriteRunnableUsbHandler {
          }
       }
 
-      if(this.device.read(var2, var2.length, 100) != var2.length) {
+      if (this.device.read(buffer, buffer.length, 100) != buffer.length) {
          this.a(this.readCmd, "comm timeout on payload");
       }
 
@@ -50,15 +51,16 @@ public class ReadWriteRunnableUsbHandler {
       throw new RobotCoreException(var2);
    }
 
-   private void b(int var1, byte[] var2) throws RobotCoreException, InterruptedException {
-      this.writeCmd[3] = (byte)var1;
-      this.writeCmd[4] = (byte)var2.length;
-      this.device.write(Util.concatenateByteArrays(this.writeCmd, var2));
-      Arrays.fill(this.respHeader, (byte)0);
-      int var3 = this.device.read(this.respHeader, this.respHeader.length, 100);
-      if(!a.a(this.respHeader, 0)) {
+   private void internalWrite(int regAddress, byte[] buffer) throws RobotCoreException, InterruptedException {
+      this.writeCmd[3] = (byte)regAddress;
+      this.writeCmd[4] = (byte)buffer.length;
+      this.device.write(Util.concatenateByteArrays(this.writeCmd, buffer));
+
+      Arrays.fill(this.respHeader, (byte) 0);
+      int cbHeaderRead = this.device.read(this.respHeader, this.respHeader.length, 100);
+      if(!ModernRoboticsUsbHeaderVerifier.verifyHeader(this.respHeader, 0)) {
          ++this.usbSequentialWriteErrorCount;
-         if(var3 == this.respHeader.length) {
+         if(cbHeaderRead == this.respHeader.length) {
             Thread.sleep(100L);
             this.a(this.writeCmd, "comm error");
          } else {
@@ -94,8 +96,8 @@ public class ReadWriteRunnableUsbHandler {
       this.device.purge(var1);
    }
 
-   public void read(int var1, byte[] var2) throws RobotCoreException, InterruptedException {
-      this.a(var1, var2);
+   public void read(int regAddress, byte[] buffer) throws RobotCoreException, InterruptedException {
+      this.internalRead(regAddress, buffer);
    }
 
    public void throwIfUsbErrorCountIsTooHigh() throws RobotCoreException {
@@ -104,7 +106,7 @@ public class ReadWriteRunnableUsbHandler {
       }
    }
 
-   public void write(int var1, byte[] var2) throws RobotCoreException, InterruptedException {
-      this.b(var1, var2);
+   public void write(int regAddress, byte[] buffer) throws RobotCoreException, InterruptedException {
+      this.internalWrite(regAddress, buffer);
    }
 }

@@ -5,11 +5,8 @@
 
 package com.ftdi.j2xx;
 
-import com.ftdi.j2xx.FT_Device;
-import com.ftdi.j2xx.FT_EEPROM;
-import com.ftdi.j2xx.k;
-
-class f extends k {
+class f extends FT_EE_Ctrl
+    {
     private static FT_Device d;
 
     f(FT_Device var1) {
@@ -31,7 +28,7 @@ class f extends k {
 
                 var2[1] = var3.VendorId;
                 var2[2] = var3.ProductId;
-                var2[3] = d.g.bcdDevice;
+                var2[3] = d.ftDeviceInfoListNode.bcdDevice;
                 var2[4] = this.a((Object)var1);
                 byte var7 = 10;
                 int var8 = this.a(var3.Manufacturer, var2, var7, 7, true);

@@ -1,14 +1,12 @@
 package com.ftdi.j2xx;
 
 import android.util.Log;
-import com.ftdi.j2xx.n;
-import com.ftdi.j2xx.o;
 
-class p implements Runnable {
+class ProcessRequestThread implements Runnable {
    int a;
-   private o b;
+   private ProcessInCtrl b;
 
-   p(o var1) {
+   ProcessRequestThread(ProcessInCtrl var1) {
       this.b = var1;
       this.a = this.b.b().getBufferNumber();
    }

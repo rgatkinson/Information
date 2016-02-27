@@ -1,17 +1,15 @@
 package com.ftdi.j2xx;
 
 import android.util.Log;
-import com.ftdi.j2xx.D2xxManager;
-import com.ftdi.j2xx.FT_Device;
-import com.ftdi.j2xx.FT_EEPROM;
 
-class k {
+class FT_EE_Ctrl
+   {
    short a;
    int b;
    boolean c;
    private FT_Device d;
 
-   k(FT_Device var1) {
+   FT_EE_Ctrl(FT_Device var1) {
       this.d = var1;
    }
 
@@ -122,7 +120,7 @@ class k {
       if(var1 >= 1024) {
          return -1;
       } else {
-         this.d.c().controlTransfer(-64, 144, 0, var1, var2, 2, 0);
+         this.d.getUsbDeviceConnection().controlTransfer(-64, 144, 0, var1, var2, 2, 0);
          return (255 & var2[1]) << 8 | 255 & var2[0];
       }
    }
@@ -185,7 +183,7 @@ class k {
    boolean a(short var1, short var2) {
       int var3 = var2 & '\uffff';
       int var4 = var1 & '\uffff';
-      return var1 < 1024 && this.d.c().controlTransfer(64, 145, var3, var4, (byte[])null, 0, 0) == 0;
+      return var1 < 1024 && this.d.getUsbDeviceConnection().controlTransfer(64, 145, var3, var4, (byte[])null, 0, 0) == 0;
    }
 
    boolean a(int[] var1, int var2) {
@@ -225,6 +223,6 @@ class k {
    }
 
    int c() {
-      return this.d.c().controlTransfer(64, 146, 0, 0, (byte[])null, 0, 0);
+      return this.d.getUsbDeviceConnection().controlTransfer(64, 146, 0, 0, (byte[])null, 0, 0);
    }
 }

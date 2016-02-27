@@ -13,8 +13,7 @@ import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.util.Log;
-import com.ftdi.j2xx.FT_Device;
-import com.ftdi.j2xx.m;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -307,7 +306,7 @@ public class D2xxManager {
                                 var5 = new FT_Device(parentContext, g, var7, var7.getInterface(var9));
                             } else {
                                 this.f.remove(var5);
-                                var5.a(parentContext);
+                                var5.setContext(parentContext);
                             }
 
                             var4.add(var5);
@@ -320,14 +319,14 @@ public class D2xxManager {
 
     public synchronized int getDeviceInfoList(int numDevs, D2xxManager.FtDeviceInfoListNode[] deviceList) {
         for(int var3 = 0; var3 < numDevs; ++var3) {
-            deviceList[var3] = ((FT_Device)this.f.get(var3)).g;
+            deviceList[var3] = ((FT_Device)this.f.get(var3)).ftDeviceInfoListNode;
         }
 
         return this.f.size();
     }
 
     public synchronized D2xxManager.FtDeviceInfoListNode getDeviceInfoListDetail(int index) {
-        return index <= this.f.size() && index >= 0?((FT_Device)this.f.get(index)).g:null;
+        return index <= this.f.size() && index >= 0?((FT_Device)this.f.get(index)).ftDeviceInfoListNode :null;
     }
 
     public static int getLibraryVersion() {
@@ -341,7 +340,7 @@ public class D2xxManager {
         } else if(var1 == null) {
             return var4;
         } else {
-            var2.a(var1);
+            var2.setContext(var1);
             if(var3 != null) {
                 var2.setDriverParameters(var3);
             }
@@ -402,7 +401,7 @@ public class D2xxManager {
             for(int var7 = 0; var7 < this.f.size(); ++var7) {
                 FT_Device var6 = (FT_Device)this.f.get(var7);
                 if(var6 != null) {
-                    var4 = var6.g;
+                    var4 = var6.ftDeviceInfoListNode;
                     if(var4 == null) {
                         Log.d("D2xx::", "***devInfo cannot be null***");
                     } else if(var4.serialNumber.equals(serialNumber)) {
@@ -435,7 +434,7 @@ public class D2xxManager {
             for(int var7 = 0; var7 < this.f.size(); ++var7) {
                 FT_Device var6 = (FT_Device)this.f.get(var7);
                 if(var6 != null) {
-                    var4 = var6.g;
+                    var4 = var6.ftDeviceInfoListNode;
                     if(var4 == null) {
                         Log.d("D2xx::", "***devInfo cannot be null***");
                     } else if(var4.description.equals(description)) {
@@ -468,7 +467,7 @@ public class D2xxManager {
             for(int var7 = 0; var7 < this.f.size(); ++var7) {
                 FT_Device var6 = (FT_Device)this.f.get(var7);
                 if(var6 != null) {
-                    var4 = var6.g;
+                    var4 = var6.ftDeviceInfoListNode;
                     if(var4 == null) {
                         Log.d("D2xx::", "***devInfo cannot be null***");
                     } else if(var4.location == location) {
@@ -504,7 +503,7 @@ public class D2xxManager {
                         if(var2 == null) {
                             var2 = new FT_Device(b, g, dev, dev.getInterface(var5));
                         } else {
-                            var2.a(b);
+                            var2.setContext(b);
                         }
 
                         this.f.add(var2);

@@ -5,13 +5,10 @@
 
 package com.ftdi.j2xx;
 
-import com.ftdi.j2xx.FT_Device;
-import com.ftdi.j2xx.FT_EEPROM;
-import com.ftdi.j2xx.FT_EEPROM_2232D;
-import com.ftdi.j2xx.k;
 import com.ftdi.j2xx.D2xxManager.D2xxException;
 
-class d extends k {
+class d extends FT_EE_Ctrl
+    {
     d(FT_Device var1) throws D2xxException {
         super(var1);
         this.a((byte)10);

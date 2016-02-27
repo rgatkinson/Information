@@ -5,12 +5,8 @@
 
 package com.ftdi.j2xx;
 
-import com.ftdi.j2xx.FT_Device;
-import com.ftdi.j2xx.FT_EEPROM;
-import com.ftdi.j2xx.FT_EEPROM_X_Series;
-import com.ftdi.j2xx.k;
-
-class l extends k {
+class l extends FT_EE_Ctrl
+    {
     private static FT_Device d;
 
     l(FT_Device var1) {

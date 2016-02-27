@@ -5,11 +5,8 @@
 
 package com.ftdi.j2xx;
 
-import com.ftdi.j2xx.FT_Device;
-import com.ftdi.j2xx.FT_EEPROM;
-import com.ftdi.j2xx.k;
-
-class e extends k {
+class e extends FT_EE_Ctrl
+    {
     e(FT_Device var1) {
         super(var1);
     }

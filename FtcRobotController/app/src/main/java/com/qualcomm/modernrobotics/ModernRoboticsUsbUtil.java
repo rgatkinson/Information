@@ -2,7 +2,6 @@ package com.qualcomm.modernrobotics;
 
 import android.content.Context;
 import com.qualcomm.analytics.Analytics;
-import com.qualcomm.modernrobotics.a;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DeviceManager;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -16,9 +15,9 @@ public class ModernRoboticsUsbUtil {
    public static final int DEVICE_ID_LEGACY_MODULE = 73;
    public static final int DEVICE_ID_SERVO_CONTROLLER = 83;
    public static final int MFG_CODE_MODERN_ROBOTICS = 77;
-   private static Analytics a;
+   private static Analytics analytics;
 
-   private static DeviceManager.DeviceType a(byte[] var0) {
+   private static DeviceManager.DeviceType internalGetDeviceType(byte[] var0) {
       if(var0[1] != 77) {
          return DeviceManager.DeviceType.FTDI_USB_UNKNOWN_DEVICE;
       } else {
@@ -37,105 +36,104 @@ public class ModernRoboticsUsbUtil {
       }
    }
 
-   private static RobotUsbDevice a(RobotUsbManager var0, SerialNumber var1) throws RobotCoreException {
-      int var2 = var0.scanForDevices();
-      int var3 = 0;
+   private static RobotUsbDevice internalOpenUsbDevice(RobotUsbManager robotUsbManager, SerialNumber serialNumber) throws RobotCoreException {
+      int numberOfDevices = robotUsbManager.scanForDevices();
+      int iDevice = 0;
 
-      String var4;
-      boolean var5;
+      String deviceDescription;
+      boolean foundDevice;
       while(true) {
-         if(var3 >= var2) {
-            var4 = "";
-            var5 = false;
+         if(iDevice >= numberOfDevices) {
+            deviceDescription = "";
+            foundDevice = false;
             break;
          }
 
-         if(var1.equals(var0.getDeviceSerialNumberByIndex(var3))) {
-            var5 = true;
-            var4 = var0.getDeviceDescriptionByIndex(var3) + " [" + var1.getSerialNumber() + "]";
+         if(serialNumber.equals(robotUsbManager.getDeviceSerialNumberByIndex(iDevice))) {
+            foundDevice = true;
+            deviceDescription = robotUsbManager.getDeviceDescriptionByIndex(iDevice) + " [" + serialNumber.getSerialNumber() + "]";
             break;
          }
 
-         ++var3;
+         ++iDevice;
       }
 
-      if(!var5) {
-         a("unable to find USB device with serial number " + var1.toString());
+      if(!foundDevice) {
+         logAndThrow("unable to find USB device with serial number " + serialNumber.toString());
       }
 
-      RobotUsbDevice var7;
+      RobotUsbDevice result;
       label29: {
-         RobotUsbDevice var10;
+         RobotUsbDevice robotUsbDevice;
          try {
-            var10 = var0.openBySerialNumber(var1);
+            robotUsbDevice = robotUsbManager.openBySerialNumber(serialNumber);
          } catch (RobotCoreException var13) {
-            a("Unable to open USB device " + var1 + " - " + var4 + ": " + var13.getMessage());
-            var7 = null;
+            logAndThrow("Unable to open USB device " + serialNumber + " - " + deviceDescription + ": " + var13.getMessage());
+            result = null;
             break label29;
          }
 
-         var7 = var10;
+         result = robotUsbDevice;
       }
 
       try {
-         var7.setBaudRate(250000);
-         var7.setDataCharacteristics((byte)8, (byte)0, (byte)0);
-         var7.setLatencyTimer(2);
+         result.setBaudRate(250000);
+         result.setDataCharacteristics((byte) 8, (byte) 0, (byte) 0);
+         result.setLatencyTimer(2);
       } catch (RobotCoreException var12) {
-         var7.close();
-         a("Unable to open USB device " + var1 + " - " + var4 + ": " + var12.getMessage());
+         result.close();
+         logAndThrow("Unable to open USB device " + serialNumber + " - " + deviceDescription + ": " + var12.getMessage());
       }
 
       try {
-         Thread.sleep(400L);
-         return var7;
+         Thread.sleep(400L);  // why?
+         return result;
       } catch (InterruptedException var11) {
-         return var7;
+         return result;
       }
    }
 
-   private static void a(String var0) throws RobotCoreException {
+   private static void logAndThrow(String var0) throws RobotCoreException {
       System.err.println(var0);
       throw new RobotCoreException(var0);
    }
 
-   private static byte[] a(RobotUsbDevice var0) throws RobotCoreException {
-      byte[] var1 = new byte[5];
-      byte[] var2 = new byte[3];
-      byte[] var3 = new byte[]{(byte)85, (byte)-86, (byte)-128, (byte)0, (byte)3};
+   private static byte[] internalGetUsbDeviceHeader(RobotUsbDevice robotUsbDevice) throws RobotCoreException {
+      byte[] rgbDeviceHeaderHeader = new byte[5];
+      byte[] rgbDeviceHeaderPayload = new byte[3];
+      byte[] rgbReadDeviceHeader = new byte[]{(byte)85, (byte)-86, (byte)-128, (byte)0, (byte)3};
 
       try {
-         var0.purge(RobotUsbDevice.Channel.RX);
-         var0.write(var3);
-         var0.read(var1);
+         robotUsbDevice.purge(RobotUsbDevice.Channel.RX);
+         robotUsbDevice.write(rgbReadDeviceHeader);
+         robotUsbDevice.read(rgbDeviceHeaderHeader);
       } catch (RobotCoreException var5) {
-         a("error reading Modern Robotics USB device headers");
+         logAndThrow("error reading Modern Robotics USB device headers");
       }
 
-      if(!a.a(var1, 3)) {
-         return var2;
+      if(!analytics.a(rgbDeviceHeaderHeader, 3)) {
+         return rgbDeviceHeaderPayload;
       } else {
-         var0.read(var2);
-         return var2;
+         robotUsbDevice.read(rgbDeviceHeaderPayload);
+         return rgbDeviceHeaderPayload;
       }
    }
 
    public static DeviceManager.DeviceType getDeviceType(byte[] var0) {
-      return a(var0);
+      return internalGetDeviceType(var0);
    }
 
-   public static byte[] getUsbDeviceHeader(RobotUsbDevice var0) throws RobotCoreException {
-      return a(var0);
+   public static byte[] getUsbDeviceHeader(RobotUsbDevice robotUsbDevice) throws RobotCoreException {
+      return internalGetUsbDeviceHeader(robotUsbDevice);
    }
 
    public static void init(Context var0, HardwareMap var1) {
-      if(a == null) {
-         a = new Analytics(var0, "update_rc", var1);
+      if (analytics == null) {
+         analytics = new Analytics(var0, "update_rc", var1);
       }
-
    }
 
-   public static RobotUsbDevice openUsbDevice(RobotUsbManager var0, SerialNumber var1) throws RobotCoreException {
-      return a(var0, var1);
+   public static RobotUsbDevice openUsbDevice(RobotUsbManager robotUsbManager, SerialNumber serialNumber) throws RobotCoreException {
+      return internalOpenUsbDevice(robotUsbManager, serialNumber);
    }
 }

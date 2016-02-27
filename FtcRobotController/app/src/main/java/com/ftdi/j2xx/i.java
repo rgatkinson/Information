@@ -5,12 +5,8 @@
 
 package com.ftdi.j2xx;
 
-import com.ftdi.j2xx.FT_Device;
-import com.ftdi.j2xx.FT_EEPROM;
-import com.ftdi.j2xx.FT_EEPROM_245R;
-import com.ftdi.j2xx.k;
-
-class i extends k {
+class i extends FT_EE_Ctrl
+    {
     private static FT_Device d;
 
     i(FT_Device var1) {
@@ -29,7 +25,7 @@ class i extends k {
         } else {
             byte var9 = d.getLatencyTimer();
             d.setLatencyTimer((byte)119);
-            int var8 = d.c().controlTransfer(64, 145, var3, var4, (byte[])null, 0, 0);
+            int var8 = d.getUsbDeviceConnection().controlTransfer(64, 145, var3, var4, (byte[])null, 0, 0);
             if(var8 == 0) {
                 var6 = true;
             }
