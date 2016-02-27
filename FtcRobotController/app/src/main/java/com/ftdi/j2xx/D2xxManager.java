@@ -528,7 +528,7 @@ public class D2xxManager {
     public static class DriverParameters {
         private int a = 16384;
         private int b = 16384;
-        private int c = 16;
+        private int bufferNumber = 16;
         private int d = 5000;
 
         public DriverParameters() {
@@ -569,7 +569,7 @@ public class D2xxManager {
         public boolean setBufferNumber(int number) {
             boolean var2 = false;
             if(number >= 2 && number <= 16) {
-                this.c = number;
+                this.bufferNumber = number;
                 var2 = true;
             } else {
                 Log.e("D2xx::", "***nrBuffers Out of correct range***");
@@ -579,7 +579,7 @@ public class D2xxManager {
         }
 
         public int getBufferNumber() {
-            return this.c;
+            return this.bufferNumber;
         }
 
         public boolean setReadTimeout(int timeout) {

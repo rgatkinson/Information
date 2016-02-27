@@ -477,7 +477,7 @@ public class FT_Device {
     }
 
     public int getQueueStatus() {
-        return !this.isOpen()?-1:(this.processInCtrl == null?-2:this.processInCtrl.c());
+        return !this.isOpen()?-1:(this.processInCtrl == null?-2:this.processInCtrl.cbAvailableToRead());
     }
 
     public boolean readBufferFull() {

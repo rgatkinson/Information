@@ -13,86 +13,86 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
 
 class BulkInRunnable implements Runnable {
-    UsbDeviceConnection a;
-    UsbEndpoint b;
-    ProcessInCtrl c;
-    FT_Device d;
-    int e;
-    int f;
-    int g;
-    Semaphore h;
-    boolean i;
+    UsbDeviceConnection usbDeviceConnection;
+    UsbEndpoint usbEndpoint;
+    ProcessInCtrl processInCtrl;
+    FT_Device ftDevice;
+    int bufferCount;
+    int cbMaxTransfer;
+    int msReadTimeout;
+    Semaphore semaphore;
+    boolean isStopped;
 
     BulkInRunnable(FT_Device var1, ProcessInCtrl var2, UsbDeviceConnection var3, UsbEndpoint var4) {
-        this.d = var1;
-        this.b = var4;
-        this.a = var3;
-        this.c = var2;
-        this.e = this.c.b().getBufferNumber();
-        this.f = this.c.b().getMaxTransferSize();
-        this.g = this.d.getDriverParameters().getReadTimeout();
-        this.h = new Semaphore(1);
-        this.i = false;
+        this.ftDevice = var1;
+        this.usbEndpoint = var4;
+        this.usbDeviceConnection = var3;
+        this.processInCtrl = var2;
+        this.bufferCount = this.processInCtrl.getDriverParameters().getBufferNumber();
+        this.cbMaxTransfer = this.processInCtrl.getDriverParameters().getMaxTransferSize();
+        this.msReadTimeout = this.ftDevice.getDriverParameters().getReadTimeout();
+        this.semaphore = new Semaphore(1);
+        this.isStopped = false;
     }
 
     void stop() throws InterruptedException {
-        this.h.acquire();
-        this.i = true;
+        this.semaphore.acquire();
+        this.isStopped = true;
     }
 
     void restart() {
-        this.i = false;
-        this.h.release();
+        this.isStopped = false;
+        this.semaphore.release();
     }
 
     boolean stopped() {
-        return this.i;
+        return this.isStopped;
     }
 
     public void run() {
-        ByteBuffer var1 = null;
-        n var2 = null;
-        int var3 = 0;
+        ByteBuffer byteBuffer = null;
+        SomeKindOfBuffer var2 = null;
+        int iBuffer = 0;
         boolean var4 = false;
         Object var5 = null;
 
         try {
             do {
-                if(this.i) {
-                    this.h.acquire();
-                    this.h.release();
+                if(this.isStopped) {
+                    this.semaphore.acquire();
+                    this.semaphore.release();
                 }
 
-                var2 = this.c.b(var3);
-                if(var2.b() == 0) {
-                    var1 = var2.a();
-                    var1.clear();
-                    var2.a(var3);
-                    byte[] var12 = var1.array();
-                    int var11 = this.a.bulkTransfer(this.b, var12, this.f, this.g);
+                var2 = this.processInCtrl.b(iBuffer);
+                if(var2.getSomeCount() == 0) {
+                    byteBuffer = var2.getByteBuffer();
+                    byteBuffer.clear();
+                    var2.a(iBuffer);
+                    byte[] var12 = byteBuffer.array();
+                    int var11 = this.usbDeviceConnection.bulkTransfer(this.usbEndpoint, var12, this.cbMaxTransfer, this.msReadTimeout);
                     if(var11 > 0) {
-                        var1.position(var11);
-                        var1.flip();
-                        var2.b(var11);
-                        this.c.e(var3);
+                        byteBuffer.position(var11);
+                        byteBuffer.flip();
+                        var2.setSomeCount(var11);
+                        this.processInCtrl.e(iBuffer);
                     }
                 }
 
-                ++var3;
-                var3 %= this.e;
+                ++iBuffer;
+                iBuffer %= this.bufferCount;
             } while(!Thread.interrupted());
 
             throw new InterruptedException();
-        } catch (InterruptedException var9) {
+        } catch (InterruptedException interrupt) {
             try {
-                this.c.f();
-                this.c.e();
-            } catch (Exception var8) {
+                this.processInCtrl.f();
+                this.processInCtrl.e();
+            } catch (Exception except) {
                 Log.d("BulkIn::", "Stop BulkIn thread");
-                var8.printStackTrace();
+                except.printStackTrace();
             }
-        } catch (Exception var10) {
-            var10.printStackTrace();
+        } catch (Exception except) {
+            except.printStackTrace();
             Log.e("BulkIn::", "Fatal error in BulkIn thread");
         }
 

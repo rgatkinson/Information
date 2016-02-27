@@ -3,36 +3,36 @@ package com.ftdi.j2xx;
 import android.util.Log;
 
 class ProcessRequestThread implements Runnable {
-   int a;
-   private ProcessInCtrl b;
+   int bufferCount;
+   private ProcessInCtrl processInCtrl;
 
    ProcessRequestThread(ProcessInCtrl var1) {
-      this.b = var1;
-      this.a = this.b.b().getBufferNumber();
+      this.processInCtrl = var1;
+      this.bufferCount = this.processInCtrl.getDriverParameters().getBufferNumber();
    }
 
    public void run() {
-      int var1 = 0;
+      int iBuffer = 0;
 
       try {
          do {
-            n var6 = this.b.c(var1);
-            if(var6.b() > 0) {
-               this.b.a(var6);
-               var6.c();
+            SomeKindOfBuffer var6 = this.processInCtrl.getAcquireBuffer(iBuffer);
+            if(var6.getSomeCount() > 0) {
+               this.processInCtrl.a(var6);
+               var6.clear();
             }
 
-            this.b.d(var1);
-            var1 = (var1 + 1) % this.a;
+            this.processInCtrl.releaseBuffer(iBuffer);
+            iBuffer = (iBuffer + 1) % this.bufferCount;
          } while(!Thread.interrupted());
 
          throw new InterruptedException();
-      } catch (InterruptedException var7) {
+      } catch (InterruptedException e) {
          Log.d("ProcessRequestThread::", "Device has been closed.");
-         var7.printStackTrace();
-      } catch (Exception var8) {
+         e.printStackTrace();
+      } catch (Exception e) {
          Log.e("ProcessRequestThread::", "Fatal error!");
-         var8.printStackTrace();
+         e.printStackTrace();
       }
    }
 }
