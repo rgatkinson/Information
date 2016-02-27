@@ -21,60 +21,58 @@ class BulkInRunnable implements Runnable {
     int cbMaxTransfer;
     int msReadTimeout;
     Semaphore semaphore;
-    boolean isStopped;
+    boolean stopRequested;
 
     BulkInRunnable(FT_Device var1, ProcessInCtrl var2, UsbDeviceConnection var3, UsbEndpoint var4) {
         this.ftDevice = var1;
         this.usbEndpoint = var4;
         this.usbDeviceConnection = var3;
         this.processInCtrl = var2;
-        this.bufferCount = this.processInCtrl.getDriverParameters().getBufferNumber();
+        this.bufferCount = this.processInCtrl.getDriverParameters().getBufferCount();
         this.cbMaxTransfer = this.processInCtrl.getDriverParameters().getMaxTransferSize();
         this.msReadTimeout = this.ftDevice.getDriverParameters().getReadTimeout();
         this.semaphore = new Semaphore(1);
-        this.isStopped = false;
+        this.stopRequested = false;
     }
 
     void stop() throws InterruptedException {
         this.semaphore.acquire();
-        this.isStopped = true;
+        this.stopRequested = true;
     }
 
     void restart() {
-        this.isStopped = false;
+        this.stopRequested = false;
         this.semaphore.release();
     }
 
     boolean stopped() {
-        return this.isStopped;
+        return this.stopRequested;
     }
 
     public void run() {
         ByteBuffer byteBuffer = null;
-        SomeKindOfBuffer var2 = null;
+        SomeKindOfBuffer someKindOfBuffer = null;
         int iBuffer = 0;
-        boolean var4 = false;
-        Object var5 = null;
 
         try {
             do {
-                if(this.isStopped) {
+                if (this.stopRequested) {
                     this.semaphore.acquire();
                     this.semaphore.release();
                 }
 
-                var2 = this.processInCtrl.b(iBuffer);
-                if(var2.getSomeCount() == 0) {
-                    byteBuffer = var2.getByteBuffer();
+                someKindOfBuffer = this.processInCtrl.getAcquireBuffer(iBuffer);
+                if(someKindOfBuffer.getSomeCount() == 0) {
+                    byteBuffer = someKindOfBuffer.getByteBuffer();
                     byteBuffer.clear();
-                    var2.a(iBuffer);
-                    byte[] var12 = byteBuffer.array();
-                    int var11 = this.usbDeviceConnection.bulkTransfer(this.usbEndpoint, var12, this.cbMaxTransfer, this.msReadTimeout);
-                    if(var11 > 0) {
-                        byteBuffer.position(var11);
+                    someKindOfBuffer.setBufferNumber(iBuffer);
+                    byte[] buffer = byteBuffer.array();
+                    int cbTransferred = this.usbDeviceConnection.bulkTransfer(this.usbEndpoint, buffer, this.cbMaxTransfer, this.msReadTimeout);
+                    if (cbTransferred > 0) {
+                        byteBuffer.position(cbTransferred);
                         byteBuffer.flip();
-                        var2.setSomeCount(var11);
-                        this.processInCtrl.e(iBuffer);
+                        someKindOfBuffer.setSomeCount(cbTransferred);
+                        this.processInCtrl.releaseOtherBuffer(iBuffer);
                     }
                 }
 

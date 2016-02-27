@@ -6,6 +6,7 @@
 package com.ftdi.j2xx;
 
 import android.content.Context;
+import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
@@ -26,8 +27,8 @@ public class FT_Device {
     Boolean b;
     UsbDevice usbDevice;
     UsbInterface usbInterface;
-    UsbEndpoint e;
-    UsbEndpoint f;
+    UsbEndpoint usbEndPointOut;
+    UsbEndpoint usbEndpointIn;
     private UsbRequest usbRequest;
     private UsbDeviceConnection usbDeviceConnection;
     private BulkInRunnable bulkInRunnable;
@@ -42,7 +43,7 @@ public class FT_Device {
     private DriverParameters driverParameters;
     private int intfId = 0;
     Context context;
-    private int u;
+    private int cbMaxPacketSizeIn;
 
     public FT_Device(Context parentContext, UsbManager usbManager, UsbDevice dev, UsbInterface itf) {
         byte[] var6 = new byte[255];
@@ -52,9 +53,9 @@ public class FT_Device {
         try {
             this.usbDevice = dev;
             this.usbInterface = itf;
-            this.e = null;
-            this.f = null;
-            this.u = 0;
+            this.usbEndPointOut = null;
+            this.usbEndpointIn = null;
+            this.cbMaxPacketSizeIn = 0;
             this.h = new r();
             this.i = new q();
             this.ftDeviceInfoListNode = new FtDeviceInfoListNode();
@@ -273,7 +274,7 @@ public class FT_Device {
     protected void setDriverParameters(DriverParameters params) {
         this.driverParameters.setMaxBufferSize(params.getMaxBufferSize());
         this.driverParameters.setMaxTransferSize(params.getMaxTransferSize());
-        this.driverParameters.setBufferNumber(params.getBufferNumber());
+        this.driverParameters.setBufferNumber(params.getBufferCount());
         this.driverParameters.setReadTimeout(params.getReadTimeout());
     }
 
@@ -326,10 +327,10 @@ public class FT_Device {
                     Log.e("FTDI_Device::", "Failed to find endpoints.");
                     return var2;
                 } else {
-                    this.usbRequest.initialize(this.usbDeviceConnection, this.e);
+                    this.usbRequest.initialize(this.usbDeviceConnection, this.usbEndPointOut);
                     Log.d("D2XX::", "**********************Device Opened**********************");
                     this.processInCtrl = new ProcessInCtrl(this);
-                    this.bulkInRunnable = new BulkInRunnable(this, this.processInCtrl, this.getUsbDeviceConnection(), this.f);
+                    this.bulkInRunnable = new BulkInRunnable(this, this.processInCtrl, this.getUsbDeviceConnection(), this.usbEndpointIn);
                     this.bulkInThread = new Thread(this.bulkInRunnable);
                     this.bulkInThread.setName("bulkInThread");
                     this.processRequestThread = new Thread(new ProcessRequestThread(this.processInCtrl));
@@ -419,41 +420,41 @@ public class FT_Device {
         return this.write(data, length, true);
     }
 
-    public int write(byte[] data, int length, boolean wait) {
-        int var6 = -1;
+    public int write(byte[] data, int length, boolean waitForCompletion) {
+        int cbWritten = -1;
         if(!this.isOpen()) {
-            return var6;
+            return cbWritten;
         } else if(length < 0) {
-            return var6;
+            return cbWritten;
         } else {
-            UsbRequest var4 = this.usbRequest;
-            if(wait) {
-                var4.setClientData(this);
+            UsbRequest usbRequest = this.usbRequest;
+            if (waitForCompletion) {
+                usbRequest.setClientData(this);
             }
 
             if(length == 0) {
                 byte[] var7 = new byte[1];
-                if(var4.queue(ByteBuffer.wrap(var7), length)) {
-                    var6 = length;
+                if (usbRequest.queue(ByteBuffer.wrap(var7), length)) {
+                    cbWritten = length;
                 }
-            } else if(var4.queue(ByteBuffer.wrap(data), length)) {
-                var6 = length;
+            } else if (usbRequest.queue(ByteBuffer.wrap(data), length)) {
+                cbWritten = length;
             }
 
             Object var5;
-            if(wait) {
+            if (waitForCompletion) {
                 do {
-                    var4 = this.usbDeviceConnection.requestWait();
-                    if(var4 == null) {
+                    usbRequest = this.usbDeviceConnection.requestWait();
+                    if (usbRequest == null) {
                         Log.e("FTDI_Device::", "UsbConnection.requestWait() == null");
                         return -99;
                     }
 
-                    var5 = var4.getClientData();
+                    var5 = usbRequest.getClientData();
                 } while(var5 != this);
             }
 
-            return var6;
+            return cbWritten;
         }
     }
 
@@ -986,21 +987,21 @@ public class FT_Device {
     }
 
     private boolean q() {
-        for(int var1 = 0; var1 < this.usbInterface.getEndpointCount(); ++var1) {
-            Log.i("FTDI_Device::", "EP: " + String.format("0x%02X", new Object[]{Integer.valueOf(this.usbInterface.getEndpoint(var1).getAddress())}));
-            if(this.usbInterface.getEndpoint(var1).getType() == 2) {
-                if(this.usbInterface.getEndpoint(var1).getDirection() == 128) {
-                    this.f = this.usbInterface.getEndpoint(var1);
-                    this.u = this.f.getMaxPacketSize();
+        for(int iEndPoint = 0; iEndPoint < this.usbInterface.getEndpointCount(); ++iEndPoint) {
+            Log.i("FTDI_Device::", "EP: " + String.format("0x%02X", new Object[]{Integer.valueOf(this.usbInterface.getEndpoint(iEndPoint).getAddress())}));
+            if(this.usbInterface.getEndpoint(iEndPoint).getType() == 2) {
+                if(this.usbInterface.getEndpoint(iEndPoint).getDirection() == UsbConstants.USB_DIR_IN) {
+                    this.usbEndpointIn = this.usbInterface.getEndpoint(iEndPoint);
+                    this.cbMaxPacketSizeIn = this.usbEndpointIn.getMaxPacketSize();
                 } else {
-                    this.e = this.usbInterface.getEndpoint(var1);
+                    this.usbEndPointOut = this.usbInterface.getEndpoint(iEndPoint);
                 }
             } else {
                 Log.i("FTDI_Device::", "Not Bulk Endpoint");
             }
         }
 
-        if(this.e != null && this.f != null) {
+        if(this.usbEndPointOut != null && this.usbEndpointIn != null) {
             return true;
         } else {
             return false;
@@ -1060,7 +1061,7 @@ public class FT_Device {
         }
     }
 
-    int e() {
-        return this.u;
+    int getCbMaxPacketSizeIn() {
+        return this.cbMaxPacketSizeIn;
     }
 }

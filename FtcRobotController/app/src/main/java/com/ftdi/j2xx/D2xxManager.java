@@ -578,7 +578,7 @@ public class D2xxManager {
             return var2;
         }
 
-        public int getBufferNumber() {
+        public int getBufferCount() {
             return this.bufferNumber;
         }
 

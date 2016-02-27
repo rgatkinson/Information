@@ -9,20 +9,20 @@ import java.nio.ByteBuffer;
 
 class SomeKindOfBuffer
     {
-    private int a;
+    private int iBuffer;
     private ByteBuffer byteBuffer;
     private int someCount;
-    private boolean d;
+    private boolean isSomeStatus;
 
-    public SomeKindOfBuffer(int var1)
+    public SomeKindOfBuffer(int cbCapacity)
         {
-        this.byteBuffer = ByteBuffer.allocate(var1);
+        this.byteBuffer = ByteBuffer.allocate(cbCapacity);
         this.setSomeCount(0);
         }
 
-    void a(int var1)
+    void setBufferNumber(int iBuffer)
         {
-        this.a = var1;
+        this.iBuffer = iBuffer;
         }
 
     ByteBuffer getByteBuffer()
@@ -46,30 +46,30 @@ class SomeKindOfBuffer
         this.setSomeCount(0);
         }
 
-    synchronized boolean d()
+    synchronized boolean isSomeStatus()
         {
-        return this.d;
+        return this.isSomeStatus;
         }
 
-    synchronized ByteBuffer c(int var1)
+    synchronized ByteBuffer setSomeStatus(int iBuffer)
         {
-        ByteBuffer var2 = null;
-        if (!this.d)
+        ByteBuffer result = null;
+        if (!this.isSomeStatus)
             {
-            this.d = true;
-            this.a = var1;
-            var2 = this.byteBuffer;
+            this.isSomeStatus = true;
+            this.iBuffer = iBuffer;
+            result = this.byteBuffer;
             }
 
-        return var2;
+        return result;
         }
 
-    synchronized boolean d(int var1)
+    synchronized boolean clearSomeStatus(int iBuffer)
         {
         boolean result = false;
-        if (this.d && var1 == this.a)
+        if (this.isSomeStatus && iBuffer == this.iBuffer)
             {
-            this.d = false;
+            this.isSomeStatus = false;
             result = true;
             }
 
