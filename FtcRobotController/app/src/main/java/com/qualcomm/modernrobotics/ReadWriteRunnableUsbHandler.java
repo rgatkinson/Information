@@ -10,7 +10,7 @@ public class ReadWriteRunnableUsbHandler {
    protected final int MAX_SEQUENTIAL_USB_ERROR_COUNT = 10;
    protected final int USB_MSG_TIMEOUT = 100;
    protected RobotUsbDevice device;
-   protected byte[] readCmd = new byte[]{(byte)85, (byte)-86, (byte)-128, (byte)0, (byte)0};
+   protected byte[] readCmd = new byte[]{(byte)0x55, (byte)0xAA, (byte)0x80, (byte)0, (byte)0};
    protected final byte[] respHeader = new byte[5];
    protected int usbSequentialReadErrorCount = 0;
    protected int usbSequentialWriteErrorCount = 0;
@@ -32,20 +32,20 @@ public class ReadWriteRunnableUsbHandler {
          ++this.usbSequentialReadErrorCount;
          if(cbHeaderRead == this.respHeader.length) {
             Thread.sleep(100L);
-            this.a(this.readCmd, "comm error");
+            this.logPurgeAndThrow(this.readCmd, "comm error");
          } else {
-            this.a(this.readCmd, "comm timeout");
+            this.logPurgeAndThrow(this.readCmd, "comm timeout");
          }
       }
 
       if (this.device.read(buffer, buffer.length, 100) != buffer.length) {
-         this.a(this.readCmd, "comm timeout on payload");
+         this.logPurgeAndThrow(this.readCmd, "comm timeout on payload");
       }
 
       this.usbSequentialReadErrorCount = 0;
    }
 
-   private void a(byte[] var1, String var2) throws RobotCoreException {
+   private void logPurgeAndThrow(byte[] var1, String var2) throws RobotCoreException {
       RobotLog.w(bufferToString(var1) + " -> " + bufferToString(this.respHeader));
       this.device.purge(RobotUsbDevice.Channel.BOTH);
       throw new RobotCoreException(var2);
@@ -61,10 +61,10 @@ public class ReadWriteRunnableUsbHandler {
       if(!ModernRoboticsUsbHeaderVerifier.verifyHeader(this.respHeader, 0)) {
          ++this.usbSequentialWriteErrorCount;
          if(cbHeaderRead == this.respHeader.length) {
-            Thread.sleep(100L);
-            this.a(this.writeCmd, "comm error");
+            Thread.sleep(100L);  // allow more data to arrive before purge?
+            this.logPurgeAndThrow(this.writeCmd, "comm error");
          } else {
-            this.a(this.writeCmd, "comm timeout");
+            this.logPurgeAndThrow(this.writeCmd, "comm timeout");
          }
       }
 
@@ -92,8 +92,8 @@ public class ReadWriteRunnableUsbHandler {
       this.device.close();
    }
 
-   public void purge(RobotUsbDevice.Channel var1) throws RobotCoreException {
-      this.device.purge(var1);
+   public void purge(RobotUsbDevice.Channel channel) throws RobotCoreException {
+      this.device.purge(channel);
    }
 
    public void read(int regAddress, byte[] buffer) throws RobotCoreException, InterruptedException {

@@ -33,14 +33,14 @@ public class FT_Device
     UsbEndpoint usbEndpointIn;
     private UsbRequest usbRequest;
     private UsbDeviceConnection usbDeviceConnection;
-    private BulkInRunnable bulkInRunnable;
+    private BulkInWorker bulkInWorker;
     private Thread processRequestThread;
     private Thread bulkInThread;
     FtDeviceInfoListNode ftDeviceInfoListNode;
     private ProcessInCtrl processInCtrl;
-    private FT_EE_Ctrl ft_ee_ctrl;
+    private FT_EE_Ctrl mEEPROM;
     private byte r;
-    r h;
+    TFtSpecialChars h;
     q i;
     private DriverParameters driverParameters;
     private int intfId = 0;
@@ -60,7 +60,7 @@ public class FT_Device
             this.usbEndPointOut = null;
             this.usbEndpointIn = null;
             this.cbMaxPacketSizeIn = 0;
-            this.h = new r();
+            this.h = new TFtSpecialChars();
             this.i = new q();
             this.ftDeviceInfoListNode = new FtDeviceInfoListNode();
             this.usbRequest = new UsbRequest();
@@ -93,56 +93,56 @@ public class FT_Device
                     case 512:
                         if (this.ftDeviceInfoListNode.iSerialNumber == 0)
                             {
-                            this.ft_ee_ctrl = new f(this);
+                            this.mEEPROM = new FT_EE_232B_Ctrl(this);
                             this.ftDeviceInfoListNode.type = 0;
                             }
                         else
                             {
                             this.ftDeviceInfoListNode.type = 1;
-                            this.ft_ee_ctrl = new e(this);
+                            this.mEEPROM = new FT_EE_232A_Ctrl(this);
                             }
                         break;
                     case 1024:
-                        this.ft_ee_ctrl = new f(this);
+                        this.mEEPROM = new FT_EE_232B_Ctrl(this);
                         this.ftDeviceInfoListNode.type = 0;
                         break;
                     case 1280:
-                        this.ft_ee_ctrl = new d(this);
+                        this.mEEPROM = new FT_EE_2232_Ctrl(this);
                         this.ftDeviceInfoListNode.type = 4;
                         this.n();
                         break;
                     case 1536:
-                        this.ft_ee_ctrl = new FT_EE_Ctrl(this);
-                        short var9 = (short) (this.ft_ee_ctrl.a((short) 0) & 1);
-                        this.ft_ee_ctrl = null;
+                        this.mEEPROM = new FT_EE_Ctrl(this);
+                        short var9 = (short) (this.mEEPROM.readWord((short) 0) & 1);
+                        this.mEEPROM = null;
                         if (var9 == 0)
                             {
                             this.ftDeviceInfoListNode.type = 5;
-                            this.ft_ee_ctrl = new h(this);
+                            this.mEEPROM = new FT_EE_232R_Ctrl(this);
                             }
                         else
                             {
                             this.ftDeviceInfoListNode.type = 5;
-                            this.ft_ee_ctrl = new i(this);
+                            this.mEEPROM = new FT_EE_245R_Ctrl(this);
                             }
                         break;
                     case 1792:
                         this.ftDeviceInfoListNode.type = 6;
                         this.n();
-                        this.ft_ee_ctrl = new c(this);
+                        this.mEEPROM = new FT_EE_2232H_Ctrl(this);
                         break;
                     case 2048:
                         this.ftDeviceInfoListNode.type = 7;
                         this.n();
-                        this.ft_ee_ctrl = new j(this);
+                        this.mEEPROM = new FT_EE_4232H_Ctrl(this);
                         break;
                     case 2304:
                         this.ftDeviceInfoListNode.type = 8;
-                        this.ft_ee_ctrl = new g(this);
+                        this.mEEPROM = new FT_EE_232H_Ctrl(this);
                         break;
                     case 4096:
                         this.ftDeviceInfoListNode.type = 9;
-                        this.ft_ee_ctrl = new l(this);
+                        this.mEEPROM = new FT_EE_X_Ctrl(this);
                         break;
                     case 5888:
                         this.ftDeviceInfoListNode.type = 12;
@@ -181,7 +181,7 @@ public class FT_Device
                         break;
                     default:
                         this.ftDeviceInfoListNode.type = 3;
-                        this.ft_ee_ctrl = new FT_EE_Ctrl(this);
+                        this.mEEPROM = new FT_EE_Ctrl(this);
                     }
 
                 switch (this.ftDeviceInfoListNode.bcdDevice & 65280)
@@ -409,10 +409,10 @@ public class FT_Device
                     this.usbRequest.initialize(this.usbDeviceConnection, this.usbEndPointOut);
                     Log.d("D2XX::", "**********************Device Opened**********************");
                     this.processInCtrl = new ProcessInCtrl(this);
-                    this.bulkInRunnable = new BulkInRunnable(this, this.processInCtrl, this.getUsbDeviceConnection(), this.usbEndpointIn);
-                    this.bulkInThread = new Thread(this.bulkInRunnable);
+                    this.bulkInWorker = new BulkInWorker(this, this.processInCtrl, this.getUsbDeviceConnection(), this.usbEndpointIn);
+                    this.bulkInThread = new Thread(this.bulkInWorker);
                     this.bulkInThread.setName("bulkInThread");
-                    this.processRequestThread = new Thread(new ProcessRequestThread(this.processInCtrl));
+                    this.processRequestThread = new Thread(new ProcessRequestWorker(this.processInCtrl));
                     this.processRequestThread.setName("processRequestThread");
                     this.internalPurge(true, true);
                     this.bulkInThread.start();
@@ -468,7 +468,7 @@ public class FT_Device
 
         this.processRequestThread = null;
         this.bulkInThread = null;
-        this.bulkInRunnable = null;
+        this.bulkInWorker = null;
         this.processInCtrl = null;
         this.setClosed();
         }
@@ -893,11 +893,11 @@ public class FT_Device
     public boolean setChars(byte eventChar, byte eventCharEnable, byte errorChar, byte errorCharEnable)
         {
         boolean var7 = false;
-        r var8 = new r();
-        var8.a = eventChar;
-        var8.b = eventCharEnable;
-        var8.c = errorChar;
-        var8.d = errorCharEnable;
+        TFtSpecialChars var8 = new TFtSpecialChars();
+        var8.EventChar = eventChar;
+        var8.EventCharEnabled = eventCharEnable;
+        var8.ErrorChar = errorChar;
+        var8.ErrorCharEnabled = errorCharEnable;
         if (!this.isOpen())
             {
             return var7;
@@ -937,71 +937,71 @@ public class FT_Device
 
     public boolean setBitMode(byte mask, byte bitMode)
         {
-        int var5 = this.ftDeviceInfoListNode.type;
-        boolean var6 = false;
+        int type = this.ftDeviceInfoListNode.type;
+        boolean status = false;
         if (!this.isOpen())
             {
-            return var6;
+            return status;
             }
-        else if (var5 == 1)
+        else if (type == 1)
             {
-            return var6;
+            return status;
             }
         else
             {
-            if (var5 == 0 && bitMode != 0)
+            if (type == 0 && bitMode != 0)
                 {
                 if ((bitMode & 1) == 0)
                     {
-                    return var6;
+                    return status;
                     }
                 }
-            else if (var5 == 4 && bitMode != 0)
+            else if (type == 4 && bitMode != 0)
                 {
                 if ((bitMode & 31) == 0)
                     {
-                    return var6;
+                    return status;
                     }
 
                 if (bitMode == 2 & this.usbInterface.getId() != 0)
                     {
-                    return var6;
+                    return status;
                     }
                 }
-            else if (var5 == 5 && bitMode != 0)
+            else if (type == 5 && bitMode != 0)
                 {
                 if ((bitMode & 37) == 0)
                     {
-                    return var6;
+                    return status;
                     }
                 }
-            else if (var5 == 6 && bitMode != 0)
+            else if (type == 6 && bitMode != 0)
                 {
                 if ((bitMode & 95) == 0)
                     {
-                    return var6;
+                    return status;
                     }
 
                 if ((bitMode & 72) > 0 & this.usbInterface.getId() != 0)
                     {
-                    return var6;
+                    return status;
                     }
                 }
-            else if (var5 == 7 && bitMode != 0)
+            else if (type == 7 && bitMode != 0)
                 {
                 if ((bitMode & 7) == 0)
                     {
-                    return var6;
+                    return status;
                     }
 
                 if (bitMode == 2 & this.usbInterface.getId() != 0 & this.usbInterface.getId() != 1)
                     {
-                    return var6;
+                    return status;
                     }
                 }
-            else if (var5 == 8 && bitMode != 0 && bitMode > 64)
+            else if (type == 8 && bitMode != 0 && bitMode > 64)
                 {
-                return var6;
+                return status;
                 }
 
             int var3 = bitMode << 8;
@@ -1009,10 +1009,10 @@ public class FT_Device
             int var4 = this.getUsbDeviceConnection().controlTransfer(64, 11, var3, this.intfId, (byte[]) null, 0, 0);
             if (var4 == 0)
                 {
-                var6 = true;
+                status = true;
                 }
 
-            return var6;
+            return status;
             }
         }
 
@@ -1136,9 +1136,9 @@ public class FT_Device
         {
         try
             {
-            if (!this.bulkInRunnable.stopped())
+            if (!this.bulkInWorker.stopped())
                 {
-                this.bulkInRunnable.stop();
+                this.bulkInWorker.stop();
                 }
             }
         catch (InterruptedException e)
@@ -1151,12 +1151,12 @@ public class FT_Device
 
     public void restartInTask()
         {
-        this.bulkInRunnable.restart();
+        this.bulkInWorker.restart();
         }
 
     public boolean stoppedInTask()
         {
-        return this.bulkInRunnable.stopped();
+        return this.bulkInWorker.stopped();
         }
 
     /** Discards any data form the specified driver buffer and also flushes data from the device.
@@ -1203,7 +1203,7 @@ public class FT_Device
                     {
                     return result;
                     }
-                this.processInCtrl.purgeRxMaybe();
+                this.processInCtrl.purgeINData();
                 }
 
             if (purgeTx)
@@ -1315,12 +1315,12 @@ public class FT_Device
 
     public FT_EEPROM eepromRead()
         {
-        return !this.isOpen() ? null : this.ft_ee_ctrl.a();
+        return !this.isOpen() ? null : this.mEEPROM.readEeprom();
         }
 
     public short eepromWrite(FT_EEPROM eeData)
         {
-        return !this.isOpen() ? -1 : this.ft_ee_ctrl.a(eeData);
+        return !this.isOpen() ? -1 : this.mEEPROM.programEeprom(eeData);
         }
 
     public boolean eepromErase()
@@ -1332,7 +1332,7 @@ public class FT_Device
             }
         else
             {
-            if (this.ft_ee_ctrl.c() == 0)
+            if (this.mEEPROM.eraseEeprom() == 0)
                 {
                 var1 = true;
                 }
@@ -1343,17 +1343,17 @@ public class FT_Device
 
     public int eepromWriteUserArea(byte[] data)
         {
-        return !this.isOpen() ? 0 : this.ft_ee_ctrl.a(data);
+        return !this.isOpen() ? 0 : this.mEEPROM.writeUserData(data);
         }
 
     public byte[] eepromReadUserArea(int length)
         {
-        return !this.isOpen() ? null : this.ft_ee_ctrl.a(length);
+        return !this.isOpen() ? null : this.mEEPROM.readUserData(length);
         }
 
     public int eepromGetUserAreaSize()
         {
-        return !this.isOpen() ? -1 : this.ft_ee_ctrl.b();
+        return !this.isOpen() ? -1 : this.mEEPROM.getUserSize();
         }
 
     public int eepromReadWord(short offset)
@@ -1365,7 +1365,7 @@ public class FT_Device
             }
         else
             {
-            int var3 = this.ft_ee_ctrl.a(offset);
+            int var3 = this.mEEPROM.readWord(offset);
             return var3;
             }
         }
@@ -1379,7 +1379,7 @@ public class FT_Device
             }
         else
             {
-            var3 = this.ft_ee_ctrl.a(address, data);
+            var3 = this.mEEPROM.writeWord(address, data);
             return var3;
             }
         }

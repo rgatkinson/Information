@@ -24,9 +24,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 class ProcessInCtrl
     {
-    private Semaphore[] rgBufferSempaphores;
-    private Semaphore[] rgOtherBufferSempahores;
-    private SomeKindOfBuffer[] rgBuffers;
+    private Semaphore[] mWritable;
+    private Semaphore[] mReadable;
+    private InBuffer[] mInputBufs;
     private ByteBuffer d;
     private ByteBuffer[] byteBuffers;
     private Pipe pipe;
@@ -37,12 +37,12 @@ class ProcessInCtrl
     private Object cbAvailableToReadLock;
     private FT_Device ftDevice;
     private DriverParameters driverParameters;
-    private Lock nLock;
-    private Condition nCondition;
-    private boolean readBufferFull;
+    private Lock mInFullLock;
+    private Condition mFullCon;
+    private boolean mSinkFull;
     private Lock qLock;
     private Condition qCondition;
-    private Object s;
+    private Object mSinkFullLock;
     private int cbMaxPacketSizeIn;
 
     public ProcessInCtrl(FT_Device ftDevice) {
@@ -51,17 +51,17 @@ class ProcessInCtrl
         this.bufferCount = this.driverParameters.getBufferCount();
         int maxBufferSize = this.driverParameters.getMaxBufferSize();
         this.cbMaxPacketSizeIn = this.ftDevice.getCbMaxPacketSizeIn();
-        this.rgBufferSempaphores = new Semaphore[this.bufferCount];
-        this.rgOtherBufferSempahores = new Semaphore[this.bufferCount];
-        this.rgBuffers = new SomeKindOfBuffer[this.bufferCount];
+        this.mWritable = new Semaphore[this.bufferCount];
+        this.mReadable = new Semaphore[this.bufferCount];
+        this.mInputBufs = new InBuffer[this.bufferCount];
         this.byteBuffers = new ByteBuffer[256];
-        this.nLock = new ReentrantLock();
-        this.nCondition = this.nLock.newCondition();
-        this.readBufferFull = false;
+        this.mInFullLock = new ReentrantLock();
+        this.mFullCon = this.mInFullLock.newCondition();
+        this.mSinkFull = false;
         this.qLock = new ReentrantLock();
         this.qCondition = this.qLock.newCondition();
         this.cbAvailableToReadLock = new Object();
-        this.s = new Object();
+        this.mSinkFullLock = new Object();
         this.clearCbAvailableToRead();
         this.d = ByteBuffer.allocateDirect(maxBufferSize);
 
@@ -75,12 +75,12 @@ class ProcessInCtrl
         }
 
         for(int iBuffer = 0; iBuffer < this.bufferCount; ++iBuffer) {
-            this.rgBuffers[iBuffer] = new SomeKindOfBuffer(maxBufferSize);
-            this.rgOtherBufferSempahores[iBuffer] = new Semaphore(1);
-            this.rgBufferSempaphores[iBuffer] = new Semaphore(1);
+            this.mInputBufs[iBuffer] = new InBuffer(maxBufferSize);
+            this.mReadable[iBuffer] = new Semaphore(1);
+            this.mWritable[iBuffer] = new Semaphore(1);
 
             try {
-                this.getOtherAcquireBuffer(iBuffer);
+                this.acquireReadableBuffer(iBuffer);
             } catch (Exception var5) {
                 Log.d("ProcessInCtrl", "Acquire read buffer " + iBuffer + " failed!");
                 var5.printStackTrace();
@@ -90,28 +90,28 @@ class ProcessInCtrl
     }
 
     boolean readBufferFull() {
-        return this.readBufferFull;
+        return this.mSinkFull;
     }
 
     DriverParameters getDriverParameters() {
         return this.driverParameters;
     }
 
-    SomeKindOfBuffer getSomeKindOfBuffer(int iBuffer) {
-        SomeKindOfBuffer result = null;
-        synchronized(this.rgBuffers) {
+    InBuffer getBuffer(int iBuffer) {
+        InBuffer result = null;
+        synchronized(this.mInputBufs) {
             if(iBuffer >= 0 && iBuffer < this.bufferCount) {
-                result = this.rgBuffers[iBuffer];
+                result = this.mInputBufs[iBuffer];
             }
 
             return result;
         }
     }
 
-    SomeKindOfBuffer getAcquireBuffer(int iBuffer) throws InterruptedException {
-        SomeKindOfBuffer result = null;
-        this.rgBufferSempaphores[iBuffer].acquire();
-        result = this.getSomeKindOfBuffer(iBuffer);
+    InBuffer acquireWritableBuffer(int iBuffer) throws InterruptedException {
+        InBuffer result = null;
+        this.mWritable[iBuffer].acquire();
+        result = this.getBuffer(iBuffer);
         if (result.setSomeStatus(iBuffer) == null) {
             result = null;
         }
@@ -119,58 +119,58 @@ class ProcessInCtrl
         return result;
     }
 
-    SomeKindOfBuffer getOtherAcquireBuffer(int iBuffer) throws InterruptedException {
-        SomeKindOfBuffer someKindOfBuffer = null;
-        this.rgOtherBufferSempahores[iBuffer].acquire();
-        someKindOfBuffer = this.getSomeKindOfBuffer(iBuffer);
-        return someKindOfBuffer;
+    InBuffer acquireReadableBuffer(int iBuffer) throws InterruptedException {
+        InBuffer inBuffer = null;
+        this.mReadable[iBuffer].acquire();
+        inBuffer = this.getBuffer(iBuffer);
+        return inBuffer;
     }
 
-    public void releaseBuffer(int iBuffer) throws InterruptedException {
-        SomeKindOfBuffer[] var2 = this.rgBuffers;
-        synchronized(this.rgBuffers) {
-            this.rgBuffers[iBuffer].clearSomeStatus(iBuffer);
+    public void releaseWritableBuffer(int iBuffer) throws InterruptedException {
+        InBuffer[] var2 = this.mInputBufs;
+        synchronized(this.mInputBufs) {
+            this.mInputBufs[iBuffer].release(iBuffer);
         }
-        this.rgBufferSempaphores[iBuffer].release();
+        this.mWritable[iBuffer].release();
     }
 
-    public void releaseOtherBuffer(int iBuffer) throws InterruptedException {
-        this.rgOtherBufferSempahores[iBuffer].release();
+    public void releaseReadableBuffer(int iBuffer) throws InterruptedException {
+        this.mReadable[iBuffer].release();
     }
 
-    public void processSomeKindOfAvailability(SomeKindOfBuffer someKindOfBuffer) throws D2xxException {
-        byte var3 = 0;
-        byte var4 = 0;
-        boolean var5 = false;
+    public void processBulkInData(InBuffer inBuffer) throws D2xxException {
+        byte signalEvents = 0;
+        byte signalLineEvents = 0;
+        boolean signalRxChar = false;
 
         try {
-            int cbSomeCount = someKindOfBuffer.getSomeCount();
+            int cbSomeCount = inBuffer.getLength();
             if (cbSomeCount < 2) {
-                someKindOfBuffer.getByteBuffer().clear();
+                inBuffer.getByteBuffer().clear();
                 return;
             }
 
             int cbBufferFree;
             int var7;
-            synchronized(this.s) {
+            synchronized(this.mSinkFullLock) {
                 cbBufferFree = this.cbBufferFree();
                 var7 = cbSomeCount - 2;
                 if (cbBufferFree < var7) {
                     Log.d("ProcessBulkIn::", " Buffer is full, waiting for read....");
-                    this.a(var5, var3, var4);
-                    this.nLock.lock();
-                    this.readBufferFull = true;
+                    this.processEventChars(signalRxChar, signalEvents, signalLineEvents);
+                    this.mInFullLock.lock();
+                    this.mSinkFull = true;
                 }
             }
 
             if(cbBufferFree < var7) {
-                this.nCondition.await();
-                this.nLock.unlock();
+                this.mFullCon.await();
+                this.mInFullLock.unlock();
             }
 
-            this.extractReadData(someKindOfBuffer);
+            this.extractReadData(inBuffer);
         } catch (InterruptedException var10) {
-            this.nLock.unlock();
+            this.mInFullLock.unlock();
             Log.e("ProcessInCtrl", "Exception in Full await!");
             var10.printStackTrace();
         } catch (Exception var11) {
@@ -181,14 +181,14 @@ class ProcessInCtrl
 
     }
 
-    private void extractReadData(SomeKindOfBuffer someKindOfBuffer) throws InterruptedException {
+    private void extractReadData(InBuffer inBuffer) throws InterruptedException {
         int cbTotalData = 0;
         long cbWritten = 0L;
         short var9 = 0;
         short var10 = 0;
         boolean var11 = false;
-        ByteBuffer byteBuffer = someKindOfBuffer.getByteBuffer();
-        int cbSomeCount = someKindOfBuffer.getSomeCount();
+        ByteBuffer byteBuffer = inBuffer.getByteBuffer();
+        int cbSomeCount = inBuffer.getLength();
         if (cbSomeCount > 0) {
             int var18 = cbSomeCount / this.cbMaxPacketSizeIn + (cbSomeCount % this.cbMaxPacketSizeIn > 0?1:0);
 
@@ -242,7 +242,7 @@ class ProcessInCtrl
             }
 
             byteBuffer.clear();
-            this.a(var11, var9, var10);
+            this.processEventChars(var11, var9, var10);
         }
 
     }
@@ -276,15 +276,15 @@ class ProcessInCtrl
                         }
                     }
 
-                synchronized (this.s)
+                synchronized (this.mSinkFullLock)
                     {
-                    if (this.readBufferFull)
+                    if (this.mSinkFull)
                         {
                         Log.i("FTDI debug::", "buffer is full , and also re start buffer");
-                        this.nLock.lock();
-                        this.nCondition.signalAll();
-                        this.readBufferFull = false;
-                        this.nLock.unlock();
+                        this.mInFullLock.lock();
+                        this.mFullCon.signalAll();
+                        this.mSinkFull = false;
+                        this.mInFullLock.unlock();
                         }
                     }
 
@@ -347,9 +347,9 @@ class ProcessInCtrl
         return this.driverParameters.getMaxBufferSize() - this.cbAvailableToRead() - 1;
     }
 
-    public int purgeRxMaybe() {
+    public int purgeINData() {
         int var1 = this.driverParameters.getBufferCount();
-        SomeKindOfBuffer var2 = null;
+        InBuffer var2 = null;
         boolean var3 = false;
         ByteBuffer var4 = this.d;
         synchronized(this.d) {
@@ -367,9 +367,9 @@ class ProcessInCtrl
             this.clearCbAvailableToRead();
 
             for(int var5 = 0; var5 < var1; ++var5) {
-                var2 = this.getSomeKindOfBuffer(var5);
-                if(var2.isSomeStatus() && var2.getSomeCount() > 2) {
-                    var2.clear();
+                var2 = this.getBuffer(var5);
+                if(var2.isSomeStatus() && var2.getLength() > 2) {
+                    var2.purge();
                 }
             }
 
@@ -377,7 +377,7 @@ class ProcessInCtrl
         }
     }
 
-    public int a(boolean var1, short var2, short var3) throws InterruptedException {
+    public int processEventChars(boolean var1, short var2, short var3) throws InterruptedException {
         long var6 = 0L;
         boolean var8 = false;
         boolean var9 = false;
@@ -409,12 +409,12 @@ class ProcessInCtrl
         return 0;
     }
 
-    public void f() throws InterruptedException {
+    public void releaseWritableBuffers() throws InterruptedException {
         int bufferCount = this.driverParameters.getBufferCount();
 
         for(int iBuffer = 0; iBuffer < bufferCount; ++iBuffer) {
-            if(this.getSomeKindOfBuffer(iBuffer).isSomeStatus()) {
-                this.releaseBuffer(iBuffer);
+            if(this.getBuffer(iBuffer).isSomeStatus()) {
+                this.releaseWritableBuffer(iBuffer);
             }
         }
 
@@ -424,37 +424,37 @@ class ProcessInCtrl
         int var1;
         for(var1 = 0; var1 < this.bufferCount; ++var1) {
             try {
-                this.releaseOtherBuffer(var1);
+                this.releaseReadableBuffer(var1);
             } catch (Exception var4) {
                 Log.d("ProcessInCtrl", "Acquire read buffer " + var1 + " failed!");
                 var4.printStackTrace();
             }
 
-            this.rgBuffers[var1] = null;
-            this.rgOtherBufferSempahores[var1] = null;
-            this.rgBufferSempaphores[var1] = null;
+            this.mInputBufs[var1] = null;
+            this.mReadable[var1] = null;
+            this.mWritable[var1] = null;
         }
 
         for(var1 = 0; var1 < 256; ++var1) {
             this.byteBuffers[var1] = null;
         }
 
-        this.rgBufferSempaphores = null;
-        this.rgOtherBufferSempahores = null;
-        this.rgBuffers = null;
+        this.mWritable = null;
+        this.mReadable = null;
+        this.mInputBufs = null;
         this.byteBuffers = null;
         this.d = null;
-        if(this.readBufferFull) {
-            this.nLock.lock();
-            this.nCondition.signalAll();
-            this.nLock.unlock();
+        if(this.mSinkFull) {
+            this.mInFullLock.lock();
+            this.mFullCon.signalAll();
+            this.mInFullLock.unlock();
         }
 
         this.qLock.lock();
         this.qCondition.signalAll();
         this.qLock.unlock();
-        this.nLock = null;
-        this.nCondition = null;
+        this.mInFullLock = null;
+        this.mFullCon = null;
         this.cbAvailableToReadLock = null;
         this.qLock = null;
         this.qCondition = null;

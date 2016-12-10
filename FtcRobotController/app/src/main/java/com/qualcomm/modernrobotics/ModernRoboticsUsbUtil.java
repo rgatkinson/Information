@@ -18,17 +18,17 @@ public class ModernRoboticsUsbUtil {
    private static Analytics analytics;
 
    private static DeviceManager.DeviceType internalGetDeviceType(byte[] var0) {
-      if(var0[1] != 77) {
+      if(var0[1] != 77) /* 0x4d */ {
          return DeviceManager.DeviceType.FTDI_USB_UNKNOWN_DEVICE;
       } else {
          switch(var0[2]) {
-         case 65:
+         case 65: // 0x41
             return DeviceManager.DeviceType.MODERN_ROBOTICS_USB_DEVICE_INTERFACE_MODULE;
-         case 73:
+         case 73: // 0x49
             return DeviceManager.DeviceType.MODERN_ROBOTICS_USB_LEGACY_MODULE;
-         case 77:
+         case 77: // 0x4d
             return DeviceManager.DeviceType.MODERN_ROBOTICS_USB_DC_MOTOR_CONTROLLER;
-         case 83:
+         case 83: // 0x53
             return DeviceManager.DeviceType.MODERN_ROBOTICS_USB_SERVO_CONTROLLER;
          default:
             return DeviceManager.DeviceType.MODERN_ROBOTICS_USB_UNKNOWN_DEVICE;
